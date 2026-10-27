@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10161d">
+  <meta name="description" content="Keep the feeling alive. Three original, free, offline browser games inspired by the golden age of arcade play.">
+  <title>ARCADE — Keep the feeling alive.</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="js/core.js"></script>
+  <script defer src="js/draw.js"></script>
+  <script defer src="js/input.js"></script>
+  <script defer src="js/audio.js"></script>
+  <script defer src="js/games/iron.js"></script>
+  <script defer src="js/games/heist.js"></script>
+  <script defer src="js/games/ninja.js"></script>
+  <script defer src="js/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#collection">Skip to the games</a>
+  <header class="site-header wrap">
+    <a class="brand" href="#" aria-label="ARCADE home"><img src="assets/icon.svg" alt="" width="38" height="38"><span>ARCADE<span class="brand-dot">✳</span></span><span class="brand-by">BY QSOL–IMC</span></a>
+    <nav aria-label="Main navigation"><button class="text-button" id="about-button">About <span aria-hidden="true">↗</span></button><button class="sound-button" id="sound-toggle" aria-pressed="false" aria-label="Enable sound"><span class="sound-icon" aria-hidden="true">♪</span><span id="sound-label">Sound off</span></button></nav>
+  </header>
+  <main>
+    <section id="lobby" class="wrap">
+      <div class="hero">
+        <div><p class="eyebrow"><span class="little-square"></span> A RETRO EXPERIENCE PRESERVATION PROJECT</p><h1>Keep the<br><em>feeling</em> alive.</h1><p class="hero-description">The one-more-go feeling. The impossible last level.<br>Three new games with an old soul. Yours to keep playing.</p></div>
+        <aside class="hero-aside"><div class="edition"><span>COLLECTION</span><b>001</b></div><p>Good games don't<br>have an expiry date.</p><div class="online-status"><span class="status-dot"></span><span id="offline-status">Preparing offline play…</span></div><button id="update-button" hidden>Update ready · Reload</button></aside>
+      </div>
+      <section id="collection" class="collection" aria-labelledby="collection-title">
+        <div class="section-heading"><div><span class="eyebrow">THE FIRST THREE</span><h2 id="collection-title">Choose your cabinet<span class="count">03</span></h2></div><div class="setup"><label>Mode<select id="difficulty"><option value="arcade">Arcade</option><option value="relaxed">Relaxed</option></select></label><label>Players<select id="players"><option value="1">1 player</option><option value="2">2 players · local</option></select></label></div></div>
+        <div class="game-grid">
+          <article class="game-card iron-card">
+            <div class="cover"><canvas id="cover-iron" width="480" height="270" role="img" aria-label="Original pixel artwork of a coastal mercenary mission"></canvas><span class="cover-number">01</span><span class="cover-tag">RUN &amp; GUN</span></div>
+            <div class="card-body"><div class="card-meta"><span>16-BIT SPIRIT</span><span>1–2 PLAYERS</span></div><h3>Iron Meridian</h3><p>Choose a contract. Gear up. Get your people home. A mercenary's work is never done.</p><div class="inspiration">Inspired by <cite>Dogs of War</cite> <span>1989</span></div><div class="card-bottom"><button data-game="iron" class="play-button">Play game <span aria-hidden="true">↗</span><span class="sr-only"> — Iron Meridian</span></button><span class="best">BEST <b data-best="iron">000000</b></span></div></div>
+          </article>
+          <article class="game-card heist-card">
+            <div class="cover"><canvas id="cover-heist" width="480" height="270" role="img" aria-label="Original pixel artwork of a midnight diamond heist"></canvas><span class="cover-number">02</span><span class="cover-tag">MAZE HEIST</span></div>
+            <div class="card-body"><div class="card-meta"><span>8-BIT MISCHIEF</span><span>1 PLAYER</span></div><h3>Velvet Heist</h3><p>A pocket full of diamonds. A city full of trouble. Try to make it back to the getaway car.</p><div class="inspiration">Inspired by <cite>Cops 'n' Robbers</cite> <span>1985</span></div><div class="card-bottom"><button data-game="heist" class="play-button">Play game <span aria-hidden="true">↗</span><span class="sr-only"> — Velvet Heist</span></button><span class="best">BEST <b data-best="heist">000000</b></span></div></div>
+          </article>
+          <article class="game-card ninja-card">
+            <div class="cover"><canvas id="cover-ninja" width="480" height="270" role="img" aria-label="Original pixel artwork of two masked warriors beneath lanterns"></canvas><span class="cover-number">03</span><span class="cover-tag">SCROLLING ACTION</span></div>
+            <div class="card-body"><div class="card-meta"><span>ARCADE ENERGY</span><span>1–2 PLAYERS</span></div><h3>Neon Ronin</h3><p>Stars fly. Lanterns fall. Take back the night, one city block and one impossible boss at a time.</p><div class="inspiration">Inspired by <cite>Ninja Combat</cite> <span>1990</span></div><div class="card-bottom"><button data-game="ninja" class="play-button">Play game <span aria-hidden="true">↗</span><span class="sr-only"> — Neon Ronin</span></button><span class="best">BEST <b data-best="ninja">000000</b></span></div></div>
+          </article>
+        </div>
+      </section>
+      <div class="preservation-strip"><div class="strip-icon" aria-hidden="true">∞</div><div><h2>Preserve the experience. Create something new.</h2><p>Original code, art, worlds and sound. No ROMs required. No coins either.</p></div><button class="text-button" id="offline-button">Take it offline <span aria-hidden="true">↓</span></button></div>
+      <footer><span>QSOL–IMC <span class="muted">/</span> INDEPENDENT BY DESIGN</span><div><button id="controls-home" class="text-button">How to play</button><a href="https://github.com/QSOLKCB/ARCADE" target="_blank" rel="noopener noreferrer">Source code ↗</a><span class="muted">v0.1.0</span></div></footer>
+    </section>
+    <section id="cabinet" class="wrap cabinet" hidden aria-label="Game cabinet">
+      <div class="cabinet-toolbar"><button id="back-button" class="text-button">← All cabinets</button><h1 id="game-title">Iron Meridian</h1><div class="cabinet-actions"><button id="help-button" title="Controls">Controls</button><button id="touch-toggle" aria-pressed="false">Touch</button><button id="crt-toggle" aria-pressed="false">CRT</button><button id="pause-button">Pause</button><button id="fullscreen-button" aria-label="Toggle fullscreen">⛶</button></div></div>
+      <div class="game-frame" id="game-frame"><canvas id="game" width="480" height="270" tabindex="0" aria-label="Game screen. Controls are listed below. Your game automatically pauses when focus is lost."></canvas><div class="scanlines" aria-hidden="true"></div><div id="game-overlay" class="overlay"><div id="menu-content" class="menu-content" role="region" aria-label="Game menu"></div></div></div>
+      <div class="game-status"><span class="status-dot"></span><span id="game-status" role="status" aria-live="off">Ready to play</span></div>
+      <div id="touch-controls" class="touch-controls" hidden aria-label="Touch controls"><div class="dpad"><button data-touch="up" aria-label="Move up">↑</button><button data-touch="left" aria-label="Move left">←</button><span aria-hidden="true">✛</span><button data-touch="right" aria-label="Move right">→</button><button data-touch="down" aria-label="Move down">↓</button></div><div class="touch-actions"><button data-touch="fire">Attack<span>J</span></button><button data-touch="special">Special<span>K</span></button><button data-touch="jump">Jump / dash<span>SPACE</span></button><button data-touch="interact">Use / swap<span>E</span></button></div></div>
+      <div class="control-legend"><span><kbd>W A S D</kbd> Move <span class="solo-arrows">/ Arrows</span></span><span><kbd>J</kbd> Attack</span><span><kbd>K</kbd> Special</span><span><kbd>SPACE</kbd> Jump / dash</span><span><kbd>E</kbd> Use / swap</span><span><kbd>ESC</kbd> Pause</span></div>
+      <p id="coop-hint" class="coop-hint" hidden>Player 2: Arrow keys to move · U attack · I special · O jump / dash · H use / revive. Standard controllers supported.</p>
+      <p class="cabinet-note">Original worlds. Familiar spirit. <span id="game-inspiration"></span></p>
+    </section>
+  </main>
+  <dialog id="info-dialog"><button class="dialog-close" id="close-info" aria-label="Close information">×</button><div id="info-content"></div></dialog>
+  <noscript><p class="noscript">Enable JavaScript to play these games. All game code runs in your browser.</p></noscript>
+</body>
+</html>
