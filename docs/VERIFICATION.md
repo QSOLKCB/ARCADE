@@ -20,7 +20,7 @@ The initial suite passes **44 tests**. The suite covers:
 
 Chromium cloud preview was used to inspect the launcher, artwork, game briefings, weapon purchases, all three rendered games, keyboard actions, health/resource/score displays, help, pause and restart controls. A 390-pixel iframe was used for narrow-layout and touch-control inspection. The action games expose separate player-two controls and HUDs. Page-specific console checks found no application errors during these checks.
 
-The development preview is plain HTTP on a non-localhost hostname, so it correctly offers a download instead of claiming an offline cache. The final GitHub Pages HTTPS address is checked separately during publication.
+The development preview is plain HTTP on a non-localhost hostname, so it correctly offers a download instead of claiming an offline cache. The published HTTPS launcher at https://qsolkcb.github.io/ARCADE/ loaded successfully, reported “Offline ready · all 3 games”, and launched Neon Ronin without application console errors. The initial publishing run passed all 44 tests and deployment: https://github.com/QSOLKCB/ARCADE/actions/runs/40486083566.
 
 ## Limits
 

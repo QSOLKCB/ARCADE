@@ -84,9 +84,15 @@
     if(!('serviceWorker' in navigator)){$('offline-status').textContent='Download for offline play';return;}
     try{
       const registration=await navigator.serviceWorker.register('./sw.js',{scope:'./'});
-      const announceUpdate=()=>{if(registration.waiting){waitingWorker=registration.waiting;$('update-button').hidden=false;}};
-      announceUpdate();registration.addEventListener('updatefound',()=>{const worker=registration.installing;if(worker)worker.addEventListener('statechange',()=>{if(worker.state==='installed')announceUpdate();});});
-      await navigator.serviceWorker.ready;$('offline-status').textContent='Offline ready · all 3 games';
+      const announceUpdate=()=>{const pending=registration.waiting;const isUpdate=!!(pending&&registration.active&&pending!==registration.active);waitingWorker=isUpdate?pending:null;$('update-button').hidden=!isUpdate;};
+      announceUpdate();registration.addEventListener('updatefound',()=>{const worker=registration.installing;if(worker)worker.addEventListener('statechange',()=>{if(worker.state==='installed'||worker.state==='activated')announceUpdate();});});
+      await new Promise((resolve,reject)=>{
+        if(registration.active?.state==='activated'){resolve();return;}
+        const worker=registration.installing||registration.waiting||registration.active;
+        if(!worker){reject(new Error('No arcade worker'));return;}
+        const check=()=>{if(worker.state==='activated'){worker.removeEventListener('statechange',check);resolve();}else if(worker.state==='redundant'){worker.removeEventListener('statechange',check);reject(new Error('Arcade cache installation failed'));}};
+        worker.addEventListener('statechange',check);check();
+      });announceUpdate();$('offline-status').textContent='Offline ready · all 3 games';
       navigator.serviceWorker.addEventListener('controllerchange',()=>{if(updateRequested)location.reload();});
     }catch(_){$('offline-status').textContent='Download for offline play';}
   }
