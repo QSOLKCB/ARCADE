@@ -12,6 +12,8 @@
 
 These are new interpretations of the play experiences, **not exact ports or emulations**. Code, maps, characters, pixel art, sound effects and musical sequences are original to this project. No ROMs, original game assets or recorded soundtrack samples are required or included.
 
+![The live ARCADE launcher](docs/arcade-preview-20261027.jpg)
+
 ## Play offline
 
 1. Download the repository ZIP and extract it.

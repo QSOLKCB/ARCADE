@@ -29,3 +29,5 @@ This is a first playable release, not a certified compatibility matrix or a clai
 The cloud browser disallows file:// navigation, so direct file-open execution could not be browser-tested here. Static checks confirm classic scripts, local asset paths, no fetched game data and a service-worker-independent runtime. Real gamepad hardware, real touchscreen devices, Firefox and Safari were not available for this pass; input mappings and cancellation were tested with controlled inputs. The offline network-failure tests run against the service-worker logic, rather than disconnecting a physical device.
 
 The Pages publishing workflow runs the same checks before staging the static runtime, with official actions pinned to verified commit SHAs and an Ubuntu 24.04 runner.
+
+Final runtime publication also passed: https://github.com/QSOLKCB/ARCADE/actions/runs/40486526192. The live update prompt was exercised: selecting Reload activated the new cache, refreshed the launcher, removed the update prompt and retained the offline-ready status.
