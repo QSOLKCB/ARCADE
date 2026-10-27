@@ -10,6 +10,12 @@ A separate before/after comparison ran the existing combat input replays against
 
 Chromium preview checks exercised all three cabinets, the updated heist briefing and shooting, action-game attacks, grenades, two-player ninja controls, jump/storm, pause, and the Audio panel. Music/effects values were changed, survived reload, and displayed correctly in a 390-pixel iframe. The heist touch controls show TNT and Enter/bank and hide the unused jump button. The narrow page and audio panel had 390-pixel content/scroll widths, with no horizontal overflow. Page-specific console inspection found no application errors. These are UI/rendering observations, not a claim of physical-controller or hardware-audio verification.
 
+Published runtime commit: `55dc819a0f543931ca9f1a0b271d571da3a8d432`. The [Pages run](https://github.com/QSOLKCB/ARCADE/actions/runs/40491180071) passed verification and deployment. On the live HTTPS site, the existing v0.1.0 cache displayed the update button; selecting it loaded v0.2.0, removed the prompt and retained “Offline ready · all 3 games”. All three cabinets launched from that updated collection. Page-specific live console inspection found no application errors.
+
+![Live revised heist](heist-v020-1793098132395.jpg)
+
+![Live action-game polish](ninja-v020-1793098186802.jpg)
+
 ## First release — v0.1.0
 
 ## Automated checks

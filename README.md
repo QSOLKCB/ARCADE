@@ -18,6 +18,8 @@ These are new interpretations of the play experiences, **not exact ports or emul
 
 Velvet Heist now concentrates on the C64 adventure loop: spend ammunition to escape a pursuit, gather tools, open the safe, brave the dark mine and decide when to bank your bag. Its graphics stay deliberately simple. Iron Meridian and Neon Ronin retain their combat rules, with animated hits, richer particles, projectile trails, environmental detail and distinct original music.
 
+![Velvet Heist — second-pass gameplay](docs/heist-v020-1793098132395.jpg)
+
 ## Play offline
 
 1. Download the repository ZIP and extract it.
