@@ -4,7 +4,7 @@
 
 Run `npm test` and `npm run check` with Node.js 20 or later. No dependency installation is needed.
 
-The suite covers:
+The initial suite passes **44 tests**. The suite covers:
 
 - Fixed-step timing, bounded catch-up, repeatable random sequences, particle limits and unavailable/corrupt storage.
 - Affordable team loadouts, ammunition fallback, walls stopping actors and projectiles, objective/extraction requirements, revives, all three contract transitions, and fresh-run state.
@@ -27,3 +27,5 @@ The development preview is plain HTTP on a non-localhost hostname, so it correct
 This is a first playable release, not a certified compatibility matrix or a claim of exact equivalence to the historical games. The scripted campaign replays establish that the combat campaigns are completable; human difficulty tuning and extended playtesting remain useful.
 
 The cloud browser disallows file:// navigation, so direct file-open execution could not be browser-tested here. Static checks confirm classic scripts, local asset paths, no fetched game data and a service-worker-independent runtime. Real gamepad hardware, real touchscreen devices, Firefox and Safari were not available for this pass; input mappings and cancellation were tested with controlled inputs. The offline network-failure tests run against the service-worker logic, rather than disconnecting a physical device.
+
+The Pages publishing workflow runs the same checks before staging the static runtime, with official actions pinned to verified commit SHAs and an Ubuntu 24.04 runner.

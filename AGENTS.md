@@ -9,5 +9,5 @@ Read this file, docs/INVARIANTS.md and docs/ARCHITECTURE.md before changing code
 - Never add telemetry, accounts, network gameplay or external runtime requests without explicit maintainer direction.
 - Keep all three games completable. Test campaign transitions, failure/restart, objective reachability and offline caching after relevant changes.
 - Run npm test and npm run check. For browser QA, use the available browser environment; record precisely what was actually verified.
-- Do not add GitHub Actions workflows unless requested. GitHub Pages can serve the repository root directly.
+- Keep the existing Pages publishing workflow minimal. It verifies and deploys static files; do not add unrelated CI or scheduled workflows without maintainer direction.
 - Bump the release cache key in sw.js whenever changing a runtime resource. Keep its precache list complete.

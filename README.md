@@ -37,7 +37,7 @@ Iron Meridian also supports mouse aim, left-button fire and right-button grenade
 
 ## Hosting and development
 
-Serve the repository root with any static host. For GitHub Pages, use **Deploy from a branch → main → / (root)**. There is no build step and no custom GitHub Actions workflow.
+Serve the repository root with any static host. The included **Publish arcade** workflow verifies the games and deploys only their runtime files to the already-enabled GitHub Pages site on pushes to `main`. It uses pinned official GitHub actions and requires no package installation or application build. A branch-based host can also serve `main` at `/ (root)`.
 
 The runtime uses HTML, CSS, classic JavaScript, Canvas 2D and Web Audio. It intentionally does not require WebGL, a game engine, a CDN or npm dependencies. All paths are relative so the same files work under `/ARCADE/`, another subdirectory, or directly from disk.
 
