@@ -1,4 +1,16 @@
-# Verification — initial collection
+# Verification
+
+## Second pass — v0.2.0
+
+`npm test` passes **54 tests**; `npm run check` and `git diff --check` pass. Six normal-input replays complete all three games on both Arcade and Relaxed, with real damage and resource limits. The heist replay collects equipment, uses lifts, opens the safe and giant-ghost gate, enters the dark gallery, recovers any lost gems, frees captured lives and banks all 22 gems. It never grants lives, moves actors directly, removes enemies or forces progression.
+
+New regression coverage checks the seven authored maps and all fixtures, permanent key/code requirements, interrupted safe cracking, non-wasteable TNT, torch expiry/recharging and an unlocked return route, shooting police and small ghosts, bounded/announced reinforcements, helicopter warning time, recoverable bags and captured lives. Audio checks cover optional context creation, finite musical notes, voice cleanup/limits, saved-level validation and independent music/effects muting.
+
+A separate before/after comparison ran the existing combat input replays against the first-release commit `5ba9d07747f9b11a4553f2f46d489fccfe5a1953` and the second-pass files. Iron Meridian and Neon Ronin matched tick for tick on both difficulties for player positions, health, ammunition/energy, enemy positions/health, projectile counts, scores and progression. The presentation pass therefore preserved those recorded gameplay outcomes exactly.
+
+Chromium preview checks exercised all three cabinets, the updated heist briefing and shooting, action-game attacks, grenades, two-player ninja controls, jump/storm, pause, and the Audio panel. Music/effects values were changed, survived reload, and displayed correctly in a 390-pixel iframe. The heist touch controls show TNT and Enter/bank and hide the unused jump button. The narrow page and audio panel had 390-pixel content/scroll widths, with no horizontal overflow. Page-specific console inspection found no application errors. These are UI/rendering observations, not a claim of physical-controller or hardware-audio verification.
+
+## First release — v0.1.0
 
 ## Automated checks
 

@@ -7,7 +7,7 @@ The initial scope is three compact, complete campaigns rather than reproductions
 | Historical reference | Retained experiential elements | Deliberate original choices |
 | --- | --- | --- |
 | Dogs of War | Top-down mercenary action; pre-mission equipment buying; constrained ammunition; objectives and heavy enemies | Three sequential contracts; new coast/desert/night layouts; weapon balance; unlimited fallback sidearm; dash; co-op revival |
-| Cops 'n' Robbers | Connected maze locations; collecting diamonds and returning to a car; limited shots; mine ghosts; jail rescue; safe | New connected mazes; three code scraps; temporary police stun and smoke; 22-gem objective; recoverable loot |
+| Cops 'n' Robbers | Connected maze locations; collecting diamonds and returning to a car; limited shots; mine ghosts; jail rescue; safe | Seven original authored floor plans; pursuing and reinforcing police; key, lifts, service-floor code, safe, TNT and rechargeable torch; 22-gem objective; recoverable loot |
 | Ninja Combat | Belt-scrolling ninja action; ranged stars and close combat; jumping; weapon pickups; special attacks; cooperative play | New districts, enemies and bosses; twelve blocks; rechargeable storm; readable attack windups; revives |
 
 ## Research references
@@ -20,7 +20,9 @@ Read on 27 October 2026 to identify broad mechanics and the specific historical 
 - [Cops 'N Robbers — reproduced instructions at Acorn Electron World](https://www.acornelectron.co.uk/info/electron/atlantis/Cops-N-Robbers.html). Platform-specific instructions informed the broad maze/car/mine/safe loop, not a claim of exact C64 parity.
 - [Cops and Robbers — Lemon64](https://www.lemon64.com/game/cops-and-robbers), for C64 context.
 - [Ninja Combat — SNK Wiki](https://snk.fandom.com/wiki/Ninja_Combat), retrieved through search indexing; direct retrieval was unavailable.
-- Maintainer-supplied [CSDb release 225460](https://csdb.dk/release/?id=225460). This specific page could not be retrieved, so its release-specific changes were not assumed or implemented. The separately linked 1985 game identifies the intended gameplay family.
+- Maintainer-supplied [CSDb release 225460](https://csdb.dk/release/?id=225460). The second pass retrieved its listing: a C64 crack credited to 5211. No disk image was downloaded, and no release-specific modifications were assumed.
+
+The second pass also consulted the [contemporary Zzap!64 review reproduced by Codetapper](https://codetapper.com/c64/zzap-reviews/cops-n-robbers-zzap-review/) and [C64 screenshot captions at MobyGames](https://www.mobygames.com/game/20333/cops-n-robbers/screenshots/). These distinguish the original's equipment puzzles, lifts, dark areas and pursuit from a generic maze game. The resulting maps, names, art, safe combination, timings and balance remain original. The code is automatically entered once discovered; it is not a recreation of the original number-entry interface. Patrol warnings and a small unlit visibility radius improve readability without eliminating limited ammunition or return-trip risk.
 
 No downloads of original game binaries or assets were used. Research text has been summarised; no source descriptions or original maps were copied into the games.
 

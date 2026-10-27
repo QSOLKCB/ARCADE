@@ -8,3 +8,6 @@
 .cabinet:fullscreen{width:100%;padding:12px 18px;overflow:auto;background:var(--bg)}.cabinet:fullscreen .game-frame{width:min(100%,calc((100vh - 130px)*16/9))}.cabinet.touch-mode:fullscreen .game-frame{width:min(100%,calc((100vh - 295px)*16/9))}.cabinet:fullscreen .control-legend,.cabinet:fullscreen .coop-hint,.cabinet:fullscreen .cabinet-note{display:none}.cabinet:fullscreen .cabinet-toolbar{margin-bottom:12px}.cabinet:fullscreen .game-status{margin:10px 0}.cabinet:fullscreen .touch-controls{margin:10px auto}
 
 @media(max-width:760px){.brand{gap:6px;flex-shrink:0}.brand>span:first-of-type{white-space:nowrap;font-size:24px}.brand img{width:30px;height:30px}.brand-dot{display:none}nav{gap:14px}.sound-button{white-space:nowrap;font-size:11px;padding:8px}.setup{width:100%;justify-content:space-between;gap:10px}.setup label{gap:7px}.setup select{padding:8px 6px;max-width:140px}}
+
+/* Audio mix uses native, keyboard-accessible sliders. */
+.audio-enable{display:flex;align-items:center;gap:.6rem;margin:1.2rem 0}.audio-slider{display:flex;justify-content:space-between;margin:1.3rem 0 .5rem}#info-content input[type=range]{width:100%;accent-color:var(--amber,#e9c486);min-height:32px}#info-content input[type=checkbox]{accent-color:#e9c486;width:20px;height:20px}

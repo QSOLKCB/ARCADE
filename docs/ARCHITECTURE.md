@@ -2,9 +2,9 @@
 
 The application is a buildless static site. index.html loads classic scripts in dependency order; styles.css handles the launcher, cabinet and responsive controls. Canvas 2D renders original pixel graphics at 480 × 270. This does not require WebGL or a GPU-specific extension.
 
-The Arcade global is the sole shared namespace. core.js provides seeded randomness, geometry, progression helpers and a bounded particle pool. draw.js contains original pixel characters, scenery and cover compositions. input.js merges keyboard, pointer, touch and standard gamepad input. audio.js synthesizes original sounds and musical patterns with Web Audio. No recorded samples are used.
+The Arcade global is the sole shared namespace. core.js provides seeded randomness, geometry, progression helpers and bounded particle/effect pools. Presentation randomness is independent of each game simulation. draw.js contains original pixel characters, scenery and cover compositions. input.js merges keyboard, pointer, touch and standard gamepad input. audio.js synthesizes original sounds and 32-step musical arrangements with Web Audio. Music and effects have separate buses and saved levels, bounded voices and explicit cleanup on pause or track changes. No recorded samples are used.
 
-Each game in js/games owns its state, update, render, HUD and menu transitions. Iron Meridian is a top-down three-contract shooter with a loadout shop. Velvet Heist is a connected five-area maze heist. Neon Ronin is a three-stage belt-scrolling action game. They share infrastructure, not simulation objects.
+Each game in js/games owns its state, update, render, HUD and menu transitions. Iron Meridian is a top-down three-contract shooter with a loadout shop. Velvet Heist is a seven-screen arcade adventure with authored escape loops, persistent equipment puzzles, capped police reinforcements and a torch-limited dark gallery. Neon Ronin is a three-stage belt-scrolling action game. They share infrastructure, not simulation objects.
 
 app.js owns one requestAnimationFrame loop, one input manager, one audio engine and one active game. Menus are DOM elements; simulation and world rendering remain independent of the DOM. Fixed-step update methods can run headlessly in the Node test suite.
 

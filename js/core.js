@@ -26,14 +26,41 @@
   };
   A.Particles = class {
     constructor() { this.items = []; this.rand = A.rng(8801); }
-    burst(x, y, color, count = 12, speed = 60) { for (let i = 0; i < count && this.items.length < 220; i++) { const a = this.rand() * Math.PI * 2, v = speed * (.3 + this.rand()); this.items.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: .3 + this.rand() * .4, color }); } }
-    update(dt) { for (const p of this.items) { p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .96; p.vy *= .96; } this.items = this.items.filter(p => p.life > 0); }
-    draw(c) { for (const p of this.items) { c.globalAlpha = Math.min(1, p.life * 3); c.fillStyle = p.color; c.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); } c.globalAlpha = 1; }
+    burst(x, y, color, count = 12, speed = 60, style = {}) { for (let i = 0; i < count && this.items.length < 220; i++) { const a = this.rand() * Math.PI * 2, v = speed * (.3 + this.rand()); this.items.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: .3 + this.rand() * .4, color, size: 2, gravity: 0, ...style }); } }
+    update(dt) { for (const p of this.items) { p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .96; p.vy = p.vy * .96 + p.gravity * dt; } this.items = this.items.filter(p => p.life > 0); }
+    draw(c) { for (const p of this.items) { c.globalAlpha = Math.min(1, p.life * 3); c.fillStyle = p.color; c.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size); } c.globalAlpha = 1; }
+  };
+  // Presentation has its own bounded pool and never consumes simulation randomness.
+  A.Effects = class {
+    constructor() { this.items = []; }
+    add(kind, x, y, color = '#ffe0a2', radius = 28, duration = .4, face = 1) {
+      if (this.items.length >= 32) this.items.shift();
+      this.items.push({kind, x, y, color, radius, duration, life: duration, face});
+    }
+    update(dt) { for (const e of this.items) e.life -= dt; this.items = this.items.filter(e => e.life > 0); }
+    draw(c) {
+      for (const e of this.items) {
+        const t = 1 - e.life / e.duration, r = e.radius * (.2 + t * .8);
+        c.save(); c.translate(e.x, e.y); c.globalAlpha = (1 - t) * .85;
+        c.strokeStyle = e.color; c.fillStyle = e.color; c.lineWidth = Math.max(1, 4 * (1 - t));
+        if (e.kind === 'slash') {
+          c.scale(e.face, 1); c.rotate(-.45 + t * .7); c.beginPath(); c.arc(0, 0, e.radius, -1.3, 1.3); c.stroke();
+          c.globalAlpha *= .3; c.beginPath(); c.arc(-4, 0, e.radius - 5, -1.3, 1.3); c.stroke();
+        } else if (e.kind === 'storm') {
+          c.beginPath(); c.ellipse(0, 16, r, r * .24, 0, 0, Math.PI * 2); c.stroke();
+          for (let i = 0; i < 5; i++) { const x = Math.sin(i * 7 + t * 8) * r; c.beginPath(); c.moveTo(x, 16); c.lineTo(x + 10, -10 - r * .25); c.lineTo(x - 4, -24 - r * .4); c.lineTo(x + 5, -40 - r * .5); c.stroke(); }
+        } else {
+          c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.stroke();
+          if (e.kind === 'blast' && t < .45) { c.globalAlpha *= .5; c.beginPath(); c.arc(0, 0, r * .8, 0, Math.PI * 2); c.fill(); }
+        }
+        c.restore();
+      }
+    }
   };
   A.Game = class {
-    constructor(options = {}, sound = () => {}) { this.options = { players: 1, difficulty: 'arcade', ...options }; this.sound = sound; this.score = 0; this.time = 0; this.state = 'briefing'; this.particles = new A.Particles(); this.message = ''; this.messageTime = 0; this.shake = 0; }
+    constructor(options = {}, sound = () => {}) { this.options = { players: 1, difficulty: 'arcade', ...options }; this.sound = sound; this.score = 0; this.time = 0; this.state = 'briefing'; this.particles = new A.Particles(); this.effects = new A.Effects(); this.message = ''; this.messageTime = 0; this.shake = 0; }
     say(text, time = 3) { this.message = text; this.messageTime = time; }
-    common(dt) { this.time += dt; this.messageTime = Math.max(0, this.messageTime - dt); this.shake = Math.max(0, this.shake - dt); this.particles.update(dt); }
+    common(dt) { this.time += dt; this.messageTime = Math.max(0, this.messageTime - dt); this.shake = Math.max(0, this.shake - dt); this.particles.update(dt); this.effects.update(dt); }
     hitPlayer(p, damage) { if (p.hp <= 0 || p.inv > 0 || p.z > 12) return false; p.hp = Math.max(0, p.hp - damage); p.inv = 1.2; this.shake = .14; this.particles.burst(p.x, p.y, '#ffce92', 9); this.sound('hurt'); return true; }
     finish(won) { if (this.state === 'victory' || this.state === 'gameover') return; this.state = won ? 'victory' : 'gameover'; this.sound(won ? 'win' : 'lose'); }
     get relaxed() { return this.options.difficulty === 'relaxed'; }

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — 2026-10-27
+
+Second pass guided by the maintainer's playtest: rebuild the heist's gameplay and tension, preserve both action games' mechanics.
+
+- Velvet Heist: seven authored screens, lifts, a police-station key, service-floor code, safe and torch, TNT/giant-ghost gate, dark gallery, police reinforcements with advance warnings, limited shots that clear pursuers, helicopter passes and short-turn input buffering. Retains banking, recoverable bags and jail rescues. Deliberately simple C64-style presentation.
+- Iron Meridian: layered blast effects, bullet impacts and tracers, shell particles, dash dust, hit flashes, wrecks, subtle environmental motion and an in-game ammunition/grenade display. Combat values and progression unchanged.
+- Neon Ronin: directional slash arcs, attack poses, projectile trails, storm lightning, landing dust, defeat fades, lantern light, atmospheric particles, boss health/name display and chain timer. Combat values and progression unchanged.
+- Original multi-part music, synthesized percussion and differentiated weapon effects. Separate music/effects levels, saved locally; audio voices stop cleanly on pause and track changes.
+- Separate new-edition heist score table, preserving first-edition scores in storage. Updated offline cache, instructions and preservation notes.
+- Complete input-driven replays for all three games on both difficulty settings, plus puzzle, pursuit, darkness and audio regression checks.
+
 ## 0.1.0 — 2026-10-27
 
 Initial collection: Iron Meridian, Velvet Heist and Neon Ronin, with a shared arcade launcher and original code, maps, pixel artwork and synthesised audio.

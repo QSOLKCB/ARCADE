@@ -14,13 +14,20 @@ In co-op, keep together so both players remain within the shared camera. Hold E 
 
 ## Velvet Heist
 
-Move through the maze with WASD or arrows. Diagonal input chooses a cardinal direction. E uses nearby marked doors. The courtyard connects to the exchange, mine and lockup; the exchange leads upstairs to the vault. You can return through every door.
+Move with WASD or arrows. Movement is cardinal, with a short turn buffer for intersections. E enters marked doors and lifts. The garden connects to the exchange, ghost mine and police station; lifts connect the exchange's ground, safe and service floors. Every route has a return door.
 
-Pick up 18 loose diamonds and the code scraps in the exchange, mine and lockup. Hold E for 1.5 seconds beside the upper-vault safe after collecting all three scraps; it contains four more gems. Return all 22 gems to the car and press E to bank them and complete the heist. Banking is allowed in multiple trips.
+J or Z fires one of eight rounds in your facing direction. Shots clear police and small ghosts, but police reinforcements arrive through doors after a flashing warning. Shooting and carrying more loot increase pressure. A marked row warns two seconds before a helicopter crosses the garden. Move off that row. There is no jump or smoke action.
 
-J or Z fires one of eight stun rounds in your last movement direction. K or X creates a temporary smoke cloud. Police follow walkable corridors and are stunned by bullets. Mine ghosts move through walls and ignore bullets and smoke: keep moving around them. There is no jump action in this cabinet.
+The equipment route is:
 
-The car refills rounds and smoke. Getting caught costs one life, drops the bag at the capture point, and returns you to the car; already banked gems and code scraps remain yours. Dropped gems can be collected again. Visit the lockup holding cell and press E to restore a captured life. Lose the final life and the run ends.
+1. Find the key inside the police station. It unlocks the service lift above the safe floor.
+2. Get the safe combination on the service floor, then hold E at the safe for 1.8 uninterrupted seconds. It contains four gems and a torch. The known code is entered automatically.
+3. Find TNT in the mine. Press K or X within range of the giant ghost to clear the dark-gallery entrance. TNT cannot be wasted elsewhere.
+4. Collect the gallery's diamonds while the torch lasts. Torch charge drains only in darkness: 55 seconds on Arcade, 85 on Relaxed. Return to the open safe and press E to recharge it. You can always leave the gallery, even without light.
+
+Pick up 18 loose gems plus the safe's four, then bank all 22 at the car using E. Bank in short trips or risk a larger bag. The car reloads eight rounds. Getting caught costs a life and drops the bag at a reachable cell; banked gems and key/code progress remain yours. Recover the dropped gems, and visit the police station's holding cell to free a captured crewmate and restore a life. Losing the final life ends the run.
+
+The rebuilt heist has a separate best-score table from the first edition. Old scores are retained in storage.
 
 ## Neon Ronin
 
@@ -35,3 +42,7 @@ In co-op, hold E or H beside a fallen partner to revive them. Stay together; bot
 Player 2: arrows move; U attacks; I uses special; O jumps/dashes; H uses or revives. Numpad 1, 2, 0 and 3 are alternatives. Standard controllers use left stick/D-pad for movement, A/B/X/Y for attack/special/jump/use, and Start to pause/resume. Up to two standard-mapped controllers are read; non-standard devices may need keyboard input.
 
 Touch controls use pointer capture and support holding a direction while attacking. Use two directional buttons for diagonal movement in the action games. Cancelled touches release their actions. The launcher and menus support keyboard focus. Canvas gameplay itself is visual and is not screen-reader equivalent.
+
+## Sound
+
+Enable sound in the header or the cabinet Audio panel. Music and effects have separate saved levels. Iron Meridian and Neon Ronin have original bass, lead and percussion arrangements; Velvet Heist uses a sparse pulse with long rests. Music at 0% leaves pursuit and gameplay effects audible. Pausing, changing games or restarting stops active voices.

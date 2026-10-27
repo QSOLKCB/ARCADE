@@ -10,29 +10,34 @@
   D.star = (c, x, y, t, color = '#a4f7ec') => { c.save(); c.translate(x, y); c.rotate(t); D.rect(c, -6, -1, 12, 2, color); D.rect(c, -1, -6, 2, 12, color); D.rect(c, -2, -2, 4, 4, '#fff5d6'); c.restore(); };
   D.person = function (c, p, kind = 'soldier', color = '#b6cf73', scale = 1) {
     if (p.hp === 0) return;
+    if (p.hurt > 0) color = '#fff1cb';
     if (p.inv > 0 && Math.floor(p.inv * 14) % 2) c.globalAlpha = .45;
     D.shadow(c, p.x, p.y, 8 * scale);
     c.save(); c.translate(Math.round(p.x), Math.round(p.y - (p.z || 0))); c.scale(scale * (p.face === -1 ? -1 : 1), scale);
     const step = p.walk ? Math.sin(p.walk * 13) * 2 : 0;
     D.rect(c, -5, -6, 4, 7 + step, '#223041'); D.rect(c, 2, -6, 4, 7 - step, '#223041');
     D.rect(c, -6, -1 + step, 5, 3, '#0c151e'); D.rect(c, 2, -1 - step, 6, 3, '#0c151e');
-    D.rect(c, -6, -17, 12, 12, color); D.rect(c, -6, -8, 12, 2, '#171e2a');
+    D.rect(c, -6, -17, 12, 12, color); D.rect(c, -5, -16, 2, 6, '#fff1cc40'); D.rect(c, -6, -8, 12, 2, '#171e2a');
     D.rect(c, -4, -24, 9, 8, '#f0b68f');
-    if (kind === 'ninja') { D.rect(c, -5, -25, 10, 4, color); D.rect(c, -5, -19, 10, 4, color); D.rect(c, 1, -21, 4, 1, '#172435'); D.rect(c, -11, -23, 6, 2, '#ed8c64'); }
+    if (kind === 'ninja') { D.rect(c, -5, -25, 10, 4, color); D.rect(c, -5, -19, 10, 4, color); D.rect(c, 1, -21, 4, 1, '#172435'); D.rect(c, -13, -23 + Math.sin((p.walk||0)*9), 8, 2, '#ed8c64'); D.rect(c, -16, -21 + Math.sin((p.walk||0)*9), 5, 2, '#bd645a'); D.rect(c,-3,-15,7,2,'#16243670'); }
     else if (kind === 'thief') { D.rect(c, -5, -25, 11, 4, '#243047'); D.rect(c, -7, -22, 15, 2, '#243047'); D.rect(c, -5, -19, 10, 3, '#142337'); D.rect(c, -6, -14, 12, 2, '#e6decc'); D.rect(c, -6, -10, 12, 2, '#e6decc'); }
     else { D.rect(c, -5, -25, 11, 5, color); D.rect(c, -6, -21, 13, 2, '#213338'); D.rect(c, -4, -14, 3, 6, '#51604d'); }
-    D.rect(c, -9, -16, 4, 8, color); D.rect(c, 6, -16, 4, 8, color);
-    if (kind !== 'thief') { D.rect(c, 4, -12, p.attack > 0 ? 15 : 10, 3, kind === 'ninja' ? '#d8e2d5' : '#101d28'); D.rect(c, 7, -11, 3, 4, '#e4b18d'); }
+    D.rect(c, -9, -16, 4, 8, color);
+    if(kind==='ninja' && p.attack>0){D.rect(c,5,-17,12,4,color);D.rect(c,15,-17,4,4,'#f0b68f');D.rect(c,17,-19,11,2,'#e2eee1');}
+    else {D.rect(c,6,-16,4,8,color);if(kind!=='thief'){D.rect(c,4,-12,10,3,kind==='ninja'?'#d8e2d5':'#101d28');D.rect(c,7,-11,3,4,'#e4b18d');}}
     c.restore(); c.globalAlpha = 1;
   };
   D.topSoldier = function (c, p, color = '#a9c875') {
     if (p.hp === 0) return;
+    if (p.hurt > 0) color = '#fff1c7';
+    D.shadow(c,p.x,p.y,8);
     c.save(); c.translate(Math.round(p.x), Math.round(p.y));
     if (p.inv > 0 && Math.floor(p.inv * 14) % 2) c.globalAlpha = .4;
     c.rotate((p.angle || 0) + Math.PI / 2);
     const walk = Math.sin((p.walk || 0) * 14) * 2;
     D.rect(c, -5, 4, 4, 5 + walk, '#1a2827'); D.rect(c, 2, 4, 4, 5 - walk, '#1a2827');
     D.rect(c, -7, -4, 14, 10, color); D.rect(c, -4, -6, 8, 9, '#e4bb8c'); D.rect(c, -5, -8, 10, 7, color);
+    D.rect(c,-4,-7,8,2,'#fff6d040');D.rect(c,-4,1,7,5,'#263d37');D.rect(c,-3,2,5,1,'#7e9575');
     D.rect(c, 6, -12, 3, 14, '#13242b'); D.rect(c, 5, -1, 5, 3, '#e4bb8c');
     if (p.attack > 0) { D.rect(c, 5, -17, 5, 5, '#fff0a6'); D.rect(c, 7, -21, 2, 7, '#f8b84c'); }
     c.restore();
