@@ -13,7 +13,7 @@ test('audio remains optional, only unlocks after enabling, and clamps saved leve
 });
 test('all original arrangements schedule finite notes and release bounded voices',()=>{
  const {calls}=mock(),a=new A.Audio();a.setEnabled(true);
- for(const id of ['iron','ninja','heist']){a.setTrack(id);for(let i=0;i<600;i++){a.tick(1/60,id);for(const n of calls.nodes.splice(0))n.onended?.();}assert.ok(a.beat>=32);}
+ for(const id of ['iron','ninja','heist','hockey','brawl','chrono','breaker','void']){a.setTrack(id);for(let i=0;i<600;i++){a.tick(1/60,id);for(const n of calls.nodes.splice(0))n.onended?.();}assert.ok(a.beat>=32);}
  assert.ok(calls.includes('noise'));assert.ok(calls.includes('tone'));assert.equal(a.voices,0);
  for(let i=0;i<200;i++)a.effect('boom');assert.equal(a.voices,32);
 });

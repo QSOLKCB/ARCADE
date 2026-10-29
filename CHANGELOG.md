@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.0 — 2026-10-30
+
+Collection 002 expands ARCADE from three cabinets to eight, with original code, art, sound and worlds.
+
+- **Neon Air:** perspective 3D table, moving-mallet puck physics, bank shots, first-to-seven matches and Rookie / Club / Expert opponents with distinct reaction, speed and prediction settings.
+- **Basement Brawl:** Pit-Fighter-inspired arena combat; Mara, Bolt and Rook; five bouts; punches, kicks, jumps, guard, combos, chairs, throws and enemy windups/poise.
+- **Chrono Wing:** Time Pilot-inspired free flight through five eras with patrol quotas, flagship bosses, courier rescues, evasive rolls, extra lives and a more forgiving Relaxed armour rule.
+- **Prism Break:** five original Breakout-inspired boards, armoured bricks, paddle-angle control and wide, slow, multiball and laser capsules.
+- **Void Command:** a wholly original 1971-style space strategy campaign with a more advanced ncurses-inspired browser console, tactical/frontier maps, gauges, command history, clickable orders, three seeded missions, damage/repair, docking and an emergency tow.
+- Shared launcher, context-specific control legends, native touch dragging for mallets/paddles, optional procedural music, per-AI hockey records, preserved fighter/mission choices on restart and complete offline precaching.
+- Expanded rules, controls, provenance, game-frame previews and verification notes. Existing Pages deployment workflow retained.
+- Automated command/input replays plus collision, failure/restart, bounded state, audio, input, cache and existing-game regressions. Browser verification limits are recorded in `docs/VERIFICATION.md`.
+
 ## 0.2.0 — 2026-10-27
 
 Second pass guided by the maintainer's playtest: rebuild the heist's gameplay and tension, preserve both action games' mechanics.

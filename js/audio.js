@@ -8,6 +8,16 @@
     ninja:{step:.15,bass:[38,0,38,0,45,0,38,0,41,0,41,0,48,0,41,0,43,0,43,0,50,0,43,0,45,0,45,0,52,50,48,45],lead:[74,0,77,81,0,77,74,0,72,0,69,72,77,0,74,0,79,0,81,84,81,0,79,77,74,0,72,69,72,0,74,0]},
     heist:{step:.23,bass:[40,0,0,0,0,0,47,0,0,0,0,0,38,0,0,0,40,0,0,0,0,0,43,0,0,0,0,0,47,0,0,0],lead:[0,0,0,0,76,0,0,0,0,0,0,0,0,0,74,0,0,0,0,0,79,0,0,0,0,0,0,0,0,0,78,0]}
   };
+  // Five short, original arrangements; Void stays sparse and percussion-free.
+  for(const [id,root,step,pattern] of [
+    ['hockey',45,.14,[0,7,12,10,7,3,5,7]],
+    ['brawl',38,.16,[0,0,3,5,0,7,5,3]],
+    ['chrono',48,.13,[0,4,7,12,9,7,4,2]],
+    ['breaker',50,.15,[0,7,9,14,12,9,7,4]],
+    ['void',36,.32,[0,7,0,10,0,5,0,7]]
+  ]){
+    SONGS[id]={step,bass:Array.from({length:32},(_,i)=>i%4===0?root+pattern[Math.floor(i/4)]:0),lead:Array.from({length:32},(_,i)=>i%(id==='void'?8:2)===0?root+24+pattern[Math.floor(i/4)]:0)};
+  }
   A.Audio=class{
     constructor(){this.enabled=false;this.ctx=null;this.beat=0;this.timer=0;this.voices=0;this.track='';this.active=new Set();this.musicLevel=.55;this.fxLevel=.8;}
     unlock(){
@@ -52,9 +62,9 @@
       if(this.track!==id)this.setTrack(id);this.timer-=dt;if(this.timer>0)return;
       const s=SONGS[id]||SONGS.iron;this.timer+=s.step;if(this.timer<0)this.timer=s.step;
       const step=this.beat%32,b=s.bass[step],n=s.lead[step];
-      if(b)this.tone(midi(b),s.step*1.3,'triangle',id==='heist'?.13:.24,midi(b),'music');
-      if(n)this.tone(midi(n),s.step*.8,id==='ninja'?'triangle':'square',id==='heist'?.035:.055,midi(n),'music');
-      if(id!=='heist'){
+      if(b)this.tone(midi(b),s.step*1.3,'triangle',['heist','void'].includes(id)?.13:.24,midi(b),'music');
+      if(n)this.tone(midi(n),s.step*.8,id==='ninja'?'triangle':'square',['heist','void'].includes(id)?.035:.055,midi(n),'music');
+      if(!['heist','void'].includes(id)){
         if(step%8===0||step%8===3)this.tone(110,.14,'sine',.42,35,'music');
         if(step%8===4){this.noise(.09,.14,1.4,'music');this.tone(180,.07,'triangle',.1,80,'music');}
         if(step%2===0)this.noise(.025,.035,2,'music');

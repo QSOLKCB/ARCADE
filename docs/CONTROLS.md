@@ -1,6 +1,6 @@
 # How to play
 
-Choose Arcade or Relaxed difficulty and one or two players before opening a cabinet. The action games support two local players. Velvet Heist is single-player. Sound, optional CRT scanlines and touch controls can be toggled; fullscreen keeps the cabinet controls available. Escape or P pauses. Losing window focus pauses automatically; use Resume to continue.
+Choose Arcade or Relaxed difficulty and one or two players before opening a cabinet. Iron Meridian and Neon Ronin support two local players. The other six cabinets are single-player. Sound, optional CRT scanlines and touch controls can be toggled; fullscreen keeps the cabinet controls available. Escape or P pauses. Losing window focus pauses automatically; use Resume to continue.
 
 ## Iron Meridian
 
@@ -46,3 +46,42 @@ Touch controls use pointer capture and support holding a direction while attacki
 ## Sound
 
 Enable sound in the header or the cabinet Audio panel. Music and effects have separate saved levels. Iron Meridian and Neon Ronin have original bass, lead and percussion arrangements; Velvet Heist uses a sparse pulse with long rests. Music at 0% leaves pursuit and gameplay effects audible. Pausing, changing games or restarting stops active voices.
+
+## Neon Air
+
+Choose **Rookie**, **Club** or **Expert** on the cabinet card. Move the cyan mallet with the mouse, a touch drag, WASD/arrows or the controller stick. You stay on the near half of the table. J / Z / controller A adds a forward strike when the puck is close; moving the mallet into the puck also transfers momentum. Goals count only through the end slots. Bank shots work. First to seven wins. AI difficulty controls reaction delay, speed, targeting error and wall-rebound prediction. Best scores are separated by AI profile.
+
+## Basement Brawl
+
+Choose Mara (balanced), Bolt (fast) or Rook (power) before the first bout. Move in both screen axes to line up attacks or step around a windup. J punches (or swings a held chair), K kicks, Space jumps. Three hits within the combo window strengthen the third hit. E picks up a nearby chair or throws a nearby staggered foe; holding E guards frontal attacks on the ground. Chairs break after three swings. Enemies briefly resist repeated staggering, so watch the `!` and jump or move instead of holding punch indefinitely. Defeat five bouts before each 99-second timer expires. Health partly recovers between bouts.
+
+## Chrono Wing
+
+The craft always moves forward; use WASD/arrows or the stick to choose a heading. Hold J to fire. K performs a short evasive roll with a four-second cooldown. Rescue parachuting couriers for 500 points and an immediate roll recharge. Defeat the patrol quota to summon that era's flagship. Five flagships complete the campaign. A cleared era provides one replacement craft (up to seven); another is awarded every 12,000 points. Arcade craft are lost on one unprotected hit. Relaxed craft absorb one extra armour hit and start with five lives. Invulnerability flashes after damage.
+
+## Prism Break
+
+Mouse / touch drag or left/right moves the paddle. J, Space or controller A launches a waiting ball. Paddle edges send the ball at a steeper horizontal angle. Destroy all bricks on each of five boards; dots mark extra armour hits. Catch capsules: WIDE lasts 18 seconds, SLOW 15 seconds and LASER 16 seconds. MULTI adds two balls, up to five. Hold J to fire active lasers. Losing every ball costs one life and clears active powers; remaining bricks stay broken. Arcade starts with three lives, Relaxed with five and a wider paddle.
+
+## Void Command
+
+The command deck is turn-based: thinking and reading do not consume campaign time. Type commands in the prompt and press Enter / Execute, or use the quick-order buttons. ↑ / ↓ recalls up to 50 submitted commands. Escape pauses even while typing. Click a tactical cell to prepare MOVE (or LANCE for a visible raider); click the frontier chart to prepare JUMP. **Map clicks prepare an order; Execute commits it.** All coordinates are column then row, 1–8.
+
+| Order | Effect |
+| --- | --- |
+| `HELP` | Display the command reference; free. |
+| `MAP` / `STATUS` | Close help / report status; free. |
+| `SCAN` | Reveal the current and surrounding sectors; 40 energy, 1 day. Damaged sensors need repairs. |
+| `JUMP x y` | Change frontier sector; energy/time depend on distance. Drive damage doubles energy cost. |
+| `MOVE x y` | Local movement; 18 energy per travelled cell, 1 day. Stars, depots and enemies stop the course. |
+| `BEAM 300` | Spend 50–1500 energy split among local raiders, attenuated by distance; 1 day. 300 is the default. |
+| `LANCE x y` | Spend one lance firing along a heading; first star, depot or raider intercepts it; 1 day. |
+| `SHIELD 800` | Set shield reserve to 0–1200, transferring energy to or from the ship; 1 day. Excess returned energy above the 3000 capacity is vented. |
+| `DOCK` | Adjacent to a depot in a cleared sector: refill hull, energy, shields, lances and repairs; 3 days. |
+| `REPAIR` | 100 energy, 1 day; restore 15 hull and reduce each damaged subsystem by one. |
+| `WAIT` | One day passes; local raiders retaliate. |
+| `SOS` | One emergency tow home, losing 12 days. Dock on arrival for a full refit. |
+
+Each accepted operational order allows surviving local raiders to fire back. Shields absorb damage before the hull; unshielded hits can damage systems. Invalid orders are free. Known depot locations are broadcast at the start, but their surrounding threat counts require scanning. The chart remembers the last scan; the current sector is refreshed after each operational turn. Clear 22 raiders within 145 days on Arcade, or 16 within 180 days on Relaxed. The three campaign choices use distinct reproducible layouts. Hull loss, deadline expiry or unrecoverable power exhaustion ends the mission. The UI provides a fresh retry.
+
+The terminal supports keyboard and touch command entry; it does not map tactical orders onto the action-game gamepad controls. On narrow screens the canvas scrolls horizontally while the command console remains responsive. The last command result is announced through a live text region; the canvas maps remain visual.

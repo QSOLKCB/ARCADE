@@ -1,5 +1,35 @@
 # Verification
 
+
+## Collection 002 — v0.3.0, 30 October 2026
+
+### Automated checks
+
+`npm test`: **102 passed, 0 failed**. `npm run check`: passed (syntax, relative asset URLs, complete precache coverage, file-open-compatible classic scripts and no external runtime game-data dependencies). `git diff --check`: clean. No npm packages were installed or added.
+
+The suite retains the original three games' real-damage replays and adds:
+
+- Hockey projection/unprojection, AI speed and reaction distinctions, rail rebounds, mallet momentum, goal-slot scoring and first-to-seven victory/defeat.
+- Brawl fighter stats, finite chairs, frontal guard, jump avoidance, throws, poise, failure and five-bout transitions. Complete normal-input replays with all three fighters on both difficulty settings, without changing health/damage or forcing stage completion.
+- Chrono firing, rescues, rolls, finite lives, patrol quotas and all five flagship transitions. A complete normal-input Relaxed replay. Fatal-damage regressions prevent a flagship transition or rescue bonus from reviving a lost run. A complete Arcade input-replay victory is **not** claimed.
+- Breaker launch, edge aiming, reinforced bricks, capsule duration, multiball cap, ball loss/restart and five boards. Complete paddle-input replays on both difficulty settings with actual ball/brick collisions.
+- Void command rejection without costs; free reads; idle turns; bounded command queue; shield transfer; obstacle movement; lance blocking; split beam damage; retaliation; docking; repairs; one-use tow; deadline/hull loss; victory; fresh choices and layouts. Complete command-only playthroughs of all three campaign seeds on both difficulties, using scanned chart information and visible local cells.
+- Finite drawing coordinates and bounded simulation/presentation pools for all new games. Audio scheduling for all eight original arrangements. Direct paddle touch cancellation and keyboard takeover from a mouse target. All 18 precached runtime entries served by the service-worker harness with networking disabled.
+
+### Visual and browser checks
+
+The managed preview launched. Its eight-cabinet launcher was inspected through the browser UI. Void Command's start, `SCAN`, typed `JUMP 2 2`, resource/status updates and full HELP panel were exercised and visually inspected. Neon Air's 3D table, active match, keyboard input and pause menu were visually inspected.
+
+During refresh, the browser policy gate subsequently rejected access with an unsupported-protocol error. Further browser interaction stopped. The final terminal-focus/restart refinements and the other three new cabinets were therefore **not** re-verified in a browser. There is no claim of a full final-build browser pass, real-device gamepad/mobile testing, downloaded `file://` play, audible-output testing or real-browser offline reload for this revision. The HTTP preview did not provide a secure service-worker context; offline behaviour was tested in the existing worker harness and statically checked.
+
+All five new game renderers were also run through an installed offline Canvas implementation and the resulting frames visually inspected. `collection-002-v030.png` and `void-command-v030.png` are clearly labelled game-code renders, **not browser screenshots**. That renderer and its system-font registration were temporary QA tools; the game and test suite have no new dependency.
+
+### Deployment
+
+This revision is prepared as a pull request. The existing workflow verifies and publishes runtime files on merge to `main`; it has not been replaced or expanded. The v0.3.0 cache key includes all five new scripts. Existing players should use **Update ready · Reload** after the release is deployed. This log does not claim that an unmerged branch is live on GitHub Pages.
+
+---
+
 ## Second pass — v0.2.0
 
 `npm test` passes **54 tests**; `npm run check` and `git diff --check` pass. Six normal-input replays complete all three games on both Arcade and Relaxed, with real damage and resource limits. The heist replay collects equipment, uses lifts, opens the safe and giant-ghost gate, enters the dark gallery, recovers any lost gems, frees captured lives and banks all 22 gems. It never grants lives, moves actors directly, removes enemies or forces progression.

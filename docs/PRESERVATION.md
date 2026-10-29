@@ -2,7 +2,7 @@
 
 ARCADE preserves an opportunity to experience characteristic play loops in a portable, inspectable form. It does not preserve the original software binaries or claim timing, map, audiovisual or behavioural equivalence to the references.
 
-The initial scope is three compact, complete campaigns rather than reproductions of every original level or feature. New names and worlds distinguish these contributions from their inspirations. Each has explicit completion/failure states and a fresh-run path.
+The initial three campaigns are joined by five additional cabinets in Collection 002; each is a compact original implementation of a characteristic play loop. New names and worlds distinguish these contributions from their inspirations. Each has explicit completion/failure states and a fresh-run path.
 
 | Historical reference | Retained experiential elements | Deliberate original choices |
 | --- | --- | --- |
@@ -31,3 +31,15 @@ No downloads of original game binaries or assets were used. Research text has be
 Runtime assets are local files. The games use classic JavaScript and Canvas 2D, and the downloadable source is the playable distribution. Browser-dependent services such as audio, gamepads, storage and service workers degrade independently. A missing optional capability must not prevent a new run.
 
 Future preservation work should add documented mechanics, maintain offline compatibility, retain the provenance of every asset and record verification limits. Do not replace a compact standalone game with a dependency on an external live service.
+
+## Collection 002 — 30 October 2026
+
+| Historical starting point | Retained play loop | Original implementation choices |
+| --- | --- | --- |
+| Air hockey | Defend a goal, strike a puck, bank off rails | Software 3D table, first to seven, three imperfect AI profiles |
+| Pit-Fighter | Free movement through a brawling arena, multiple attacks and environmental objects | Three original fighters; five bouts; crowds; chairs, combos, guard, throws and readable windups; no digitised actors or original arena layouts |
+| Time Pilot | Free-direction flight, scrolling world, rescuing parachutes, eras and flagships | Five fictional eras and named flagships; original aircraft; timed evasive roll; replacement craft between eras |
+| Breakout | Paddle and ball, angled rebounds, clearing rows of bricks | Five new board patterns, armoured bricks, four capsule effects and finite campaign |
+| Star Trek (1971) | Sector exploration, local tactical grids, finite energy and ammunition, turn-based attacks, resupply and a deadline | Independent courier Lantern versus the Cinder Array; terminal panels, clickable map orders, typed commands/history, repair system and a one-use emergency tow |
+
+The maintainer's [Star Trek (1971) reference](https://en.wikipedia.org/wiki/Star_Trek_(1971_video_game)) was read to identify the sector/scanning/combat/resupply loop. The supplied screenshot informed the terminal direction; the maintainer subsequently requested a more advanced ncurses-like interface. This is a browser-native interface with that visual language, not a bundled native ncurses library or an emulator. The reference source code and screenshot pixels were not copied into the implementation.
