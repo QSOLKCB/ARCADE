@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),cp=require('node:child_process');
 const root=path.resolve(__dirname,'..');
-const runtime=['index.html','styles.css','manifest.webmanifest','assets/icon.svg','js/core.js','js/draw.js','js/input.js','js/audio.js','js/games/iron.js','js/games/heist.js','js/games/ninja.js','js/app.js'];
+const runtime=['index.html','styles.css','manifest.webmanifest','assets/icon.svg','js/core.js','js/draw.js','js/input.js','js/audio.js','js/games/iron.js','js/games/heist.js','js/games/ninja.js','js/games/hockey.js','js/games/brawl.js','js/games/chrono.js','js/games/breaker.js','js/games/void.js','js/app.js'];
 for(const file of runtime){assert.ok(fs.existsSync(path.join(root,file)),file+' exists');if(file.endsWith('.js'))cp.execFileSync(process.execPath,['--check',path.join(root,file)]);}
 cp.execFileSync(process.execPath,['--check',path.join(root,'sw.js')]);
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');

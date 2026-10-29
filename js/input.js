@@ -14,11 +14,12 @@
         if (gameKeys.has(e.code)) { e.preventDefault(); this.keys.add(e.code); if (!e.repeat) this.taps.add(e.code); }
       });
       window.addEventListener('keyup', e => this.keys.delete(e.code));
-      canvas.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse' || !this.enabled()) return; const r = canvas.getBoundingClientRect(); this.pointer = { x: (e.clientX-r.left)*480/r.width, y: (e.clientY-r.top)*270/r.height }; });
-      canvas.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' || !this.enabled()) return; canvas.focus({preventScroll:true}); if (e.button === 0) this.mouseFire = this.mouseFireTap = true; if (e.button === 2) this.mouseSpecial = this.mouseSpecialTap = true; });
+      const setPointer=e=>{if(!Number.isFinite(e.clientX)||!Number.isFinite(e.clientY))return;const r=canvas.getBoundingClientRect();this.pointer={x:(e.clientX-r.left)*480/r.width,y:(e.clientY-r.top)*270/r.height};};
+      canvas.addEventListener('pointermove',e=>{if(!this.enabled()||(e.pointerType!=='mouse'&&canvas.dataset?.pointerControl!=='true'))return;if(e.pointerType!=='mouse')e.preventDefault();setPointer(e);});
+      canvas.addEventListener('pointerdown',e=>{if(!this.enabled()||(e.pointerType!=='mouse'&&canvas.dataset?.pointerControl!=='true'))return;canvas.focus({preventScroll:true});setPointer(e);if(e.pointerType!=='mouse'){e.preventDefault();canvas.setPointerCapture(e.pointerId);}if(e.button===0)this.mouseFire=this.mouseFireTap=true;if(e.button===2)this.mouseSpecial=this.mouseSpecialTap=true;});
       window.addEventListener('pointerup', e => { if (e.button === 0) this.mouseFire = false; if (e.button === 2) this.mouseSpecial = false; });
       canvas.addEventListener('contextmenu', e => e.preventDefault());
-      window.addEventListener('pointercancel', e => { this.mouseFire = this.mouseFireTap = false; this.mouseSpecial = this.mouseSpecialTap = false; this.touchTaps.delete(this.touch.get(e.pointerId)); this.touch.delete(e.pointerId); });
+      window.addEventListener('pointercancel', e => { this.pointer = null; this.mouseFire = this.mouseFireTap = false; this.mouseSpecial = this.mouseSpecialTap = false; this.touchTaps.delete(this.touch.get(e.pointerId)); this.touch.delete(e.pointerId); });
       for (const button of document.querySelectorAll('[data-touch]')) {
         button.addEventListener('pointerdown', e => { if (!this.enabled()) return; e.preventDefault(); button.setPointerCapture(e.pointerId); this.touch.set(e.pointerId, button.dataset.touch); this.touchTaps.add(button.dataset.touch); button.classList.add('held'); });
         const release = e => { if (e.type === 'pointercancel') this.touchTaps.delete(button.dataset.touch); this.touch.delete(e.pointerId); button.classList.remove('held'); };
@@ -55,6 +56,7 @@
           a.x += Number(p.buttons[15]?.pressed) - Number(p.buttons[14]?.pressed); a.y += Number(p.buttons[13]?.pressed) - Number(p.buttons[12]?.pressed);
           a.fire ||= !!p.buttons[0]?.pressed; a.special ||= !!p.buttons[1]?.pressed; a.jump ||= !!p.buttons[2]?.pressed; a.interact ||= !!p.buttons[3]?.pressed;
         }
+        if(i===0&&this.canvas.dataset?.pointerControl==='true'&&(a.x||a.y)){a.aim=null;this.pointer=null;}
         const n = Math.hypot(a.x, a.y); if (n > 1) { a.x /= n; a.y /= n; }
         const edges = i === 0 ? { special: tapped('KeyK','KeyX') || this.mouseSpecialTap || this.touchTaps.has('special'), jump: tapped('Space','KeyC') || this.touchTaps.has('jump'), interact: tapped('KeyE') || this.touchTaps.has('interact') } : { special: tapped('KeyI','Numpad2'), jump: tapped('KeyO','Numpad0'), interact: tapped('KeyH','Numpad3') };
         for (const action of ['special','jump','interact']) a[action+'Pressed'] = !!edges[action] || (a[action] && !this.previous[i][action]);

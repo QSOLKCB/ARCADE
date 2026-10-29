@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#10161d">
-  <meta name="description" content="Keep the feeling alive. Three original, free, offline browser games inspired by the golden age of arcade play.">
+  <meta name="description" content="Keep the feeling alive. Eight original, free, offline browser games inspired by the golden age of arcade play.">
   <title>ARCADE — Keep the feeling alive.</title>
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
@@ -16,6 +16,11 @@
   <script defer src="js/games/iron.js"></script>
   <script defer src="js/games/heist.js"></script>
   <script defer src="js/games/ninja.js"></script>
+  <script defer src="js/games/hockey.js"></script>
+  <script defer src="js/games/brawl.js"></script>
+  <script defer src="js/games/chrono.js"></script>
+  <script defer src="js/games/breaker.js"></script>
+  <script defer src="js/games/void.js"></script>
   <script defer src="js/app.js"></script>
 </head>
 <body>
@@ -27,11 +32,11 @@
   <main>
     <section id="lobby" class="wrap">
       <div class="hero">
-        <div><p class="eyebrow"><span class="little-square"></span> A RETRO EXPERIENCE PRESERVATION PROJECT</p><h1>Keep the<br><em>feeling</em> alive.</h1><p class="hero-description">The one-more-go feeling. The impossible last level.<br>Three new games with an old soul. Yours to keep playing.</p></div>
-        <aside class="hero-aside"><div class="edition"><span>COLLECTION</span><b>001</b></div><p>Good games don't<br>have an expiry date.</p><div class="online-status"><span class="status-dot"></span><span id="offline-status">Preparing offline play…</span></div><button id="update-button" hidden>Update ready · Reload</button></aside>
+        <div><p class="eyebrow"><span class="little-square"></span> A RETRO EXPERIENCE PRESERVATION PROJECT</p><h1>Keep the<br><em>feeling</em> alive.</h1><p class="hero-description">The one-more-go feeling. The impossible last level.<br>Eight new games with an old soul. Yours to keep playing.</p></div>
+        <aside class="hero-aside"><div class="edition"><span>COLLECTION</span><b>002</b></div><p>Good games don't<br>have an expiry date.</p><div class="online-status"><span class="status-dot"></span><span id="offline-status">Preparing offline play…</span></div><button id="update-button" hidden>Update ready · Reload</button></aside>
       </div>
       <section id="collection" class="collection" aria-labelledby="collection-title">
-        <div class="section-heading"><div><span class="eyebrow">THE FIRST THREE</span><h2 id="collection-title">Choose your cabinet<span class="count">03</span></h2></div><div class="setup"><label>Mode<select id="difficulty"><option value="arcade">Arcade</option><option value="relaxed">Relaxed</option></select></label><label>Players<select id="players"><option value="1">1 player</option><option value="2">2 players · local</option></select></label></div></div>
+        <div class="section-heading"><div><span class="eyebrow">FIVE NEW ARRIVALS</span><h2 id="collection-title">Choose your cabinet<span class="count">08</span></h2></div><div class="setup"><label>Mode<select id="difficulty"><option value="arcade">Arcade</option><option value="relaxed">Relaxed</option></select></label><label>Players<select id="players"><option value="1">1 player</option><option value="2">2 players · local</option></select></label></div></div>
         <div class="game-grid">
           <article class="game-card iron-card">
             <div class="cover"><canvas id="cover-iron" width="480" height="270" role="img" aria-label="Original pixel artwork of a coastal mercenary mission"></canvas><span class="cover-number">01</span><span class="cover-tag">RUN &amp; GUN</span></div>
@@ -45,17 +50,43 @@
             <div class="cover"><canvas id="cover-ninja" width="480" height="270" role="img" aria-label="Original pixel artwork of two masked warriors beneath lanterns"></canvas><span class="cover-number">03</span><span class="cover-tag">SCROLLING ACTION</span></div>
             <div class="card-body"><div class="card-meta"><span>ARCADE ENERGY</span><span>1–2 PLAYERS</span></div><h3>Neon Ronin</h3><p>Stars fly. Lanterns fall. Take back the night, one city block and one impossible boss at a time.</p><div class="inspiration">Inspired by <cite>Ninja Combat</cite> <span>1990</span></div><div class="card-bottom"><button data-game="ninja" class="play-button">Play game <span aria-hidden="true">↗</span><span class="sr-only"> — Neon Ronin</span></button><span class="best">BEST <b data-best="ninja">000000</b></span></div></div>
           </article>
+          <article class="game-card hockey-card">
+            <div class="cover"><canvas id="cover-hockey" width="480" height="270" role="img" aria-label="a perspective 3D air hockey table"></canvas><span class="cover-number">04</span><span class="cover-tag">3D AIR HOCKEY</span></div>
+            <div class="card-body"><div class="card-meta"><span>BANK SHOT ENERGY</span><span>1 PLAYER</span></div><h3>Neon Air</h3><p>Mouse, mallet, momentum. Own the table against Rookie, Club or Expert AI. First to seven.</p><label class="ai-select" for="hockey-ai">AI opponent<select id="hockey-ai"><option value="rookie">Rookie</option><option value="club" selected>Club</option><option value="expert">Expert</option></select></label><div class="inspiration">Inspired by <cite>Air hockey</cite> <span>TABLE SPORT</span></div><div class="card-bottom"><button data-game="hockey" class="play-button">Play game <span aria-hidden="true">↗</span><span class="sr-only"> — Neon Air</span></button><span class="best">BEST <b data-best="hockey">000000</b></span></div></div>
+          </article>
+          <article class="game-card brawl-card">
+            <div class="cover"><canvas id="cover-brawl" width="480" height="270" role="img" aria-label="an original underground fighting arena"></canvas><span class="cover-number">05</span><span class="cover-tag">ARENA FIGHTER</span></div>
+            <div class="card-body"><div class="card-meta"><span>NO ROPES. NO REFUNDS.</span><span>1 PLAYER</span></div><h3>Basement Brawl</h3><p>Pick your fighter. Read the wind-up. Grab a chair. Five underground bouts, one way out.</p><div class="inspiration">Inspired by <cite>Pit-Fighter</cite> <span>1990</span></div><div class="card-bottom"><button data-game="brawl" class="play-button">Play game <span aria-hidden="true">↗</span><span class="sr-only"> — Basement Brawl</span></button><span class="best">BEST <b data-best="brawl">000000</b></span></div></div>
+          </article>
+          <article class="game-card chrono-card">
+            <div class="cover"><canvas id="cover-chrono" width="480" height="270" role="img" aria-label="original aircraft over a scrolling sky"></canvas><span class="cover-number">06</span><span class="cover-tag">360° DOGFIGHTS</span></div>
+            <div class="card-body"><div class="card-meta"><span>FIVE SKIES TO SURVIVE</span><span>1 PLAYER</span></div><h3>Chrono Wing</h3><p>Outfly the patrols. Rescue the couriers. Bring down a flagship in every era.</p><div class="inspiration">Inspired by <cite>Time Pilot</cite> <span>1982</span></div><div class="card-bottom"><button data-game="chrono" class="play-button">Play game <span aria-hidden="true">↗</span><span class="sr-only"> — Chrono Wing</span></button><span class="best">BEST <b data-best="chrono">000000</b></span></div></div>
+          </article>
+          <article class="game-card breaker-card">
+            <div class="cover"><canvas id="cover-breaker" width="480" height="270" role="img" aria-label="colourful brick patterns and a paddle"></canvas><span class="cover-number">07</span><span class="cover-tag">BRICK BREAKER</span></div>
+            <div class="card-body"><div class="card-meta"><span>ONE MORE BRICK</span><span>1 PLAYER</span></div><h3>Prism Break</h3><p>Find the angle. Catch the capsule. Turn five walls of colour into a beautiful mess.</p><div class="inspiration">Inspired by <cite>Breakout</cite> <span>1976</span></div><div class="card-bottom"><button data-game="breaker" class="play-button">Play game <span aria-hidden="true">↗</span><span class="sr-only"> — Prism Break</span></button><span class="best">BEST <b data-best="breaker">000000</b></span></div></div>
+          </article>
+          <article class="game-card void-card">
+            <div class="cover"><canvas id="cover-void" width="480" height="270" role="img" aria-label="an original green terminal with tactical and frontier maps"></canvas><span class="cover-number">08</span><span class="cover-tag">TERMINAL STRATEGY</span></div>
+            <div class="card-body"><div class="card-meta"><span>THE FRONTIER IS WAITING</span><span>1 PLAYER</span></div><h3>Void Command</h3><p>A star chart. A command line. A ship running low. Bring the free relays back online.</p><div class="inspiration">Inspired by <cite>Star Trek gameplay</cite> <span>1971</span></div><div class="card-bottom"><button data-game="void" class="play-button">Play game <span aria-hidden="true">↗</span><span class="sr-only"> — Void Command</span></button><span class="best">BEST <b data-best="void">000000</b></span></div></div>
+          </article>
         </div>
       </section>
       <div class="preservation-strip"><div class="strip-icon" aria-hidden="true">∞</div><div><h2>Preserve the experience. Create something new.</h2><p>Original code, art, worlds and sound. No ROMs required. No coins either.</p></div><button class="text-button" id="offline-button">Take it offline <span aria-hidden="true">↓</span></button></div>
-      <footer><span>QSOL–IMC <span class="muted">/</span> INDEPENDENT BY DESIGN</span><div><button id="controls-home" class="text-button">How to play</button><a href="https://github.com/QSOLKCB/ARCADE" target="_blank" rel="noopener noreferrer">Source code ↗</a><span class="muted">v0.2.0</span></div></footer>
+      <footer><span>QSOL–IMC <span class="muted">/</span> INDEPENDENT BY DESIGN</span><div><button id="controls-home" class="text-button">How to play</button><a href="https://github.com/QSOLKCB/ARCADE" target="_blank" rel="noopener noreferrer">Source code ↗</a><span class="muted">v0.3.0</span></div></footer>
     </section>
     <section id="cabinet" class="wrap cabinet" hidden aria-label="Game cabinet">
       <div class="cabinet-toolbar"><button id="back-button" class="text-button">← All cabinets</button><h1 id="game-title">Iron Meridian</h1><div class="cabinet-actions"><button id="help-button" title="Controls">Controls</button><button id="audio-button">Audio</button><button id="touch-toggle" aria-pressed="false">Touch</button><button id="crt-toggle" aria-pressed="false">CRT</button><button id="pause-button">Pause</button><button id="fullscreen-button" aria-label="Toggle fullscreen">⛶</button></div></div>
       <div class="game-frame" id="game-frame"><canvas id="game" width="480" height="270" tabindex="0" aria-label="Game screen. Controls are listed below. Your game automatically pauses when focus is lost."></canvas><div class="scanlines" aria-hidden="true"></div><div id="game-overlay" class="overlay"><div id="menu-content" class="menu-content" role="region" aria-label="Game menu"></div></div></div>
+      <section id="terminal-controls" class="terminal-controls" hidden aria-label="Void Command console">
+        <div class="terminal-shortcuts" aria-label="Quick orders"><button data-command="SCAN">Scan</button><button data-command="BEAM 300">Beam 300</button><button data-command="SHIELD 800">Shield 800</button><button data-command="DOCK">Dock</button><button data-command="REPAIR">Repair</button><button data-command="HELP">Help</button><button data-command="MAP">Map</button></div>
+        <form id="command-form"><label for="command-input">LANTERN &gt;</label><input id="command-input" type="text" maxlength="80" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Type HELP, or click a map cell…" aria-describedby="command-hint"><button type="submit">Execute ↵</button></form>
+        <p id="command-hint">Column then row, 1–8. ↑ / ↓ command history. Click a map cell to prepare an order; Execute commits it. Escape pauses.</p>
+        <output id="terminal-result" role="status" aria-live="polite"></output>
+      </section>
       <div class="game-status"><span class="status-dot"></span><span id="game-status" role="status" aria-live="off">Ready to play</span></div>
       <div id="touch-controls" class="touch-controls" hidden aria-label="Touch controls"><div class="dpad"><button data-touch="up" aria-label="Move up">↑</button><button data-touch="left" aria-label="Move left">←</button><span aria-hidden="true">✛</span><button data-touch="right" aria-label="Move right">→</button><button data-touch="down" aria-label="Move down">↓</button></div><div class="touch-actions"><button data-touch="fire">Attack<span>J</span></button><button data-touch="special">Special<span>K</span></button><button data-touch="jump">Jump / dash<span>SPACE</span></button><button data-touch="interact">Use / swap<span>E</span></button></div></div>
-      <div class="control-legend"><span><kbd>W A S D</kbd> Move <span class="solo-arrows">/ Arrows</span></span><span><kbd>J</kbd> Attack</span><span><kbd>K</kbd> <span id="legend-special">Special</span></span><span id="legend-jump"><kbd>SPACE</kbd> Jump / dash</span><span><kbd>E</kbd> <span id="legend-use">Use / swap</span></span><span><kbd>ESC</kbd> Pause</span></div>
+      <div class="control-legend"><span><kbd>W A S D</kbd> <span id="legend-move">Move</span> <span class="solo-arrows">/ Arrows</span></span><span><kbd>J</kbd> <span id="legend-fire">Attack</span></span><span><kbd>K</kbd> <span id="legend-special">Special</span></span><span id="legend-jump"><kbd>SPACE</kbd> <span id="legend-jump-label">Jump / dash</span></span><span><kbd>E</kbd> <span id="legend-use">Use / swap</span></span><span><kbd>ESC</kbd> Pause</span></div>
       <p id="coop-hint" class="coop-hint" hidden>Player 2: Arrow keys to move · U attack · I special · O jump / dash · H use / revive. Standard controllers supported.</p>
       <p class="cabinet-note">Original worlds. Familiar spirit. <span id="game-inspiration"></span></p>
     </section>
