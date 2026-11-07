@@ -23,7 +23,7 @@
   - A held from play while Start paused did not activate the focused Resume button.
   - The D-pad then reached Restart run, and A restarted.
 
-Not verified: a physical controller, a mobile device, audible output, a real-browser offline reload, or a native-GPU frame-time measurement. The service-worker cache key moves to `v0.3.1-r1`, and its precache list is unchanged and complete (checked by `npm run check` and the worker harness).
+Not verified: a physical controller, a mobile device, audible output, a real-browser offline reload, or a native-GPU frame-time measurement. The service-worker cache key moves to `v0.3.1-r2` (bumped again after the controller re-arming fix changed `js/input.js`), and its precache list is unchanged and complete (checked by `npm run check` and the worker harness).
 
 
 ## Collection 002 — v0.3.0, 30 October 2026
