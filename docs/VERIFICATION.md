@@ -4,11 +4,11 @@
 
 ### Automated checks
 
-`npm test`: **122 passed, 0 failed**. `npm run check`: passed. `git diff --check`: clean. No packages were installed or added. New coverage:
+`npm test`: **123 passed, 0 failed**. `npm run check`: passed. `git diff --check`: clean. No packages were installed or added. New coverage:
 
 - `tests/parity.test.cjs`: 13 scripted, input-driven sessions across all eight cabinets (both difficulties where it applies, co-op for Iron Meridian and Neon Ronin, Expert and Rookie Neon Air, Rook in Basement Brawl, and Void Command campaign 3 driven by a rotating list of orders), 60 simulated seconds each. The complete game state is hashed every second and matched against hashes recorded from `847b0da` (v0.3.0) before any change. All 13 match, so game rules and outcomes are unchanged.
 - `tests/render-cache.test.cjs`: over scripted Void Command sessions on all three missions, every repeated render signature produced identical recorded drawing calls. Changing any one of 18 drawn values changes both the drawing and the signature. Removing `selected` or `viewHelp` from the signature makes the test fail. The cache redraws only on change, and draws shaken or non-canvas contexts directly.
-- Input: deadzone rescaling; sticks as well as buttons must be neutral before a controller responds, including after a different pad connects; menu navigation is edge-triggered, repeats when held and ignores a button held into a menu.
+- Input: deadzone rescaling; sticks as well as buttons must be neutral before a controller responds, including after a different pad connects; menu navigation is edge-triggered, repeats when held and ignores a button held into a menu. It also re-arms when the connected controllers change, so a pad that connects with A or B held cannot select or resume. That test failed before the fix for the Codex review finding.
 - Clock: with timestamps rounded to 0.1 ms, every 60 Hz frame runs exactly one step and every 30 Hz frame two, over 60 simulated seconds. The same test fails on the v0.3.0 clock (1,200 zero-step and 1,200 two-step frames per minute at 60 Hz).
 
 ### Browser checks (headless Chromium, SwiftShader)

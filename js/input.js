@@ -79,12 +79,16 @@
     }
   };
   // Menu navigation for standard controllers: D-pad or left stick moves, A confirms, B goes back.
-  // Edge-triggered with hold-to-repeat. After disarm() (a new menu, dialog or pause), every
-  // button and stick must return to neutral first, so a held attack never clicks a menu button.
+  // Edge-triggered with hold-to-repeat. After disarm() (a new menu, dialog or pause) or any change
+  // in the connected controllers, every button and stick must return to neutral first, so a held
+  // attack, or a button held while a controller connects, never clicks a menu button.
   A.PadNav = class {
     constructor() { this.armed = false; this.prev = new Set(); this.heldSince = 0; this.lastRepeat = 0; }
     disarm() { this.armed = false; this.prev.clear(); }
     sample(pads, now) {
+      // A controller connecting, disconnecting or being replaced re-arms, as Input.sample() does.
+      const ids = pads.map(p => p.index + ':' + p.id).join('|');
+      if (ids !== this.padIds) { this.padIds = ids; this.disarm(); }
       const down = new Set();
       for (const p of pads) {
         const b = i => !!p.buttons[i]?.pressed, x = A.deadzone(p.axes[0] ?? 0, .5), y = A.deadzone(p.axes[1] ?? 0, .5);
