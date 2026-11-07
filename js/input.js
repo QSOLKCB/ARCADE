@@ -1,6 +1,16 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 (function (A) {
   'use strict';
+  // Deadzone with rescaling, so analog output ramps from 0 at the zone edge to 1 at full tilt
+  // (adapted from QSOLKCB/VANILLAJS modules/input, Apache-2.0).
+  A.deadzone = (value, zone = .2) => {
+    if (!Number.isFinite(value) || !Number.isFinite(zone) || zone < 0 || zone >= 1) return 0;
+    const m = A.clamp((Math.abs(value) - zone) / (1 - zone), 0, 1);
+    return m === 0 ? 0 : Math.sign(value) * m;
+  };
+  const standardPads = () => { try { return Array.from(navigator.getGamepads ? navigator.getGamepads() : []).filter(p => p && p.mapping === 'standard'); } catch (_) { return []; } };
+  const padNeutral = p => p.buttons.every(b => !b.pressed) && p.axes.every(v => A.deadzone(v) === 0);
+  A.standardPads = standardPads;
   A.Input = class {
     constructor(canvas, enabled, pause) {
       this.canvas = canvas; this.enabled = enabled; this.pause = pause;
@@ -33,8 +43,11 @@
       this.padPause = pressed;
     }
     sample(players) {
-      let pads = []; try { pads = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).filter(p => p && p.mapping === 'standard'); } catch (_) { /* Gamepads are optional. */ }
-      if (this.gamepadBlocked && pads.every(p => p.buttons.every(b => !b.pressed))) this.gamepadBlocked = false;
+      const pads = standardPads();
+      // A controller joining or leaving re-arms: every button and stick must return to neutral first.
+      const ids = pads.map(p => p.index + ':' + p.id).join('|');
+      if (ids !== this.padIds) { this.padIds = ids; this.gamepadBlocked = true; }
+      if (this.gamepadBlocked && pads.every(padNeutral)) this.gamepadBlocked = false;
       const has = (...codes) => codes.some(k => this.keys.has(k) || this.taps.has(k));
       const tapped = (...codes) => codes.some(k => this.taps.has(k));
       const inputs = [0, 1].map(i => {
@@ -52,7 +65,7 @@
         }
         const p = pads[i];
         if (p && !this.gamepadBlocked) {
-          a.x += Math.abs(p.axes[0]) > .2 ? p.axes[0] : 0; a.y += Math.abs(p.axes[1]) > .2 ? p.axes[1] : 0;
+          a.x += A.deadzone(p.axes[0]); a.y += A.deadzone(p.axes[1]);
           a.x += Number(p.buttons[15]?.pressed) - Number(p.buttons[14]?.pressed); a.y += Number(p.buttons[13]?.pressed) - Number(p.buttons[12]?.pressed);
           a.fire ||= !!p.buttons[0]?.pressed; a.special ||= !!p.buttons[1]?.pressed; a.jump ||= !!p.buttons[2]?.pressed; a.interact ||= !!p.buttons[3]?.pressed;
         }
@@ -63,6 +76,29 @@
         return a;
       });
       this.previous = inputs; this.taps.clear(); this.touchTaps.clear(); this.mouseFireTap = this.mouseSpecialTap = false; return inputs;
+    }
+  };
+  // Menu navigation for standard controllers: D-pad or left stick moves, A confirms, B goes back.
+  // Edge-triggered with hold-to-repeat. After disarm() (a new menu, dialog or pause), every
+  // button and stick must return to neutral first, so a held attack never clicks a menu button.
+  A.PadNav = class {
+    constructor() { this.armed = false; this.prev = new Set(); this.heldSince = 0; this.lastRepeat = 0; }
+    disarm() { this.armed = false; this.prev.clear(); }
+    sample(pads, now) {
+      const down = new Set();
+      for (const p of pads) {
+        const b = i => !!p.buttons[i]?.pressed, x = A.deadzone(p.axes[0] ?? 0, .5), y = A.deadzone(p.axes[1] ?? 0, .5);
+        if (b(12) || y < 0) down.add('up'); if (b(13) || y > 0) down.add('down');
+        if (b(14) || x < 0) down.add('left'); if (b(15) || x > 0) down.add('right');
+        if (b(0)) down.add('confirm'); if (b(1)) down.add('back');
+      }
+      if (!this.armed) { this.armed = pads.every(padNeutral); this.prev = new Set(down); return []; }
+      const out = [];
+      for (const k of ['up', 'down', 'left', 'right', 'confirm', 'back']) if (down.has(k) && !this.prev.has(k)) out.push(k);
+      const dirs = ['up', 'down', 'left', 'right'].filter(k => down.has(k));
+      if (dirs.length && out.some(k => dirs.includes(k))) { this.heldSince = now; this.lastRepeat = now; }
+      else if (dirs.length && now - this.heldSince > 400 && now - this.lastRepeat > 140) { this.lastRepeat = now; out.push(dirs[0]); }
+      this.prev = down; return out;
     }
   };
 })(globalThis.Arcade);

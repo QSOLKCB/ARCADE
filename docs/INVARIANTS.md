@@ -16,3 +16,5 @@
 13. New cabinets remain single-player even when two players are selected for the original co-op games. Hockey scores are isolated by AI profile as well as collection difficulty.
 14. Void Command advances only on accepted operational commands. Invalid/read-only orders cannot spend resources, elapse campaign time or trigger retaliation. Map clicks alone never commit a command. Its textual world and terminology remain wholly original.
 15. Terminal commands, logs, action-game effects and projectile pools remain bounded. Fatal Chrono Wing damage cannot be overwritten by a same-tick flagship transition.
+16. Rendering stays a pure function of game state. The shell may skip a redraw only when no simulation step ran and nothing outside the simulation changed what is drawn. Any cached frame is keyed by a signature that covers everything its renderer reads, and is verified against direct drawing.
+17. Performance changes reproduce the pinned replay hashes in `tests/parity.test.cjs` exactly. Update the pins only for an intentional rule change, and say so in the changelog.

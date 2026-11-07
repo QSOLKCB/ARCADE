@@ -1,5 +1,30 @@
 # Verification
 
+## Quality-of-life and performance pass — v0.3.1, 7 November 2026
+
+### Automated checks
+
+`npm test`: **122 passed, 0 failed**. `npm run check`: passed. `git diff --check`: clean. No packages were installed or added. New coverage:
+
+- `tests/parity.test.cjs`: 13 scripted, input-driven sessions across all eight cabinets (both difficulties where it applies, co-op for Iron Meridian and Neon Ronin, Expert and Rookie Neon Air, Rook in Basement Brawl, and Void Command campaign 3 driven by a rotating list of orders), 60 simulated seconds each. The complete game state is hashed every second and matched against hashes recorded from `847b0da` (v0.3.0) before any change. All 13 match, so game rules and outcomes are unchanged.
+- `tests/render-cache.test.cjs`: over scripted Void Command sessions on all three missions, every repeated render signature produced identical recorded drawing calls. Changing any one of 18 drawn values changes both the drawing and the signature. Removing `selected` or `viewHelp` from the signature makes the test fail. The cache redraws only on change, and draws shaken or non-canvas contexts directly.
+- Input: deadzone rescaling; sticks as well as buttons must be neutral before a controller responds, including after a different pad connects; menu navigation is edge-triggered, repeats when held and ignores a button held into a menu.
+- Clock: with timestamps rounded to 0.1 ms, every 60 Hz frame runs exactly one step and every 30 Hz frame two, over 60 simulated seconds. The same test fails on the v0.3.0 clock (1,200 zero-step and 1,200 two-step frames per minute at 60 Hz).
+
+### Browser checks (headless Chromium, SwiftShader)
+
+- All eight cabinets launched, started and ran under keyboard input (Void Command via a typed `SCAN`). This was tested over HTTP and from `file://` with no page or console errors.
+- Paused screens: v0.3.0 redrew the paused game 61 times a second. This build redrew 0 times, in all eight cabinets over HTTP and `file://`. Active play still renders 60 frames a second.
+- Void Command: the cached frame was pixel-identical to direct drawing after `SCAN`, `JUMP`, `HELP`, `MAP`, `MOVE`, a map selection, `SHIELD`, `BEAM` and `STATUS`. Render time was 0.62 ms per frame direct and 0.19 ms cached (software rendering; not a GPU measurement).
+- Scripted standard gamepad:
+  - The D-pad moved a visible focus ring through the launcher and A launched the focused cabinet.
+  - A started the briefing.
+  - A `gamepaddisconnected` event paused play, and B resumed.
+  - A held from play while Start paused did not activate the focused Resume button.
+  - The D-pad then reached Restart run, and A restarted.
+
+Not verified: a physical controller, a mobile device, audible output, a real-browser offline reload, or a native-GPU frame-time measurement. The service-worker cache key moves to `v0.3.1-r1`, and its precache list is unchanged and complete (checked by `npm run check` and the worker harness).
+
 
 ## Collection 002 — v0.3.0, 30 October 2026
 

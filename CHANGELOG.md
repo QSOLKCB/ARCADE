@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.1 — 2026-11-07
+
+Quality-of-life and performance pass. Game rules, maps and scores are unchanged: every cabinet replays to the same state as v0.3.0.
+
+- **Controller menus:** a standard gamepad now drives the launcher, cabinet menus, pause screen and information panels. D-pad or stick moves between buttons, A selects, left/right changes a setting, B closes a panel or resumes. Buttons held from play are ignored until released.
+- **Controller safety:** unplugging a controller pauses the game. A controller that connects, or is held when a menu opens, must return to neutral before it responds; this now covers sticks as well as buttons.
+- **Smoother analog movement:** the stick deadzone is rescaled, so movement ramps up from the edge of the deadzone instead of jumping to 20%.
+- **Smoother 60 Hz play:** browsers round frame timestamps, which made one 60 Hz frame in three run no simulation step and the next run two. Frames within 0.5 ms of a whole number of steps now count as exactly that many, so every 60 Hz frame advances one step and every 30 Hz frame two.
+- **Less work when nothing moves:** a frame is redrawn only after a simulation step or a change such as a menu action. Paused and menu screens stopped redrawing 60 times a second, and tick-less frames on 120/144 Hz displays reuse the image already on screen.
+- **Void Command:** the terminal frame is reused until an order, map selection or campaign choice changes what it shows (0.62 → 0.19 ms per frame in Chromium software rendering, pixel-identical).
+- **Exactness checks:** an exact-replay parity test pins the full state of 13 scripted sessions across all eight cabinets, and a recording-canvas test proves that Void Command's cache key covers everything it draws.
+- Adapted from [QSOLKCB/VANILLAJS](https://github.com/QSOLKCB/VANILLAJS) (input deadzone and neutral arming, fixed clock) and guided by [QSOLKCB/OPT](https://github.com/QSOLKCB/OPT) (signature-bound reuse, exact-equivalence gates). Both Apache-2.0.
+
 ## 0.3.0 — 2026-10-30
 
 Collection 002 expands ARCADE from three cabinets to eight, with original code, art, sound and worlds.

@@ -65,10 +65,21 @@
     finish(won) { if (this.state === 'victory' || this.state === 'gameover') return; this.state = won ? 'victory' : 'gameover'; this.sound(won ? 'win' : 'lose'); }
     get relaxed() { return this.options.difficulty === 'relaxed'; }
   };
-  // One bounded accumulator shared by the browser loop and timing tests.
+  // One bounded accumulator shared by the browser loop and timing tests (adapted from
+  // QSOLKCB/VANILLAJS modules/time FixedClock: epsilon, bounded steps, dropped debt).
+  // Browsers round frame timestamps (often to 0.1 ms), so a 60 Hz display reports 16.7, 16.6,
+  // 16.7 ms... Compared exactly, one frame in three then runs no tick and the next runs two: a
+  // visible judder. A frame within 0.5 ms of a whole number of ticks counts as exactly that many.
   A.Clock = class {
     constructor() { this.accumulator = 0; }
-    advance(seconds, tick) { this.accumulator += A.clamp(seconds, 0, .1); let steps = 0; while (this.accumulator >= A.STEP && steps < 6) { tick(A.STEP); this.accumulator -= A.STEP; steps++; } return steps; }
+    advance(seconds, tick) {
+      let dt = A.clamp(Number.isFinite(seconds) ? seconds : 0, 0, .1);
+      const whole = Math.round(dt / A.STEP); if (whole >= 1 && Math.abs(dt - whole * A.STEP) < .0005) dt = whole * A.STEP;
+      this.accumulator += dt; let steps = 0;
+      while (this.accumulator + 1e-9 >= A.STEP && steps < 6) { tick(A.STEP); this.accumulator = Math.max(0, this.accumulator - A.STEP); steps++; }
+      if (this.accumulator >= A.STEP) this.accumulator %= A.STEP;
+      return steps;
+    }
     reset() { this.accumulator = 0; }
   };
 })(globalThis);

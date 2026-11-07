@@ -124,7 +124,21 @@
       return '';
     }
     status(){const p=this.ship;return 'Sector '+coord(p.qx,p.qy)+' · Energy '+p.energy+' · Shield '+p.shield+' · Hull '+p.hull+' · Raiders '+(this.total-this.kills)+' · Days '+this.days+' · Score '+this.score;}
+    // Every value the terminal draws from. Equal signatures produce identical drawing; this is
+    // checked by tests/render-cache.test.cjs over a full scripted session.
+    renderSignature(){return JSON.stringify([this.mission,this.ship,this.sector,this.chart,this.selected,this.damage,this.sos,this.total,this.kills,this.days,this.logs.slice(-6),this.viewHelp]);}
+    // QSOLKCB/OPT OPT-INC-001 signature-bound reuse: the terminal only changes when an order, map
+    // selection or campaign choice changes its state, so the last frame is reused until then. Any
+    // context that is not a plain, untransformed 960 x 540 canvas is drawn directly.
     render(c){
+      const t=typeof c.getTransform==='function'?c.getTransform():null;
+      if(!t||!t.isIdentity||typeof document==='undefined'||typeof c.drawImage!=='function'||c.canvas?.width!==960||c.canvas?.height!==540||c.globalAlpha!==1||c.globalCompositeOperation!=='source-over'){this.draw(c);return;}
+      const sig=this.renderSignature();
+      if(!this.frame){this.frame=document.createElement('canvas');this.frame.width=960;this.frame.height=540;this.frameSig=null;}
+      if(sig!==this.frameSig){this.draw(this.frame.getContext('2d'));this.frameSig=sig;}
+      c.drawImage(this.frame,0,0);
+    }
+    draw(c){
       D.rect(c,0,0,960,540,'#050e12');
       const text=(t,x,y,color=GREEN,size=13,align='left')=>D.text(c,t,x,y,color,size,align);
       const panel=(x,y,w,h,title)=>{c.strokeStyle='#27514f';c.lineWidth=1;c.strokeRect(x+.5,y+.5,w,h);D.rect(c,x+12,y-6,title.length*8+16,15,'#050e12');text(title,x+20,y-6,CYAN,12);};

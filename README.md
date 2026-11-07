@@ -58,7 +58,7 @@ Scores and settings are local to the browser/device; current runs are not saved.
 | Use, switch weapon or hold to revive | E | H / Numpad 3 |
 | Pause | Escape / P | Escape / P |
 
-Iron Meridian also supports mouse aim, left-button fire and right-button grenades. Standard gamepads: left stick/D-pad, A attack, B special, X jump/dash, Y use, Start pause. Touch controls are available through the **Touch** button. Local co-op uses a shared screen; Velvet Heist and the five new cabinets are single-player. Select **Relaxed** for more forgiving health, lives and enemy behaviour. High scores are separated by difficulty; Neon Air also separates Rookie, Club and Expert scores. The rebuilt Velvet Heist uses a new score table; first-edition scores remain stored without being mixed into the new rules.
+Iron Meridian also supports mouse aim, left-button fire and right-button grenades. Standard gamepads: left stick/D-pad, A attack, B special, X jump/dash, Y use, Start pause. Controllers also drive the launcher and menus (D-pad/stick moves, A selects, B goes back), and unplugging one pauses the game. Touch controls are available through the **Touch** button. Local co-op uses a shared screen; Velvet Heist and the five new cabinets are single-player. Select **Relaxed** for more forgiving health, lives and enemy behaviour. High scores are separated by difficulty; Neon Air also separates Rookie, Club and Expert scores. The rebuilt Velvet Heist uses a new score table; first-edition scores remain stored without being mixed into the new rules.
 
 ### New cabinet controls
 

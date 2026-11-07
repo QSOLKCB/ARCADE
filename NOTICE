@@ -10,3 +10,7 @@ air hockey. All new cabinet identities, settings and assets are original.
 
 Their names identify the referenced games; no affiliation or endorsement is
 implied. No original game assets or binaries are included.
+
+The controller deadzone/neutral-arming logic and fixed-step clock refinements are
+adapted from QSOLKCB/VANILLAJS (Apache-2.0). Performance changes follow the
+optimization method of QSOLKCB/OPT (Apache-2.0); no OPT code is included.

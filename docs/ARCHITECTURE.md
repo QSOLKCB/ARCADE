@@ -25,3 +25,13 @@ Development uses node's built-in test runner and static validation without packa
 The shell configures canvas resolution, solo/co-op routing, per-cabinet control labels, choice menus and terminal focus. Pausing discards queued terminal orders. Restarting preserves the chosen AI/fighter/campaign configuration and resets run state. Pointer control is enabled for direct paddle/mallet touch only; the existing action-game mouse/touch scheme is retained.
 
 The developer-only preview configuration and temporary render scripts are not shipped. Documentation PNGs are renders of game code using an available offline Canvas implementation; that package is not a runtime or test dependency.
+
+## Frame pacing and redraws (v0.3.1)
+
+`A.Clock` runs 60 fixed steps per second with at most six steps per frame. Browser frame timestamps are rounded (often to 0.1 ms), so a frame within 0.5 ms of a whole number of steps counts as exactly that many; otherwise a 60 Hz display alternates zero and two steps. A frame is redrawn only when the frame ran a simulation step or the shell marked it dirty: a new or restarted game, a menu render, a pause change or a Void Command map selection. Rendering is a pure function of game state, so a skipped frame would have produced the image already on the canvas.
+
+Void Command keeps one retained 960 × 540 frame. `renderSignature()` serialises every value `draw()` reads. The frame is redrawn when the signature changes and copied otherwise. Contexts that are transformed (screen shake), non-default, or not a plain 960 × 540 canvas are drawn directly. `tests/render-cache.test.cjs` checks over a scripted session that equal signatures produce identical drawing calls, and that changing any single drawn value changes the signature.
+
+`A.PadNav` drives menus from standard controllers with the same neutral-arming rule as gameplay input. The shell disarms it whenever the active menu context changes (launcher, cabinet overlay, information panel), so a button held from play cannot select a menu option.
+
+`tests/parity.test.cjs` pins SHA-256 hashes of the complete state of 13 scripted sessions across all eight cabinets. Performance work must reproduce them exactly; the pins change only with an intentional rule change.
