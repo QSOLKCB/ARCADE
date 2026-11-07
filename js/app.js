@@ -6,7 +6,12 @@
   let nativeStorage;try{nativeStorage=window.localStorage;}catch(_){nativeStorage=null;}
   const storage=new A.Storage(nativeStorage),audio=new A.Audio(),canvas=$('game'),c=canvas.getContext('2d'),clock=new A.Clock();
   const commandHistory=[];let historyIndex=0;
-  let game=null,paused=false,lastState='',lastTime=0,statusTimer=0,returnFocus=null,waitingWorker=null,updateRequested=false;
+  let game=null,paused=false,lastState='',lastTime=0,statusTimer=0,returnFocus=null,waitingWorker=null,updateRequested=false,frameDirty=true,navContext='';
+  const padNav=new A.PadNav();
+  // A frame is a pure function of game state: redraw only after a simulation tick or a change made
+  // outside the simulation (new game, menu action, pause, map selection). Paused and menu frames, and
+  // tick-less frames on 120/144 Hz displays, keep the identical image already on the canvas.
+  const markDirty=()=>{frameDirty=true;};
   if(!c){$('offline-status').textContent='Canvas is unavailable in this browser.';return;}
   c.imageSmoothingEnabled=false;
   const input=new A.Input(canvas,()=>!!game&&game.state==='playing'&&!paused&&!$('info-dialog').open,()=>togglePause());
@@ -33,7 +38,7 @@
     preview.render(cover.getContext('2d'));
   }
   function configureCabinet(){
-    const terminal=game.id==='void';canvas.width=terminal?960:480;canvas.height=terminal?540:270;c.imageSmoothingEnabled=false;
+    markDirty();const terminal=game.id==='void';canvas.width=terminal?960:480;canvas.height=terminal?540:270;c.imageSmoothingEnabled=false;
     canvas.dataset.pointerControl=String(['hockey','breaker'].includes(game.id));$('game-frame').classList.toggle('terminal-screen',terminal);
     $('terminal-controls').hidden=!terminal;document.querySelector('.control-legend').hidden=terminal;
     commandHistory.length=0;historyIndex=0;$('command-input').value='';$('terminal-result').textContent='';
@@ -54,7 +59,7 @@
   canvas.addEventListener('pointerdown',e=>{
     if(game?.id!=='void'||game.state!=='playing'||paused)return;
     const r=canvas.getBoundingClientRect(),order=game.pointer((e.clientX-r.left)*960/r.width,(e.clientY-r.top)*540/r.height);
-    if(order){e.preventDefault();$('command-input').value=order;$('command-input').focus({preventScroll:true});}
+    markDirty();if(order){e.preventDefault();$('command-input').value=order;$('command-input').focus({preventScroll:true});}
   });
   $('sound-toggle').onclick=()=>{audio.setEnabled(!audio.enabled);storage.write('sound',audio.enabled);updateSound();};
   $('touch-toggle').onclick=()=>{touch=!touch;storage.write('touch',touch);updateOptions();};
@@ -76,12 +81,14 @@
   $('pause-button').onclick=()=>togglePause();
   window.addEventListener('blur',()=>{if(game&&game.state==='playing'&&!paused)togglePause(true);});
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&game&&game.state==='playing'&&!paused)togglePause(true);});
+  // A controller unplugged mid-run pauses instead of leaving the player stranded.
+  window.addEventListener('gamepaddisconnected',()=>{if(game&&game.state==='playing'&&!paused)togglePause(true);});
   $('fullscreen-button').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if($('cabinet').requestFullscreen)await $('cabinet').requestFullscreen();else $('game-status').textContent='Fullscreen is unavailable in this browser.';}catch(_){$('game-status').textContent='Fullscreen could not start. The game remains playable here.';}};
   function node(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;}
   function addButton(parent,label,action,primary=false){const b=node('button',label,primary?'primary-button':'');b.onclick=action;parent.append(b);return b;}
   function restart(){const id=game.id,options={...game.options};$('pause-button').textContent='Pause';saveBest();input.clear();clock.reset();paused=false;game=new CATALOG[id].type(options,name=>audio.effect(name));audio.setTrack(id);configureCabinet();lastState='';renderMenu();updateStatus();}
   function renderMenu(){
-    if(!game)return;const overlay=$('game-overlay'),content=$('menu-content');lastState=game.state+(paused?':paused':'');
+    if(!game)return;markDirty();const overlay=$('game-overlay'),content=$('menu-content');lastState=game.state+(paused?':paused':'');
     if(game.id==='void')for(const el of $('terminal-controls').querySelectorAll('button,input'))el.disabled=paused||game.state!=='playing';
     if(game.state==='playing'&&!paused){overlay.hidden=true;input.clear();(game.id==='void'?$('command-input'):canvas).focus({preventScroll:true});return;}
     overlay.hidden=false;content.replaceChildren();let focus;
@@ -99,19 +106,53 @@
     if(focus)focus.focus({preventScroll:true});
   }
   function updateStatus(){if(game){if(game.id==='void'){$('terminal-result').textContent=game.lastMessage||'';for(const el of $('terminal-controls').querySelectorAll('button,input'))el.disabled=paused||game.state!=='playing';}$('game-status').textContent=game.status();canvas.setAttribute('aria-label',CATALOG[game.id].name+'. '+game.status()+'. Press Escape to pause.');canvas.dataset.game=game.id;canvas.dataset.state=paused?'paused':game.state;}}
+  // Standard controllers drive every menu: D-pad / left stick moves focus spatially, A activates,
+  // left/right changes a focused select or slider, B closes a dialog or resumes a paused game.
+  function navRoot(){if($('info-dialog').open)return $('info-dialog');if(game)return paused||game.state!=='playing'?$('game-overlay'):null;return document.body;}
+  function focusables(root){return Array.from(root.querySelectorAll('button,select,input,a[href]')).filter(el=>!el.disabled&&!el.closest('[hidden]')&&el.getClientRects().length&&(root!==document.body||!el.closest('dialog,#cabinet')));}
+  function padFocus(el){el.focus({preventScroll:true,focusVisible:true});el.classList.add('pad-focus');el.addEventListener('blur',()=>el.classList.remove('pad-focus'),{once:true});el.scrollIntoView?.({block:'nearest',inline:'nearest'});}
+  function nudge(el,dir){
+    if(el.tagName==='SELECT'){const i=A.clamp(el.selectedIndex+dir,0,el.options.length-1);if(i!==el.selectedIndex){el.selectedIndex=i;el.dispatchEvent(new Event('change',{bubbles:true}));}return true;}
+    if(el.tagName==='INPUT'&&el.type==='range'){dir>0?el.stepUp():el.stepDown();el.dispatchEvent(new Event('input',{bubbles:true}));return true;}
+    return false;
+  }
+  function spatial(items,from,dir){
+    const r=from.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let best=null,score=Infinity;
+    for(const el of items){if(el===from)continue;const q=el.getBoundingClientRect(),dx=q.left+q.width/2-cx,dy=q.top+q.height/2-cy;
+      const main=dir==='up'?-dy:dir==='down'?dy:dir==='left'?-dx:dx,side=dir==='up'||dir==='down'?Math.abs(dx):Math.abs(dy);
+      if(main<=1)continue;const s=main+side*2;if(s<score){score=s;best=el;}}
+    if(best)return best;const i=items.indexOf(from);return items[A.clamp(i+(dir==='up'||dir==='left'?-1:1),0,items.length-1)];
+  }
+  function padMenus(now){
+    const root=navRoot(),context=root?root.id||'lobby':'';
+    if(context!==navContext){navContext=context;padNav.disarm();}
+    if(!root)return;
+    const actions=padNav.sample(A.standardPads(),now);if(!actions.length)return;
+    const items=focusables(root);if(!items.length)return;
+    const current=items.includes(document.activeElement)?document.activeElement:null;
+    for(const action of actions){
+      if(action==='back'){if($('info-dialog').open)$('info-dialog').close();else if(game&&paused)togglePause(false);return;}
+      if(!current){padFocus(items[0]);return;}
+      if(action==='confirm'){if(current.tagName==='SELECT'){current.selectedIndex=(current.selectedIndex+1)%current.options.length;current.dispatchEvent(new Event('change',{bubbles:true}));}else current.click();return;}
+      if((action==='left'||action==='right')&&nudge(current,action==='left'?-1:1))return;
+      padFocus(spatial(items,current,action));return;
+    }
+  }
   function frame(now){
     const dt=lastTime?Math.min(.1,(now-lastTime)/1000):0;lastTime=now;
     if(game){
       if(!document.hidden)input.pollPause();
-      if(game.state==='playing'&&!paused&&!$('info-dialog').open){clock.advance(dt,step=>{if(game.state==='playing'&&!paused){const commands=input.sample(game.options.players);if(!paused){game.update(step,commands);audio.tick(step,game.id);}}});}
-      c.save();if(game.shake>0&&!reducedMotion&&!paused)c.translate(Math.sin(game.time*151)*2,Math.cos(game.time*123)*1.5);game.render(c);c.restore();
+      let steps=0;
+      if(game.state==='playing'&&!paused&&!$('info-dialog').open){steps=clock.advance(dt,step=>{if(game.state==='playing'&&!paused){const commands=input.sample(game.options.players);if(!paused){game.update(step,commands);audio.tick(step,game.id);}}});}
+      if(steps>0||frameDirty){frameDirty=false;c.save();if(game.shake>0&&!reducedMotion&&!paused)c.translate(Math.sin(game.time*151)*2,Math.cos(game.time*123)*1.5);game.render(c);c.restore();}
       if(lastState!==game.state+(paused?':paused':''))renderMenu();
       statusTimer+=dt;if(statusTimer>.25){statusTimer=0;updateStatus();}
     }
+    padMenus(now);
     requestAnimationFrame(frame);
   }
   const newControls='<h3>Five new cabinets</h3><p><b>Neon Air:</b> mouse / arrows move the mallet. J strikes. First to 7; Rookie, Club and Expert AI are selected on its card.</p><p><b>Basement Brawl:</b> J punches, K kicks, Space jumps. E picks up a nearby chair or throws a staggered enemy; hold E to guard. Choose a fighter before the first bout.</p><p><b>Chrono Wing:</b> steer in any direction, hold J to fire, K rolls. Rescue parachutes and defeat each flagship.</p><p><b>Prism Break:</b> mouse / left-right moves, J or Space launches. Catch capsules. J fires while the laser power is active.</p><p><b>Void Command:</b> type HELP for orders. Click maps to prepare MOVE, LANCE or JUMP and press Execute. Scan, manage energy and shields, dock beside depots, and clear the raiders before time runs out. Arrow Up / Down recalls orders. The seven quick-order buttons also work on touch screens.</p>';
-  const controls='<p class="eyebrow">THE CONTROL PANEL</p><h2>Pick up. Play.</h2><p>Solo players can use WASD or arrow keys. Two-player mode is available in Iron Meridian and Neon Ronin. Select it in the launcher before starting.</p><table><thead><tr><th>Action</th><th>Player 1</th><th>Player 2</th></tr></thead><tbody><tr><td>Move</td><td>WASD / arrows (solo)</td><td>Arrows</td></tr><tr><td>Attack</td><td>J or Z</td><td>U or Numpad 1</td></tr><tr><td>Grenade / TNT / storm</td><td>K or X</td><td>I or Numpad 2</td></tr><tr><td>Dash / jump</td><td>Space or C</td><td>O or Numpad 0</td></tr><tr><td>Use / switch / revive</td><td>E</td><td>H or Numpad 3</td></tr><tr><td>Pause</td><td colspan="2">Escape or P</td></tr></tbody></table><h3>Controllers &amp; touch</h3><p>Standard gamepad: left stick / D-pad move; A attack; B special; X jump/dash; Y use; Start pause. Up to two controllers. Touch enables the on-screen pad and buttons; hold two directions to move diagonally in action games.</p><h3>A few useful tricks</h3><p><b>Iron Meridian:</b> mouse aims, left button fires, right button throws a grenade. With keys only, you fire in your last movement direction. E switches weapons; hold it next to a fallen partner to revive them. The sidearm never runs out.</p><p><b>Velvet Heist:</b> E enters doors and lifts, banks gems and reloads 8 rounds at the car. Find the key in the police station, take the service lift above the safe floor, then hold E at the safe with the code. The safe contains four gems and a rechargeable torch. Find TNT in the mine and press K near the giant ghost to open the dark gallery. J clears police and small ghosts, but police reinforcements keep coming. A flashing ! warns of an arriving patrol; a marked row warns of the helicopter. The station can restore captured lives. Keep banked gems and tools if caught, and recover your dropped bag. Jump is unused.</p><p><b>Neon Ronin:</b> attack up close for melee or at range for throwing stars. Jump to avoid attacks. Storm costs 60 energy, which recharges. Clear the block and follow GO. Hold E beside a fallen partner.</p><p>Relaxed mode gives more health or lives and gentler enemies. Scores are kept separately for each difficulty. Runs are not saved when you close or reload the page.</p>'+newControls;
+  const controls='<p class="eyebrow">THE CONTROL PANEL</p><h2>Pick up. Play.</h2><p>Solo players can use WASD or arrow keys. Two-player mode is available in Iron Meridian and Neon Ronin. Select it in the launcher before starting.</p><table><thead><tr><th>Action</th><th>Player 1</th><th>Player 2</th></tr></thead><tbody><tr><td>Move</td><td>WASD / arrows (solo)</td><td>Arrows</td></tr><tr><td>Attack</td><td>J or Z</td><td>U or Numpad 1</td></tr><tr><td>Grenade / TNT / storm</td><td>K or X</td><td>I or Numpad 2</td></tr><tr><td>Dash / jump</td><td>Space or C</td><td>O or Numpad 0</td></tr><tr><td>Use / switch / revive</td><td>E</td><td>H or Numpad 3</td></tr><tr><td>Pause</td><td colspan="2">Escape or P</td></tr></tbody></table><h3>Controllers &amp; touch</h3><p>Standard gamepad: left stick / D-pad move; A attack; B special; X jump/dash; Y use; Start pause. Up to two controllers. In menus and the launcher, the D-pad or stick moves between buttons, A selects, left/right changes a setting and B closes a panel or resumes. Unplugging a controller pauses the game. Touch enables the on-screen pad and buttons; hold two directions to move diagonally in action games.</p><h3>A few useful tricks</h3><p><b>Iron Meridian:</b> mouse aims, left button fires, right button throws a grenade. With keys only, you fire in your last movement direction. E switches weapons; hold it next to a fallen partner to revive them. The sidearm never runs out.</p><p><b>Velvet Heist:</b> E enters doors and lifts, banks gems and reloads 8 rounds at the car. Find the key in the police station, take the service lift above the safe floor, then hold E at the safe with the code. The safe contains four gems and a rechargeable torch. Find TNT in the mine and press K near the giant ghost to open the dark gallery. J clears police and small ghosts, but police reinforcements keep coming. A flashing ! warns of an arriving patrol; a marked row warns of the helicopter. The station can restore captured lives. Keep banked gems and tools if caught, and recover your dropped bag. Jump is unused.</p><p><b>Neon Ronin:</b> attack up close for melee or at range for throwing stars. Jump to avoid attacks. Storm costs 60 energy, which recharges. Clear the block and follow GO. Hold E beside a fallen partner.</p><p>Relaxed mode gives more health or lives and gentler enemies. Scores are kept separately for each difficulty. Runs are not saved when you close or reload the page.</p>'+newControls;
   const newAbout='<h3>The new arrivals</h3><p>Neon Air reimagines air hockey. Basement Brawl draws on Pit-Fighter (1990), Chrono Wing on Time Pilot (1982), and Prism Break on Breakout (1976). Void Command draws on the sector navigation, resource management and turn-based combat of Star Trek (1971), with a wholly original world and terminal interface.</p>';
   const about='<p class="eyebrow">PRESERVATION THROUGH PLAY</p><h2>The feeling is the thing.</h2><p>ARCADE is an independent QSOL–IMC project: new browser games built around memorable retro game experiences. You can keep the entire collection on your own computer, read its source, and play without an account or connection.</p><p>These are original reinterpretations with new names, characters, maps, pixel artwork and synthesised music. They are not emulations or exact ports. No original game code, ROMs, artwork or recordings are included.</p><h3>The starting points</h3><p><a href="https://www.myabandonware.com/game/dogs-of-war-738" target="_blank" rel="noopener noreferrer">Dogs of War (1989)</a> — mission selection, equipment buying and top-down mercenary action.</p><p><a href="https://www.myabandonware.com/game/cops-n-robbers-4qo" target="_blank" rel="noopener noreferrer">Cops ’n’ Robbers (1985)</a> — maze exploration, jewel collection, limited ammunition, haunted mines and the getaway car.</p><p><a href="https://snk.fandom.com/wiki/Ninja_Combat" target="_blank" rel="noopener noreferrer">Ninja Combat (1990)</a> — scrolling ninja combat, throwing stars, pickups, jumping and special attacks.</p><p>Historical game names identify inspirations. This project is independent of their creators and rights holders. The original contributions are available under Apache-2.0.</p><p><a href="https://github.com/QSOLKCB/ARCADE" target="_blank" rel="noopener noreferrer">Explore the source and preservation notes ↗</a></p>'+newAbout;
   const offline='<p class="eyebrow">NO CONNECTION REQUIRED</p><h2>Take the arcade with you.</h2><h3>Option 1 · Keep a local copy</h3><p><a href="https://github.com/QSOLKCB/ARCADE/archive/refs/heads/main.zip">Download the complete arcade ZIP</a>, extract it, then open <code>index.html</code> in your browser. Keep the folders beside that file. All eight games work directly from disk — no server or installation required.</p><h3>Option 2 · Return to the cached site</h3><p>On GitHub Pages, wait for “Offline ready” in the launcher before disconnecting. This confirms the complete game collection has been cached by your browser. You can then reload the same address offline. Clearing browser site data removes the cached copy and local scores.</p><p>Scores and sound/display preferences stay on this device when browser storage is available. Current runs are not saved. No accounts, analytics or online game services are used.</p>';

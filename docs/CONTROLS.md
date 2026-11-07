@@ -41,6 +41,8 @@ In co-op, hold E or H beside a fallen partner to revive them. Stay together; bot
 
 Player 2: arrows move; U attacks; I uses special; O jumps/dashes; H uses or revives. Numpad 1, 2, 0 and 3 are alternatives. Standard controllers use left stick/D-pad for movement, A/B/X/Y for attack/special/jump/use, and Start to pause/resume. Up to two standard-mapped controllers are read; non-standard devices may need keyboard input.
 
+Controllers also drive every menu. In the launcher, cabinet menus, pause screen and information panels, the D-pad or left stick moves between buttons, A selects, left/right changes a focused setting (difficulty, players, Neon Air AI, audio levels) and B closes a panel or resumes a paused game. After a controller connects, and whenever a menu opens or the game pauses, release every button and the stick once before it responds, so a button held from play never selects a menu option. Unplugging a controller during play pauses the game.
+
 Touch controls use pointer capture and support holding a direction while attacking. Use two directional buttons for diagonal movement in the action games. Cancelled touches release their actions. The launcher and menus support keyboard focus. Canvas gameplay itself is visual and is not screen-reader equivalent.
 
 ## Sound
