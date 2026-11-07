@@ -70,16 +70,20 @@
   // Browsers round frame timestamps (often to 0.1 ms), so a 60 Hz display reports 16.7, 16.6,
   // 16.7 ms... Compared exactly, one frame in three then runs no tick and the next runs two: a
   // visible judder. A frame within 0.5 ms of a whole number of ticks counts as exactly that many.
+  // The time that snapping adds or removes is carried as drift: frames snap only while the total
+  // stays under 0.5 ms, and the next unsnapped frame repays it. Without this, a steady 59 or 61 Hz
+  // display snapped every frame and ran the games about 1.7% slow or fast against the wall clock.
   A.Clock = class {
-    constructor() { this.accumulator = 0; }
+    constructor() { this.accumulator = 0; this.drift = 0; }
     advance(seconds, tick) {
       let dt = A.clamp(Number.isFinite(seconds) ? seconds : 0, 0, .1);
-      const whole = Math.round(dt / A.STEP); if (whole >= 1 && Math.abs(dt - whole * A.STEP) < .0005) dt = whole * A.STEP;
+      const whole = Math.round(dt / A.STEP), drift = this.drift + dt - whole * A.STEP;
+      if (whole >= 1 && Math.abs(drift) < .0005) { this.drift = drift; dt = whole * A.STEP; } else { dt = Math.max(0, dt + this.drift); this.drift = 0; }
       this.accumulator += dt; let steps = 0;
       while (this.accumulator + 1e-9 >= A.STEP && steps < 6) { tick(A.STEP); this.accumulator = Math.max(0, this.accumulator - A.STEP); steps++; }
       if (this.accumulator >= A.STEP) this.accumulator %= A.STEP;
       return steps;
     }
-    reset() { this.accumulator = 0; }
+    reset() { this.accumulator = 0; this.drift = 0; }
   };
 })(globalThis);
