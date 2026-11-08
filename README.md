@@ -28,7 +28,7 @@ The VANILLAJS 2D foundation now runs inside the arcade. `js/vanilla2d.js` is gen
 - **range2d:** an exact collision prefilter (`A.near`) in the hot loops of Iron Meridian, Velvet Heist, Neon Ronin, Basement Brawl and Chrono Wing. All 13 replay pins from v0.3.1 still match, so no rule changed.
 - **ternary-store2d:** the new **Score cartridge** button packs your local best scores into a ternary grid file you can download, and restores them with strict validation. A restore only ever raises a score.
 
-![Kestrel Strike — browser screenshot, Coral Strait](docs/kestrel-strike-v040.png)
+![Kestrel Strike — browser screenshot, Coral Strait (v0.4.1 graphics)](docs/kestrel-strike-v041.png)
 
 Every original cabinet also gets a readability improvement drawn purely from its existing state:
 

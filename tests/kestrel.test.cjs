@@ -41,7 +41,8 @@ test('each front schedules a mid-boss then a boss, and clearing four fronts wins
     assert.ok(g.plan.some(w=>w.wave==='warden'));assert.ok(g.plan.some(w=>w.wave==='carrier'));
     g.player.inv=1e9;g.clock=K.STAGES[front].length;for(let n=0;n<4&&!g.enemies.some(e=>e.kind==='boss');n++){tick(g);g.enemies=g.enemies.filter(e=>e.kind!=='warden');}
     const boss=g.enemies.find(e=>e.kind==='boss');assert.ok(boss,'boss on front '+(front+1));
-    g.damage(boss,1e6);
+    g.damage(boss,1e6);assert.ok(g.wreck,'the boss breaks up before the front clears');
+    for(let i=0;i<60*4&&g.state==='playing';i++)tick(g);
     if(front<3){assert.equal(g.state,'stageclear');assert.ok(g.bonus>0);g.action('start');assert.equal(g.stage,front+1);}
   }
   assert.equal(g.state,'victory');
@@ -52,13 +53,29 @@ test('losing every plane ends the run and a new run starts fresh',()=>{
 });
 test('a long firefight stays bounded, finite and deterministic',()=>{
   const run=()=>{const g=start();const log=[];for(let f=0;f<60*120;f++){g.player.inv=1;tick(g,1,{fire:true,x:Math.sign(Math.sin(f/40)),specialPressed:f%600===300});if(g.state==='stageclear')g.action('start');log.push(g.enemies.length,g.bullets.length);
-    assert.ok(g.bullets.length<=260&&g.shots.length<=140&&g.enemies.length<=44&&g.particles.items.length<=220&&g.items.length<=24);}
+    assert.ok(g.bullets.length<=260&&g.shots.length<=140&&g.enemies.length<=44&&g.particles.items.length<=220&&g.items.length<=24&&g.blasts.length<=48&&g.debris.length<=64&&g.scorch.length<=24);}
     assert.ok(Number.isFinite(g.score)&&g.score>0);return JSON.stringify([g.score,g.clock,g.player.body,log.slice(-200)]);};
   assert.equal(run(),run());
+});
+test('a boss breaks up in chained explosions, the plane is safe, then the front clears',()=>{
+  const g=start();clearEnemies(g);g.plan=[];g.bossSpawned=true;const boss=g.addEnemy('boss',{x:120,y:190,path:'boss'});const escort=g.addEnemy('gnat',{x:60,y:200});
+  for(let i=0;i<20;i++)g.bullet(120,190,-Math.PI/2,40);g.damage(boss,1e6);
+  assert.ok(g.wreck);assert.equal(g.state,'playing');assert.equal(g.bullets.length,0);assert.ok(escort.hp<=0,'escorts go down with the boss');
+  const lives=g.lives;let peak=0;
+  for(let i=0;i<60&&g.state==='playing';i++){g.player.inv=0;g.bullets.push({x:g.player.x,y:g.player.y,vx:0,vy:0,r:2.5,grazed:false});tick(g);peak=Math.max(peak,g.blasts.length);}
+  assert.equal(g.lives,lives,'no plane is lost while the boss breaks up');assert.ok(peak>=5,'chained explosions');
+  tick(g,60*3);assert.equal(g.state,'stageclear');assert.equal(g.wreck,null);
+});
+test('explosions, wreckage and scorch marks never consume gameplay randomness and stay bounded',()=>{
+  const a=start(),b=start();for(let i=0;i<200;i++)b.explode(100,100,20,{debris:8,sparks:20,ring:true});
+  assert.deepEqual([a.rand(),a.rand(),a.rand()],[b.rand(),b.rand(),b.rand()]);
+  assert.ok(b.blasts.length<=48&&b.debris.length<=64&&b.particles.items.length<=220);
+  clearEnemies(a);a.plan=[];const t=a.addEnemy('tank',{x:60,y:150,vx:0,vy:0});a.damage(t,99);assert.equal(a.scorch.length,1);assert.ok(a.blasts.length>=1);
+  tick(a,60*8);assert.equal(a.blasts.length,0);assert.equal(a.debris.length,0);assert.equal(a.scorch.length,0,'scorch marks scroll away with the ground');
 });
 test('menus are inert and every front renders with finite coordinates',()=>{
   const g=new K();tick(g,60);assert.equal(g.clock,0);
   const methods=new Set(['fillRect','translate','scale','rotate','arc','ellipse','moveTo','lineTo','rect']);
   const c=new Proxy({}, {get:(_,name)=>(...args)=>{if(methods.has(name))assert.ok(args.filter(v=>typeof v==='number').every(Number.isFinite),String(name));},set:()=>true});
-  for(let s=0;s<4;s++){const r=start();r.stage=s;r.setup();r.demo();r.addEnemy('boss',{x:120,y:190,path:'boss'});r.addEnemy('warden',{x:80,y:200,path:'warden'});tick(r,30,{fire:true});r.render(c);}
+  for(let s=0;s<4;s++){const r=start();r.stage=s;r.setup();r.demo();r.addEnemy('boss',{x:120,y:190,path:'boss',phase:0});r.addEnemy('warden',{x:80,y:200,path:'warden'});tick(r,30,{fire:true});r.render(c);r.damage(r.addEnemy('boss',{x:120,y:190,path:'boss',phase:0}),1e6);assert.ok(r.wreck);tick(r,40);r.render(c);}
 });
