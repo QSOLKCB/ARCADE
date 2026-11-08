@@ -18,3 +18,10 @@ optimization method of QSOLKCB/OPT (Apache-2.0); no OPT code is included.
 js/vanilla2d.js is generated from QSOLKCB/VANILLAJS (Apache-2.0) modules motion2d,
 range2d, audio2d and ternary-store2d by scripts/vanilla2d.cjs; the module bodies
 are copied unchanged and the source commit is recorded in the file.
+
+
+ARCADE 2 adds ten original cabinets inspired by the gameplay categories requested
+by Trent Slade. The historical titles are listed in arcade2/README.md solely to
+identify those inspirations. No commercial game assets or source are included.
+Selected QSOLKCB/VANILLAJS v1.2.0 modules are preserved under
+arcade2/vendor/vanillajs with their full LICENSE, NOTICE and pinned provenance.

@@ -7,9 +7,24 @@ on:
       - index.html
       - styles.css
       - js/**
+      - arcade2/**
       - assets/**
       - sw.js
       - manifest.webmanifest
+      - scripts/**
+      - tests/**
+      - .github/workflows/pages.yml
+  pull_request:
+    paths:
+      - index.html
+      - styles.css
+      - js/**
+      - arcade2/**
+      - assets/**
+      - sw.js
+      - manifest.webmanifest
+      - scripts/**
+      - tests/**
       - .github/workflows/pages.yml
   workflow_dispatch:
 
@@ -17,13 +32,30 @@ permissions:
   contents: read
 
 concurrency:
-  group: github-pages
+  group: arcade-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  verify:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Verify both arcade halls
+        run: |
+          node --test tests/*.test.cjs
+          node scripts/check.cjs
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
     permissions:
       contents: read
       pages: write
@@ -36,15 +68,11 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
-      - name: Verify the arcade
-        run: |
-          node --test tests/*.test.cjs
-          node scripts/check.cjs
       - name: Stage runtime files
         run: |
           mkdir _site
-          cp index.html styles.css manifest.webmanifest sw.js .nojekyll _site/
-          cp -R js assets _site/
+          cp index.html styles.css manifest.webmanifest sw.js .nojekyll LICENSE NOTICE _site/
+          cp -R js assets arcade2 _site/
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - name: Upload static arcade

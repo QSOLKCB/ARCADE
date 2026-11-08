@@ -1,5 +1,33 @@
 # Changelog
 
+## Unreleased — ARCADE 2 / The Second Shift
+
+- Add a separate `arcade2/` hall with ten original single-player cabinets: Shadow
+  Circuit, Floodlight FC, Full Court.exe, DevOps Kombat, Cache Ninja, Breach Protocol,
+  Spaced Invaders, Iron Comet, Null Vector and Ember Wing.
+- Consume VANILLAJS v1.2.0 `integer-math` and `time` from exact commit
+  `c8d6e9972d2214e2f5330f80f7dee49750c2e776`, preserving source bytes, SHA-256
+  provenance, Apache-2.0 and upstream notices. Generate a file-open-compatible
+  classic-script adapter without adding runtime dependencies.
+- Add finite campaigns/matches, CPU opponents, original Canvas art and synthesized
+  effects, separate local best scores, keyboard/touch/standard-gamepad controls,
+  pause-on-focus-loss and explicit restart/stage transitions.
+- Link both halls, expand the existing scope-specific offline cache, and stage the
+  new files in the existing Pages workflow. Add PR verification to that workflow.
+- Add gameplay, input, deterministic replay, render-purity and packaging checks.
+  Existing game rules and replay pins are unchanged. Browser coverage and executed
+  evidence are recorded in `docs/ARCADE2_VERIFICATION.md`.
+- Keep Floodlight FC shots aimed beyond the opposing scoring plane, including
+  possession at either goal-line boundary.
+- Use explicit index files in hall navigation so links resolve from extracted
+  checkouts as well as nested HTTP hosting.
+- Prevent browser defaults on repeated gameplay keys while preserving fresh-press
+  requirements after pause or scene transitions.
+- Reclaim defeated Breach Protocol enemy slots before spawning the required boss,
+  and count only successful reinforcement spawns toward each compound's quota.
+- Add ten review regression checks and advance the offline cache revision.
+
+
 ## 0.5.0 — 2026-11-08
 
 Published as GitHub release v0.5.0. It combines Collection 003 (QSOLKCB/ARCADE#4) and the Kestrel Strike graphics pass (QSOLKCB/ARCADE#5), which were developed as 0.4.0 and 0.4.1. GitHub releases v0.4.0 and v0.4.1 had already been published for the 0.3.1 work below, so both parts ship together as 0.5.0.
@@ -106,3 +134,4 @@ Initial collection: Iron Meridian, Velvet Heist and Neon Ronin, with a shared ar
 - Arcade/Relaxed modes, local best scores, pause/restart, fullscreen and optional CRT scanlines.
 - Standalone file-open distribution and versioned, scope-isolated offline cache for HTTPS hosting.
 - Contributor invariants, source/asset provenance, control guide and dependency-free test suite.
+

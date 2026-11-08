@@ -4,6 +4,19 @@
 
 [**Play the arcade**](https://qsolkcb.github.io/ARCADE/) · [**Download for offline play**](https://github.com/QSOLKCB/ARCADE/archive/refs/heads/main.zip) · [Controls](docs/CONTROLS.md) · [Preservation notes](docs/PRESERVATION.md)
 
+## ARCADE 2 — The Second Shift
+
+A second hall adds **ten original single-player cabinets** at [`arcade2/`](arcade2/),
+using pinned VANILLAJS **v1.2.0** arithmetic and timing modules. Ninja action,
+football, 2-on-2 basketball, **DevOps Kombat**, a cover shooter, Spaced Invaders,
+run-and-gun action and two scrolling shooters bring the repository to 19 games.
+
+[**Enter ARCADE 2**](https://qsolkcb.github.io/ARCADE/arcade2/) ·
+[Cabinets, controls and engine provenance](arcade2/README.md) ·
+[Verification record](docs/ARCADE2_VERIFICATION.md)
+
+## The original hall
+
 | Cabinet | Historical inspiration | This implementation |
 | --- | --- | --- |
 | **Iron Meridian** | *Dogs of War* (1989, Amiga / Atari ST) | Three mercenary contracts, team loadout shop, four weapons, limited ammunition with unlimited sidearm fallback, grenades, rescue/recovery objectives, armoured roadblocks and extraction. 1–2 players. |
@@ -123,3 +136,4 @@ See [verification](docs/VERIFICATION.md), [architecture](docs/ARCHITECTURE.md), 
 ## Licence
 
 The original project contributions use the repository's [Apache License 2.0](LICENSE). Historical game names identify inspirations and remain associated with their respective creators and rights holders. ARCADE is an independent project, without affiliation or endorsement.
+
