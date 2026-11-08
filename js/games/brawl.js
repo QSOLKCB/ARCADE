@@ -109,7 +109,7 @@
         const reach=e.kind==='kicker'?43:29,dx=p.x-e.x,dy=p.y-e.y;
         if(Math.abs(dx)>reach||Math.abs(dy)>9){const speed=e.kind==='runner'?78:e.kind==='boss'?54:47;e.x+=Math.sign(dx)*Math.min(Math.max(0,Math.abs(dx)-reach),speed*dt);e.y+=Math.sign(dy)*Math.min(Math.abs(dy),speed*.55*dt);e.walk+=dt;}
         if(Math.abs(dx)<reach+8&&Math.abs(dy)<16&&e.cd<=0){e.windup=this.relaxed?.65:.42;e.block=false;}
-        if(A.dist(p,e)<19){const n=A.unit(p.x-e.x,p.y-e.y);p.x=A.clamp(p.x+n.x*35*dt,35,445);p.y=A.clamp(p.y+n.y*35*dt,133,233);}
+        if(A.near(p,e,19)){const n=A.unit(p.x-e.x,p.y-e.y);p.x=A.clamp(p.x+n.x*35*dt,35,445);p.y=A.clamp(p.y+n.y*35*dt,133,233);}
       }
       for(const fall of this.falls)fall.life-=dt;this.falls=this.falls.filter(f=>f.life>0);
       if(p.hp<=0||this.remaining<=0){this.finish(false);return;}
@@ -128,14 +128,14 @@
       for(const y of[142,163,191,231])D.rect(c,0,y,480,1,'#c0a68a35');
       c.strokeStyle='#e5c27a';c.lineWidth=2;c.strokeRect(30,140,420,96);c.lineWidth=1;
       D.text(c,'NO REFUNDS',240,193,'#998575',17,'center');
-      for(const q of this.props)if(q.hits){D.rect(c,q.x-9,q.y-17,18,4,'#b0b7ba');D.rect(c,q.x-9,q.y-12,3,16,'#b0b7ba');D.rect(c,q.x+6,q.y-12,3,16,'#6e8b97');D.text(c,'E',q.x,q.y-29,'#f3dc9d',8,'center');}
+      for(const q of this.props)if(q.hits){D.rect(c,q.x-9,q.y-17,18,4,'#b0b7ba');D.rect(c,q.x-9,q.y-12,3,16,'#b0b7ba');D.rect(c,q.x+6,q.y-12,3,16,'#6e8b97');D.text(c,'E',q.x,q.y-29,'#f3dc9d',8,'center');for(let i=0;i<q.hits;i++)D.rect(c,q.x-8+i*6,q.y-36,4,3,'#9fd0dc');}
       for(const f of this.falls){c.globalAlpha=f.life;D.rect(c,f.x-25,f.y-8,45,10,'#a77b78');c.globalAlpha=1;}
       const actors=[this.player,...this.enemies].sort((a,b)=>a.y-b.y);
       for(const p of actors){
         if(p.hp<=0)continue;const enemy=p!==this.player;
         if(p.windup>0){D.text(c,'!',p.x,p.y-72,'#ffad73',17,'center');D.bar(c,p.x-17,p.y+6,34,p.windup,this.relaxed?.65:.42,'#ffb47a');}
         fighter(c,p,enemy?(p.kind==='boss'?'#f2a372':p.kind==='guard'?'#c3c6b5':'#b68c9f'):FIGHTERS[this.choice].color);
-        if(enemy){D.bar(c,p.x-25,p.y-66,50,p.hp,p.maxHP,'#efad89');D.text(c,p.name,p.x,p.y-76,'#e4c6a9',6,'center');}
+        if(enemy){D.bar(c,p.x-25,p.y-66,50,p.hp,p.maxHP,'#efad89');D.text(c,p.name,p.x,p.y-76,'#e4c6a9',6,'center');if(p.stun>0&&Math.floor(this.time*8)%2)D.text(c,'THROW · E',p.x,p.y-88,'#a6f0d0',7,'center');}
       }
       this.particles.draw(c);this.effects.draw(c);
       D.hud(c,this,'BOUT '+(this.round+1)+' / 5 · '+ROUNDS[this.round].name,Math.ceil(this.remaining)+'s / '+this.score);

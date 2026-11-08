@@ -4,12 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#10161d">
-  <meta name="description" content="Keep the feeling alive. Eight original, free, offline browser games inspired by the golden age of arcade play.">
+  <meta name="description" content="Keep the feeling alive. Nine original, free, offline browser games inspired by the golden age of arcade play.">
   <title>ARCADE — Keep the feeling alive.</title>
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
   <script defer src="js/core.js"></script>
+  <script defer src="js/vanilla2d.js"></script>
+  <script defer src="js/cartridge.js"></script>
   <script defer src="js/draw.js"></script>
   <script defer src="js/input.js"></script>
   <script defer src="js/audio.js"></script>
@@ -21,6 +23,7 @@
   <script defer src="js/games/chrono.js"></script>
   <script defer src="js/games/breaker.js"></script>
   <script defer src="js/games/void.js"></script>
+  <script defer src="js/games/kestrel.js"></script>
   <script defer src="js/app.js"></script>
 </head>
 <body>
@@ -32,11 +35,11 @@
   <main>
     <section id="lobby" class="wrap">
       <div class="hero">
-        <div><p class="eyebrow"><span class="little-square"></span> A RETRO EXPERIENCE PRESERVATION PROJECT</p><h1>Keep the<br><em>feeling</em> alive.</h1><p class="hero-description">The one-more-go feeling. The impossible last level.<br>Eight new games with an old soul. Yours to keep playing.</p></div>
-        <aside class="hero-aside"><div class="edition"><span>COLLECTION</span><b>002</b></div><p>Good games don't<br>have an expiry date.</p><div class="online-status"><span class="status-dot"></span><span id="offline-status">Preparing offline play…</span></div><button id="update-button" hidden>Update ready · Reload</button></aside>
+        <div><p class="eyebrow"><span class="little-square"></span> A RETRO EXPERIENCE PRESERVATION PROJECT</p><h1>Keep the<br><em>feeling</em> alive.</h1><p class="hero-description">The one-more-go feeling. The impossible last level.<br>Nine new games with an old soul. Yours to keep playing.</p></div>
+        <aside class="hero-aside"><div class="edition"><span>COLLECTION</span><b>003</b></div><p>Good games don't<br>have an expiry date.</p><div class="online-status"><span class="status-dot"></span><span id="offline-status">Preparing offline play…</span></div><button id="update-button" hidden>Update ready · Reload</button></aside>
       </div>
       <section id="collection" class="collection" aria-labelledby="collection-title">
-        <div class="section-heading"><div><span class="eyebrow">FIVE NEW ARRIVALS</span><h2 id="collection-title">Choose your cabinet<span class="count">08</span></h2></div><div class="setup"><label>Mode<select id="difficulty"><option value="arcade">Arcade</option><option value="relaxed">Relaxed</option></select></label><label>Players<select id="players"><option value="1">1 player</option><option value="2">2 players · local</option></select></label></div></div>
+        <div class="section-heading"><div><span class="eyebrow">A NINTH CABINET ARRIVES</span><h2 id="collection-title">Choose your cabinet<span class="count">09</span></h2></div><div class="setup"><label>Mode<select id="difficulty"><option value="arcade">Arcade</option><option value="relaxed">Relaxed</option></select></label><label>Players<select id="players"><option value="1">1 player</option><option value="2">2 players · local</option></select></label></div></div>
         <div class="game-grid">
           <article class="game-card iron-card">
             <div class="cover"><canvas id="cover-iron" width="480" height="270" role="img" aria-label="Original pixel artwork of a coastal mercenary mission"></canvas><span class="cover-number">01</span><span class="cover-tag">RUN &amp; GUN</span></div>
@@ -70,10 +73,14 @@
             <div class="cover"><canvas id="cover-void" width="480" height="270" role="img" aria-label="an original green terminal with tactical and frontier maps"></canvas><span class="cover-number">08</span><span class="cover-tag">TERMINAL STRATEGY</span></div>
             <div class="card-body"><div class="card-meta"><span>THE FRONTIER IS WAITING</span><span>1 PLAYER</span></div><h3>Void Command</h3><p>A star chart. A command line. A ship running low. Bring the free relays back online.</p><div class="inspiration">Inspired by <cite>Star Trek gameplay</cite> <span>1971</span></div><div class="card-bottom"><button data-game="void" class="play-button">Play game <span aria-hidden="true">↗</span><span class="sr-only"> — Void Command</span></button><span class="best">BEST <b data-best="void">000000</b></span></div></div>
           </article>
+          <article class="game-card kestrel-card">
+            <div class="cover"><canvas id="cover-kestrel" width="480" height="270" role="img" aria-label="an original propeller fighter over a scrolling coral sea"></canvas><span class="cover-number">09</span><span class="cover-tag">VERTICAL SHMUP</span></div>
+            <div class="card-body"><div class="card-meta"><span>FOUR FRONTS. ONE PROPELLER.</span><span>1 PLAYER</span></div><h3>Kestrel Strike</h3><p>Thread the bullets. Catch the courier. Bomb the screen clean and bring down a fortress on every front.</p><div class="inspiration">Inspired by <cite>1943 and Raiden</cite> <span>1987 · 1990</span></div><div class="card-bottom"><button data-game="kestrel" class="play-button">Play game <span aria-hidden="true">↗</span><span class="sr-only"> — Kestrel Strike</span></button><span class="best">BEST <b data-best="kestrel">000000</b></span></div></div>
+          </article>
         </div>
       </section>
-      <div class="preservation-strip"><div class="strip-icon" aria-hidden="true">∞</div><div><h2>Preserve the experience. Create something new.</h2><p>Original code, art, worlds and sound. No ROMs required. No coins either.</p></div><button class="text-button" id="offline-button">Take it offline <span aria-hidden="true">↓</span></button></div>
-      <footer><span>QSOL–IMC <span class="muted">/</span> INDEPENDENT BY DESIGN</span><div><button id="controls-home" class="text-button">How to play</button><a href="https://github.com/QSOLKCB/ARCADE" target="_blank" rel="noopener noreferrer">Source code ↗</a><span class="muted">v0.3.0</span></div></footer>
+      <div class="preservation-strip"><div class="strip-icon" aria-hidden="true">∞</div><div><h2>Preserve the experience. Create something new.</h2><p>Original code, art, worlds and sound. No ROMs required. No coins either.</p></div><div class="strip-actions"><button class="text-button" id="cartridge-button">Score cartridge <span aria-hidden="true">⇅</span></button><button class="text-button" id="offline-button">Take it offline <span aria-hidden="true">↓</span></button></div></div>
+      <footer><span>QSOL–IMC <span class="muted">/</span> INDEPENDENT BY DESIGN</span><div><button id="controls-home" class="text-button">How to play</button><a href="https://github.com/QSOLKCB/ARCADE" target="_blank" rel="noopener noreferrer">Source code ↗</a><span class="muted">v0.4.0</span></div></footer>
     </section>
     <section id="cabinet" class="wrap cabinet" hidden aria-label="Game cabinet">
       <div class="cabinet-toolbar"><button id="back-button" class="text-button">← All cabinets</button><h1 id="game-title">Iron Meridian</h1><div class="cabinet-actions"><button id="help-button" title="Controls">Controls</button><button id="audio-button">Audio</button><button id="touch-toggle" aria-pressed="false">Touch</button><button id="crt-toggle" aria-pressed="false">CRT</button><button id="pause-button">Pause</button><button id="fullscreen-button" aria-label="Toggle fullscreen">⛶</button></div></div>

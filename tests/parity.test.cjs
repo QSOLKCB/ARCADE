@@ -4,9 +4,9 @@
 // exactly; update the pins only for an intentional rule change (QSOLKCB/OPT: keep a deterministic
 // reference and require exact equivalence before claiming a speedup).
 const {test}=require('node:test'),assert=require('node:assert/strict'),crypto=require('node:crypto'),path=require('node:path');
-for(const file of ['core','draw','games/iron','games/heist','games/ninja','games/hockey','games/brawl','games/chrono','games/breaker','games/void'])require(path.join(__dirname,'../js',file+'.js'));
+for(const file of ['core','draw','vanilla2d','games/kestrel','games/iron','games/heist','games/ninja','games/hockey','games/brawl','games/chrono','games/breaker','games/void'])require(path.join(__dirname,'../js',file+'.js'));
 const A=globalThis.Arcade;
-const TYPES={iron:A.Iron,heist:A.Heist,ninja:A.Ninja,hockey:A.Hockey,brawl:A.Brawl,chrono:A.Chrono,breaker:A.Breaker,void:A.Void};
+const TYPES={iron:A.Iron,heist:A.Heist,ninja:A.Ninja,hockey:A.Hockey,brawl:A.Brawl,chrono:A.Chrono,breaker:A.Breaker,void:A.Void,kestrel:A.Kestrel};
 const ORDERS=['SCAN','JUMP 2 3','SHIELD 400','BEAM 300','MOVE 4 4','LANCE 5 2','DOCK','REPAIR','WAIT','STATUS','HELP','MAP'];
 
 // Stable serialization of plain game state: functions are skipped and repeated references are
@@ -44,6 +44,7 @@ const CASES=[
   ['hockey',{difficulty:'arcade',aiDifficulty:'expert'}],['hockey',{difficulty:'relaxed',aiDifficulty:'rookie'}],
   ['brawl',{difficulty:'arcade'}],['chrono',{difficulty:'arcade'}],['chrono',{difficulty:'relaxed'}],
   ['breaker',{difficulty:'arcade'}],['void',{difficulty:'arcade'}],['void',{difficulty:'relaxed'}],
+  ['kestrel',{difficulty:'arcade'}],['kestrel',{difficulty:'relaxed'}],
 ];
 // Recorded from 847b0da (v0.3.0) before any change in this branch.
 const PINNED={
@@ -60,6 +61,9 @@ const PINNED={
   "breaker:{\"difficulty\":\"arcade\"}": "755a509593f6746b5e8fc21c26429bba300f7c5f2b892200fd916641956f9e36",  // gameover 500
   "void:{\"difficulty\":\"arcade\"}": "15b1adf4a17461412348dd4f6da4973919fcda3ba705b4e8e5820373689d073e",  // playing 0
   "void:{\"difficulty\":\"relaxed\"}": "470180762e2fd0ae486740451fd3caab6308017935368fa5fa021f1c94ff7ab7",  // playing 0
+  // Added in v0.4.0 with the new ninth cabinet (no existing pin changed).
+  "kestrel:{\"difficulty\":\"arcade\"}": "31c083b0046d71345b2523760b8348ebd2d7ee05843b2368e3ffbf1acc940825",  // gameover 3380
+  "kestrel:{\"difficulty\":\"relaxed\"}": "4f85c732695d514da9d8b68fea394a445871467cd488cf7043facc87ae82024f",  // playing 11750
 };
 if(process.env.ARCADE_PRINT_PARITY){
   for(const [id,options] of CASES){const r=session(id,options);console.log(JSON.stringify(id+':'+JSON.stringify(options))+': '+JSON.stringify(r.hash)+', // '+r.state+' '+r.score);}

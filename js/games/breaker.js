@@ -86,6 +86,12 @@
       for(const l of this.lasers)D.rect(c,l.x,l.y,2,7,'#ffabd1');
       this.particles.draw(c);this.effects.draw(c);D.hud(c,this,'BOARD '+(this.stage+1)+' / 5','LIVES '+this.lives+' / '+this.score);
       const buffs=[this.wide>0?'WIDE '+Math.ceil(this.wide):'',this.slow>0?'SLOW '+Math.ceil(this.slow):'',this.laser>0?'LASER '+Math.ceil(this.laser):''].filter(Boolean).join('  ');D.text(c,buffs,240,31,'#e8c3ac',7,'center');
+      // Launch guide (v0.4.0): the serve's straight-line path, with wall bounces, up to the first brick.
+      const served=this.balls.find(b=>b.attached);
+      if(served&&this.state==='playing'){let x=served.x,y=234,vx=90/Math.hypot(90,220),vy=-220/Math.hypot(90,220);
+        for(let i=0;i<70;i++){x+=vx*6;y+=vy*6;if(x<22||x>458){x=A.clamp(x,22,458);vx=-vx;}if(y<35||this.bricks.some(b=>b.hp>0&&x>b.x-4&&x<b.x+b.w+4&&y>b.y-4&&y<b.y+b.h+4))break;
+          if(i%2===0){c.globalAlpha=.55-i*.006;D.rect(c,x-1,y-1,2,2,'#f4edcf');}}c.globalAlpha=1;}
+      if(this.destroyed%6||this.drops.length<6)D.text(c,'CAPSULE IN '+(6-this.destroyed%6),456,31,'#8fa6bd',7,'right');
       if(this.balls.some(b=>b.attached)&&this.state==='playing'&&this.messageTime<=0)D.text(c,'J / SPACE / A TO LAUNCH',240,215,'#b6d8d7',8,'center');
     }
   };

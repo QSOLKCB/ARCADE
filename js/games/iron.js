@@ -72,8 +72,8 @@
         const down=this.players.find(q=>q!==p&&q.hp<=0&&A.dist(q,p)<26);
         if(down && a.interact) { down.revive+=dt; if(down.revive>1.2) { down.hp=Math.floor(down.maxHP*.45); down.inv=2; down.revive=0; this.say('PARTNER BACK IN ACTION'); } }
         else if(a.interactPressed) p.weapon=this.owned[(this.owned.indexOf(p.weapon)+1)%this.owned.length];
-        for(const o of this.objectives) if(!o.done && A.dist(o,p)<24) { o.done=true; this.effects.add('ring',o.x,o.y,'#b8e8ce',29,.5); this.score+=500; this.sound('pickup'); this.say(this.stage===0?'ENGINEER RESCUED':'EQUIPMENT RECOVERED'); }
-        for(const q of this.pickups) if(!q.taken && A.dist(q,p)<18) { q.taken=true; if(q.kind==='health') p.hp=Math.min(p.maxHP,p.hp+40); else for(const wi of this.owned) if(wi) p.ammo[wi]=Math.min(WEAPONS[wi].ammo,p.ammo[wi]+Math.ceil(WEAPONS[wi].ammo*.4)); this.sound('pickup'); }
+        for(const o of this.objectives) if(!o.done && A.near(o,p,24)) { o.done=true; this.effects.add('ring',o.x,o.y,'#b8e8ce',29,.5); this.score+=500; this.sound('pickup'); this.say(this.stage===0?'ENGINEER RESCUED':'EQUIPMENT RECOVERED'); }
+        for(const q of this.pickups) if(!q.taken && A.near(q,p,18)) { q.taken=true; if(q.kind==='health') p.hp=Math.min(p.maxHP,p.hp+40); else for(const wi of this.owned) if(wi) p.ammo[wi]=Math.min(WEAPONS[wi].ammo,p.ammo[wi]+Math.ceil(WEAPONS[wi].ammo*.4)); this.sound('pickup'); }
       }
       const living=this.players.filter(p=>p.hp>0); if(!living.length) { this.finish(false); return; }
       const desired=A.clamp(Math.max(...living.map(p=>p.y))-185,0,this.height-270);
@@ -92,14 +92,14 @@
           for(let i=0;i<count&&this.bullets.length<160;i++){ const angle=e.angle+(i-(count-1)/2)*.19; this.bullets.push({x:e.x+Math.cos(angle)*18,y:e.y+Math.sin(angle)*18,vx:Math.cos(angle)*90,vy:Math.sin(angle)*90,life:3.2,damage:this.relaxed?9:16,enemy:true}); }
           e.attack=.08;
         }
-        for(const p2 of living) if(A.dist(p2,e)<(e.kind==='tank'?29:13)) this.hitPlayer(p2,this.relaxed?9:15);
+        for(const p2 of living) if(A.near(p2,e,e.kind==='tank'?29:13)) this.hitPlayer(p2,this.relaxed?9:15);
       }
       for(const b of this.bullets) {
         b.life-=dt; b.x+=b.vx*dt; b.y+=b.vy*dt;
         if(this.walls.some(w=>A.inside(b,w,1))) { this.particles.burst(b.x,b.y,'#e6d4a4',3,35,{size:1,life:.2}); if(b.rocket&&b.life>0) this.explode(b.x,b.y,55,b.damage); b.life=0; }
         if(b.life<=0) continue;
-        if(b.enemy) { for(const p of living) if(A.dist(p,b)<8) { this.hitPlayer(p,b.damage); b.life=0; break; } }
-        else for(const e of this.enemies) if(e.hp>0&&A.dist(e,b)<(e.kind==='tank'?24:10)) { if(b.rocket) this.explode(b.x,b.y,60,b.damage); else this.damage(e,b.damage); b.life=0; break; }
+        if(b.enemy) { for(const p of living) if(A.near(p,b,8)) { this.hitPlayer(p,b.damage); b.life=0; break; } }
+        else for(const e of this.enemies) if(e.hp>0&&A.near(e,b,e.kind==='tank'?24:10)) { if(b.rocket) this.explode(b.x,b.y,60,b.damage); else this.damage(e,b.damage); b.life=0; break; }
       }
       for(const g of this.grenades) { g.life-=dt; g.x+=g.vx*dt; g.y+=g.vy*dt; g.vx*=.97; g.vy*=.97; if(g.life<=0) this.explode(g.x,g.y,68,150); }
       this.bullets=this.bullets.filter(b=>b.life>0&&b.x>-10&&b.x<490); this.grenades=this.grenades.filter(g=>g.life>0); this.pickups=this.pickups.filter(q=>!q.taken);
@@ -133,6 +133,13 @@
       c.save();c.globalAlpha=.22;for(let i=0;i<24;i++){const x=(i*71+this.time*(this.stage===1?18:6))%480,y=(i*43+this.time*(this.stage===2?170:8)-this.cam*.2)%270;if(this.stage===2)D.rect(c,x,y,1,7,'#a7c6cf');else D.rect(c,x,y,this.stage===1?4:2,1,'#e2d6a1');}c.restore();
       this.players.forEach((p,i)=>{D.rect(c,10+i*112,30,105,22,'#13252bd9');D.text(c,'P'+(i+1)+'  '+Math.ceil(p.hp),15+i*112,34,i?'#abe0e1':'#f3d394',7);D.bar(c,15+i*112,45,94,p.hp,p.maxHP,i?'#8dcbd0':'#e7ca88');});
       const tank=this.enemies.find(e=>e.kind==='tank');
+      // Route map (v0.4.0): the whole contract on one strip, drawn purely from state.
+      {const mx=466,my=64,mh=168,Y=v=>my+A.clamp(v/this.height,0,1)*mh;D.rect(c,mx-2,my-4,14,mh+8,'#13252bd9');D.rect(c,mx+3,my,2,mh,'#3d5a57');
+       D.rect(c,mx,Y(50),8,Y(98)-Y(50),'#2f7d62');c.strokeStyle='#f3d39480';c.lineWidth=1;c.strokeRect(mx-1.5,Y(this.cam)+.5,11,Y(this.cam+270)-Y(this.cam));
+       for(const o of this.objectives)D.rect(c,mx+1,Y(o.y)-2,6,4,o.done?'#5f8d78':'#ffe08a');
+       if(tank.hp>0)D.rect(c,mx,Y(tank.y)-3,8,6,'#ef8f6b');
+       this.players.forEach((q,i)=>{if(q.hp>0)D.rect(c,mx+2,Y(q.y)-2,4,4,i?'#9fe3e6':'#fff3c4');});
+       D.text(c,'MAP',mx+4,my+mh+6,'#8fb2a8',6,'center');}
       const p=this.players[0];D.rect(c,320,30,151,28,'#13252bd9');D.text(c,WEAPONS[p.weapon].name+' '+(p.ammo[p.weapon]===Infinity?'∞':p.ammo[p.weapon]),465,34,'#ffe3a7',8,'right');D.text(c,'GRENADES '+p.grenades+'  DASH '+(p.dashCD<=0?'READY':'…'),465,46,'#bdd9c9',7,'right');
       D.hud(c,this,'IRON MERIDIAN / '+(this.stage+1),'RECOVER '+this.objectives.filter(o=>o.done).length+'/3  '+String(this.score).padStart(6,'0'));
       if(this.messageTime<=0) D.text(c,tank.hp<=0&&this.objectives.every(o=>o.done)?'↑ REACH THE EXTRACTION PAD':'↑ PUSH NORTH · RECOVER MARKED OBJECTIVES',240,255,'#fff0bd',7,'center');

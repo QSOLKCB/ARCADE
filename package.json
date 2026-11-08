@@ -1,8 +1,8 @@
 {
   "name": "qsol-arcade",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "private": true,
-  "description": "Eight original, offline browser games inspired by retro arcade experiences",
+  "description": "Nine original, offline browser games inspired by retro arcade experiences",
   "license": "Apache-2.0",
   "scripts": {
     "test": "node --test tests/*.test.cjs",

@@ -113,6 +113,9 @@
       slab(c,-112,-172,-GOAL,-160,10,'#dc7ac4');slab(c,GOAL,-172,112,-160,10,'#dc7ac4');
       for(const side of[-1,1])slab(c,side===-1?-112:100,-160,side===-1?-100:112,160,10,'#477e96');
       for(let i=0;i<this.trail.length;i++){const t=this.trail[i],p=project(t.x,t.y,2);c.globalAlpha=i/this.trail.length*.25;D.rect(c,p.x-2,p.y-1,4,2,'#fff1ae');}c.globalAlpha=1;
+      // Strike cue (v0.4.0): the ring lights exactly when J would connect; fast pucks leave streaks.
+      if(this.state==='playing'&&this.serve<=0&&this.jab<=0&&A.dist(this.player,this.puck)<37&&this.puck.y<this.player.y+2){const q=project(this.player.x,this.player.y,1);c.globalAlpha=.55+Math.sin(this.time*18)*.3;c.strokeStyle='#c9fff2';c.lineWidth=2;c.beginPath();c.ellipse(q.x,q.y,37*q.scale,23*q.scale,0,0,Math.PI*2);c.stroke();c.lineWidth=1;c.globalAlpha=1;D.text(c,'J!',q.x,q.y-34*q.scale,'#c9fff2',8,'center');}
+      {const b=this.puck,speed=Math.hypot(b.vx,b.vy);if(speed>260){c.strokeStyle='#fff1ae';for(let i=1;i<4;i++){const k=i*.018,s0=project(b.x-b.vx*k,b.y-b.vy*k,3),s1=project(b.x-b.vx*(k+.03),b.y-b.vy*(k+.03),3);c.globalAlpha=(speed-260)/420*(.5-i*.12);c.beginPath();c.moveTo(s0.x,s0.y);c.lineTo(s1.x,s1.y);c.stroke();}c.globalAlpha=1;}}
       const actors=[{...this.player,kind:'player'},{...this.opponent,kind:'opponent'},{...this.puck,kind:'puck'}].sort((a,b)=>a.y-b.y);
       for(const p of actors){
         const s=project(p.x+3,p.y+4,1);c.fillStyle='#0007';c.beginPath();c.ellipse(s.x,s.y,(p.kind==='puck'?10:19)*s.scale,6*s.scale,0,0,Math.PI*2);c.fill();

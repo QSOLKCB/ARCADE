@@ -8,7 +8,8 @@ The repository's existing Apache-2.0 licence is retained.
 | Game maps and encounter layouts | Original hand-authored layouts and seeded encounter behaviour in js/games/ |
 | Characters, effects, scenery and cover art | Original procedural pixel drawing in js/draw.js and each game's renderer |
 | Icon | Original SVG in assets/icon.svg |
-| Sound effects and musical patterns | Original Web Audio oscillator and generated-noise synthesis in js/audio.js; no samples or recordings |
+| Sound effects and musical patterns | Original Web Audio oscillator and generated-noise synthesis in js/audio.js, plus deterministic PCM effects rendered at runtime from original integer event scores with VANILLAJS audio2d; no samples or recordings |
+| js/vanilla2d.js | Generated from QSOLKCB/VANILLAJS (Apache-2.0) by scripts/vanilla2d.cjs; module bodies unchanged, source commit recorded |
 | Fonts | Browser/system fonts; no redistributed font files |
 | Documentation and interface text | Written for this project |
 
