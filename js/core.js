@@ -5,6 +5,9 @@
   A.W = 480; A.H = 270; A.STEP = 1 / 60;
   A.clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   A.dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  // Exact range prefilter for hot collision loops (QSOLKCB/VANILLAJS modules/range2d, OPT-REDUCE-001):
+  // if either axis gap reaches r, hypot cannot be below r, so the result always equals A.dist(a, b) < r.
+  A.near = (a, b, r) => { const dx = a.x - b.x, dy = a.y - b.y; return dx < r && dx > -r && dy < r && dy > -r && Math.hypot(dx, dy) < r; };
   A.unit = (x, y) => { const n = Math.hypot(x, y); return n ? { x: x / n, y: y / n } : { x: 0, y: 0 }; };
   A.rng = function (seed) {
     let s = seed >>> 0;

@@ -145,14 +145,14 @@
         if(this.room===3&&!this.wardenGone&&A.dist(p,this.warden)<68&&this.tnt){this.tnt=false;this.wardenGone=true;this.effects.add('blast',this.warden.x,this.warden.y,'#ffffff',30,.35);this.sound('boom');this.say('GALLERY OPEN. TAKE A TORCH INTO THE DARK.');}
         else this.say(this.tnt?'K NEAR THE GIANT GHOST TO USE TNT.':'FIND TNT IN THE MINE.',2);
       }
-      for(const item of r.items)if(!item.taken&&A.dist(p,item)<9){
+      for(const item of r.items)if(!item.taken&&A.near(p,item,9)){
         item.taken=true;this.sound('pickup');
         if(item.kind==='key'){this.key=true;this.say('LIFT KEY. THE SERVICE FLOOR IS ABOVE THE SAFE.');}
         else if(item.kind==='tnt'){this.tnt=true;this.say('TNT FOUND. K NEAR THE GIANT GHOST.');}
         else if(item.kind==='code'){this.code=true;this.say('SAFE COMBINATION: 4–1–7. RETURN TO THE SAFE FLOOR.');}
         else{this.carry.push(item);this.heat=Math.min(4,this.heat+.12);}
       }
-      for(const b of this.bullets){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;const at=cell(b);if(r.grid[at.y]?.[at.x]!==0)b.life=0;if(b.life>0)for(const e of r.enemies)if(!e.dead&&A.dist(e,b)<10){e.dead=true;b.life=0;this.effects.add('ring',e.x,e.y,e.kind==='ghost'?'#bba7ff':'#9dccff',10,.22);this.sound('hit');break;}}
+      for(const b of this.bullets){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;const at=cell(b);if(r.grid[at.y]?.[at.x]!==0)b.life=0;if(b.life>0)for(const e of r.enemies)if(!e.dead&&A.near(e,b,10)){e.dead=true;b.life=0;this.effects.add('ring',e.x,e.y,e.kind==='ghost'?'#bba7ff':'#9dccff',10,.22);this.sound('hit');break;}}
       this.bullets=this.bullets.filter(b=>b.life>0).slice(-12);r.enemies=r.enemies.filter(e=>!e.dead);
       for(const e of r.enemies){
         e.grace=Math.max(0,e.grace-dt);
@@ -161,14 +161,14 @@
           if(!e.target){e.think-=dt;if(e.think<=0){e.think=.12;const next=pathStep(r.grid,cell(e),cell(p));if(next){const at=cell(e);stepActor(e,{x:next.x-at.x,y:next.y-at.y},0,dt,r.grid);}}}
           stepActor(e,{x:0,y:0},this.relaxed?37:49+Math.min(4,this.bag()*.4),dt,r.grid);
         }
-        if(e.grace<=0&&A.dist(p,e)<9){this.catchPlayer();if(this.room!==r.index||this.state!=='playing')return;}
+        if(e.grace<=0&&A.near(p,e,9)){this.catchPlayer();if(this.room!==r.index||this.state!=='playing')return;}
       }
       if(this.room===3&&!this.wardenGone&&A.dist(p,this.warden)<15){this.catchPlayer();if(this.room!==r.index||this.state!=='playing')return;}
       this.patrols(dt,r);
       if(this.room===0){
         this.chopperTimer-=dt;
         if(!this.chopper&&this.chopperTimer<=0){this.chopper={x:-24,y:p.y,warning:2};this.chopperTimer=this.relaxed?32:24;this.sound('alert');this.say('CHOPPER INBOUND — CLEAR THE MARKED ROW!',2);}
-        if(this.chopper){const h=this.chopper;if(h.warning>0)h.warning-=dt;else{h.x+=150*dt;if(A.dist(p,h)<13){this.catchPlayer();return;}if(h.x>490)this.chopper=null;}}
+        if(this.chopper){const h=this.chopper;if(h.warning>0)h.warning-=dt;else{h.x+=150*dt;if(A.near(p,h,13)){this.catchPlayer();return;}if(h.x>490)this.chopper=null;}}
       }
       this.interact(a,dt);
     }
@@ -179,6 +179,9 @@
       D.text(c,'LIVES '+this.lives+'  BANK '+this.bank+'/22+'+this.bag(),8,6,'#e6e1cf',8);
       D.text(c,'ROUNDS '+this.ammo+'  '+(this.key?'KEY ':'')+(this.tnt?'TNT ':'')+(this.code?'417 ':''),472,6,this.ammo<3?'#ef967f':'#a9c6ee',8,'right');
       D.text(c,r.name,8,19,r.wall,7);D.text(c,r.dark?'TORCH '+Math.ceil(this.torch)+'s':'LOOSE GEMS '+r.items.filter(i=>!i.taken&&i.kind!=='key'&&i.kind!=='tnt'&&i.kind!=='code').reduce((n,i)=>n+i.value,0),472,19,'#b5b2bc',7,'right');
+      // Floor plan (v0.4.0): all seven screens, the current one framed, with the loose gems left in each.
+      this.rooms.forEach((room,i)=>{const x=163+i*22,gems=room.items.filter(q=>!q.taken&&q.kind==='gem').reduce((n,q)=>n+q.value,0),here=i===this.room;
+        D.rect(c,x,4,19,13,here?'#2c2a3f':'#14141f');if(here){c.strokeStyle=room.wall;c.strokeRect(x+.5,4.5,18,12);}D.text(c,gems?String(gems):'·',x+9.5,7,gems?'#9ff0e2':'#4b4a5c',7,'center');});
       c.save();c.translate(8,30);
       for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
         const p=center(x,y);if(!this.visible(p))continue;

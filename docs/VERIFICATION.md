@@ -1,5 +1,43 @@
 # Verification
 
+## Collection 003 — v0.4.0, 8 November 2026
+
+### Automated checks
+
+`npm test`: **141 passed, 0 failed**. `npm run check`: passed (21 runtime files, all precached). No packages were installed or added.
+
+- **Exact replay:** `tests/parity.test.cjs` now runs 15 sessions. The 13 pins recorded before this release (v0.3.1) all still match, so the range2d prefilter and the eight readability additions changed no game state. The two new Kestrel Strike pins (Arcade, Relaxed) were recorded from this build.
+- **`tests/kestrel.test.cjs`:**
+  - motion2d movement (2 px per tick, integer subunits, field bounds).
+  - Firepower streams and their cap; bombs clearing bullets, and their finite stock.
+  - The loop's invulnerability and recharge.
+  - Core hitbox, single graze per bullet, and respawn with the power penalty.
+  - Carrier and medal drops, and the medal chain reset.
+  - All four fronts reaching their bosses and winning the campaign; game over and fresh runs.
+  - A 2-minute firefight that stays bounded and replays identically.
+  - Finite drawing coordinates on every front.
+- **`tests/vanilla2d.test.cjs`:**
+  - The generated port's provenance and exports, and motion2d stepping.
+  - `A.near` against `A.dist(a, b) < r` and `range2d` over 20,000 random cases and the boundaries.
+  - Every audio2d effect rendering identically twice, audible and bounded, with a valid WAV header.
+  - Ternary round-trip and rejection of tampered grids.
+  - Cartridge pack/unpack/merge, which never lowers a score and refuses bad envelopes and edited trits.
+
+### Browser checks (headless Chromium)
+
+- **Hosted path:** over HTTP at a `/ARCADE/` subpath, the launcher showed 9 cards and the `09` badge, and reported "Offline ready · all 9 games".
+- **All nine cabinets:** each launched, started and ran under keyboard input (Void Command via a typed `SCAN`), both over HTTP and from `file://`, with no page or console errors.
+- **Offline:** with the network disabled, a reload served the cached launcher and Kestrel Strike started.
+- **Pausing:** a paused Kestrel Strike made 0 canvas draw calls in one second.
+- **Score cartridge:** the dialog showed the trit grid and downloaded a valid cartridge. Restoring a cartridge holding a higher Kestrel score raised the card's best to that value. A malformed file was refused with "Nothing was changed".
+- **Visual inspection:**
+  - Kestrel Strike's four fronts, bosses, mid-bosses, panels and launcher cover.
+  - The Iron Meridian route map, the Velvet Heist floor plan and the Neon Ronin progress strip.
+  - The Chrono Wing edge radar (an off-screen patrol, the flagship and a courier), the Prism Break launch guide, the Neon Air strike cue and the Basement Brawl chair pips.
+
+Not verified: a physical controller, a mobile device, audible output, native-GPU frame times, or human playtesting of Kestrel Strike's difficulty. Scripted pilots were used to tune it: a weaving pilot that never dodges dies on front 1, while a pilot steering away from bullets reaches the front 1 boss on Arcade and clears it on Relaxed.
+
+
 ## Quality-of-life and performance pass — v0.3.1, 7 November 2026
 
 ### Automated checks

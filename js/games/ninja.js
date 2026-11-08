@@ -35,7 +35,7 @@
       if(e.kind==='boss'){
         const type=this.stage%3;
         for(let i=-1;i<=1;i++)this.bullets.push({x:e.x,y:A.clamp(p.y+i*22,178,246),z:type===1?6:15,vx:direction*(type===2?150:115),life:4,damage:this.relaxed?12:22,enemy:true});
-        if(A.dist(e,p)<65)this.hitPlayer(p,this.relaxed?12:24);this.particles.burst(e.x,e.y-18,'#f3ab8d',18);this.sound('boom');
+        if(A.near(e,p,65))this.hitPlayer(p,this.relaxed?12:24);this.particles.burst(e.x,e.y-18,'#f3ab8d',18);this.sound('boom');
       }else if(e.kind==='thrower')this.bullets.push({x:e.x+direction*12,y:e.y,z:15,vx:direction*135,life:3,damage:this.relaxed?8:15,enemy:true});
       else if(Math.abs(p.x-e.x)<34&&Math.abs(p.y-e.y)<19)this.hitPlayer(p,this.relaxed?8:16);
       e.cd=(e.kind==='boss'?1.8:e.kind==='thrower'?1.7:1.25)*(this.relaxed?1.35:1);e.attack=.18;
@@ -100,6 +100,7 @@
       this.effects.draw(c);this.particles.draw(c);c.restore();
       c.save();for(let i=0;i<18;i++){const x=(i*79+this.time*12-this.cam*.15)%480,y=(i*39+this.time*(this.stage===2?80:13))%270;c.globalAlpha=.25;D.rect(c,x,y,this.stage===0?3:1,this.stage===2?7:2,this.stage===0?'#f7be95':'#b8d4db');}c.restore();
       this.players.forEach((p,i)=>{D.rect(c,8+i*117,29,110,31,'#101b2cdd');D.text(c,'P'+(i+1)+'  '+Math.ceil(p.hp)+' / '+p.maxHP,13+i*117,33,i?'#e8c48f':'#ade7dc',7);D.bar(c,13+i*117,44,100,p.hp,p.maxHP,i?'#e0bc87':'#8dccc2');D.bar(c,13+i*117,52,100,p.energy,100,'#b6a3db');});
+      for(let i=0;i<4;i++){const x=184+i*29,boss=i===3,col=i<this.wave?'#8fd3c7':i===this.wave?(Math.floor(this.time*3)%2?'#f6c58a':'#d9a36a'):'#3a3346';D.rect(c,x,29,26,5,col);if(boss)D.text(c,'BOSS',x+13,36,i<=this.wave?'#f3a08f':'#6c5a6f',6,'center');}
       D.hud(c,this,'NEON RONIN / '+(this.stage+1),'BLOCK '+(this.wave+1)+'/4  '+String(this.score).padStart(6,'0'));
       const boss=this.enemies.find(e=>e.kind==='boss'&&e.hp>0);if(boss){D.rect(c,139,65,202,21,'#15182cdd');D.text(c,STAGES[this.stage].boss,240,69,'#f4c4ae',7,'center');D.bar(c,146,79,188,boss.hp,boss.maxHP,'#d999a1');}
       if(this.combo>1){D.text(c,this.combo+' CHAIN',465,36,'#ffdb9e',11,'right');D.bar(c,406,51,58,Math.max(0,this.comboTime),3,'#ffdb9e');}

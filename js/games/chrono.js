@@ -54,8 +54,8 @@
       this.spawn-=dt;if(this.spawn<=0&&!this.bossSpawned){this.spawn=Math.max(.4,1-this.stage*.1);if(this.enemies.filter(e=>e.hp>0).length<7+this.stage)this.addEnemy();}
       if(this.kills>=this.target&&!this.bossSpawned)this.addEnemy(true);
       this.rescueTimer-=dt;if(this.rescueTimer<=0){this.rescueTimer=10;this.pods.push({x:p.x+Math.cos(p.angle)*180+(this.rand()-.5)*150,y:p.y+Math.sin(p.angle)*180+(this.rand()-.5)*150,life:24});}
-      for(const pod of this.pods){pod.life-=dt;if(A.dist(p,pod)<20){pod.life=0;this.rescues++;this.score+=500;p.rollCD=0;this.sound('pickup');this.say('COURIER RESCUED +500',1.2);}}
-      this.pods=this.pods.filter(q=>q.life>0&&A.dist(q,p)<600).slice(-4);
+      for(const pod of this.pods){pod.life-=dt;if(A.near(p,pod,20)){pod.life=0;this.rescues++;this.score+=500;p.rollCD=0;this.sound('pickup');this.say('COURIER RESCUED +500',1.2);}}
+      this.pods=this.pods.filter(q=>q.life>0&&A.near(q,p,600)).slice(-4);
       for(const e of this.enemies){
         if(e.hp<=0)continue;e.cd-=dt;const distance=A.dist(e,p),target=Math.atan2(p.y-e.y,p.x-e.x)+(e.boss&&distance<140?1.05:e.turn);
         e.angle=turn(e.angle,target,dt*(e.boss?.9:1.2+this.stage*.15));const es=e.boss?60:66+this.stage*9;
@@ -69,10 +69,10 @@
       }
       for(const b of this.bullets){
         if(b.life<=0)continue;b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
-        if(b.enemy){if(A.dist(b,p)<9){this.hit();b.life=0;}}
-        else{for(const e of this.enemies)if(e.hp>0&&A.dist(b,e)<(e.boss?29:13)){this.damage(e,14);b.life=0;break;}}
+        if(b.enemy){if(A.near(b,p,9)){this.hit();b.life=0;}}
+        else{for(const e of this.enemies)if(e.hp>0&&A.near(b,e,e.boss?29:13)){this.damage(e,14);b.life=0;break;}}
       }
-      this.enemies=this.enemies.filter(e=>e.hp>0&&(e.boss||A.dist(e,p)<650));this.bullets=this.bullets.filter(b=>b.life>0&&A.dist(b,p)<650).slice(-180);
+      this.enemies=this.enemies.filter(e=>e.hp>0&&(e.boss||A.near(e,p,650)));this.bullets=this.bullets.filter(b=>b.life>0&&A.near(b,p,650)).slice(-180);
       if(this.state!=='gameover'&&this.score>=this.nextLife){this.lives=Math.min(9,this.lives+1);this.nextLife+=12000;this.say('EXTRA CRAFT',2);this.sound('bank');}
     }
     status(){return ERAS[this.stage].name+' · Patrols '+Math.min(this.kills,this.target)+'/'+this.target+' · Craft '+this.lives+(this.relaxed?' · Armour '+this.player.armour+'/2':'')+' · Rescues '+this.rescues+' · Score '+this.score;}
@@ -93,6 +93,11 @@
       this.particles.draw(c);this.effects.draw(c);
       if(p.inv<=0||Math.floor(p.inv*12)%2){c.save();if(p.roll>0){c.translate(p.x,p.y);c.scale(Math.cos(p.roll/.75*TAU)*.5+.55,1);plane(c,0,0,p.angle,'#8ff4e0',this.stage);}else plane(c,p.x,p.y,p.angle,'#8ff4e0',this.stage);c.restore();}
       c.restore();
+      // Edge radar (v0.4.0): arrows point to off-screen patrols, the flagship and couriers.
+      const radar=(x,y,color,size)=>{const X=x-p.x+240,Y=y-p.y+142;if(X>6&&X<474&&Y>30&&Y<266)return;const a=Math.atan2(Y-142,X-240),ex=A.clamp(X,10,470),ey=A.clamp(Y,34,262);
+        c.save();c.translate(ex,ey);c.rotate(a);c.fillStyle=color;c.beginPath();c.moveTo(size,0);c.lineTo(-size*.7,-size*.7);c.lineTo(-size*.7,size*.7);c.closePath();c.fill();c.restore();};
+      for(const enemy of this.enemies)if(enemy.hp>0)radar(enemy.x,enemy.y,enemy.boss?'#ff7a64':'#ffc79e',enemy.boss?8:4);
+      for(const pod of this.pods)radar(pod.x,pod.y,'#f0e6cb',5);
       const boss=this.enemies.find(e=>e.boss&&e.hp>0);
       if(boss){D.bar(c,120,32,240,boss.hp,boss.maxHP,'#ebbea1');D.text(c,e.boss,240,40,'#fff0d6',7,'center');}
       D.hud(c,this,e.year+' / '+e.name,'CRAFT '+this.lives+' / '+this.score);

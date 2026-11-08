@@ -34,4 +34,17 @@ Void Command keeps one retained 960 × 540 frame. `renderSignature()` serialises
 
 `A.PadNav` drives menus from standard controllers with the same neutral-arming rule as gameplay input. The shell disarms it whenever the active menu context changes (launcher, cabinet overlay, information panel), so a button held from play cannot select a menu option.
 
-`tests/parity.test.cjs` pins SHA-256 hashes of the complete state of 13 scripted sessions across all eight cabinets. Performance work must reproduce them exactly; the pins change only with an intentional rule change.
+`tests/parity.test.cjs` pins SHA-256 hashes of the complete state of 15 scripted sessions across all nine cabinets. Performance work must reproduce them exactly; the pins change only with an intentional rule change.
+
+## VANILLAJS 2D and Kestrel Strike (v0.4.0)
+
+`js/vanilla2d.js` publishes four QSOLKCB/VANILLAJS modules on `Arcade.V2D`. `scripts/vanilla2d.cjs` wraps each ES module, unchanged, in its own function scope, so the runtime stays classic-script and file:// compatible; the source commit is recorded in the file.
+
+- `motion2d` drives the Kestrel Strike plane: the body lives in integer subunits (8 per pixel) and moves 16 subunits (2 px) per tick on each axis through the `shmup` profile, clamped to the field bounds. Analog input is quantised to −1/0/1 before stepping.
+- `range2d` motivates `A.near(a, b, r)` in core.js, an allocation-free exact prefilter: if either axis gap reaches `r`, `hypot` cannot be below `r`, so the result always equals `A.dist(a, b) < r`. It replaces distance checks in per-tick collision loops only.
+- `audio2d` renders the effects bank in audio.js (`SFX2D`). Each effect is an integer score of at most four non-overlapping lanes, rendered once to PCM16, cached, converted to an AudioBuffer and played through the existing bounded voice pool on the effects bus. Without `Arcade.V2D` the oscillator recipes remain.
+- `ternary-store2d` backs `js/cartridge.js`: scores are written as a canonical JSON document, exported as a validated trit grid and restored only through `fromSnapshot`. The launcher saves and loads cartridge files only on explicit request.
+
+`kestrel.js` keeps the arcade's conventions: a 60 Hz fixed step, a seeded schedule per front (formations, couriers at fixed times, a mid-boss at the halfway point, the boss when the route ends and the mid-boss has gone), bounded pools (260 enemy bullets, 140 shots, 44 enemies, 24 items) and a renderer that is a pure function of state. The simulation uses field-local coordinates with +Y up, like motion2d. The renderer maps them onto a 240 × 245 playfield between two instrument panels.
+
+The per-cabinet readability additions in v0.4.0 read existing state only (for example Chrono Wing's radar reads enemy and courier positions, Neon Air's strike cue evaluates the exact strike condition). They add no fields to game objects, which is why the replay pins are unchanged.

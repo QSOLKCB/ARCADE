@@ -1,6 +1,6 @@
 # How to play
 
-Choose Arcade or Relaxed difficulty and one or two players before opening a cabinet. Iron Meridian and Neon Ronin support two local players. The other six cabinets are single-player. Sound, optional CRT scanlines and touch controls can be toggled; fullscreen keeps the cabinet controls available. Escape or P pauses. Losing window focus pauses automatically; use Resume to continue.
+Choose Arcade or Relaxed difficulty and one or two players before opening a cabinet. Iron Meridian and Neon Ronin support two local players. The other seven cabinets are single-player. Sound, optional CRT scanlines and touch controls can be toggled; fullscreen keeps the cabinet controls available. Escape or P pauses. Losing window focus pauses automatically; use Resume to continue.
 
 ## Iron Meridian
 
@@ -36,6 +36,14 @@ Move left and right along the street, or up and down between lanes. J or Z strik
 Pick up food for health, staffs for longer and stronger melee reach, and ember stars for stronger projectiles. Defeat every enemy in a block, then follow GO to the right. The fourth block in each district contains a boss; enemies show a warning before attacking. Three districts complete the campaign. Health refills between districts.
 
 In co-op, hold E or H beside a fallen partner to revive them. Stay together; both players use the same camera.
+
+## Kestrel Strike
+
+WASD or arrows fly the Kestrel anywhere in the playfield. Hold J or Z to fire; firepower rises from one to five streams as you catch P capsules, and the fifth level adds homing rockets. K or X drops a bomb: it clears every enemy bullet on screen (each worth 10 points), damages everything in view and grants a moment of safety. Bombs are finite; catch B capsules for more. Space or C loops the plane for 0.9 seconds of invulnerability, recharging in five seconds (3.5 on Relaxed).
+
+Red courier planes carry the capsules: shoot them down and catch what falls. Gunboats, tanks and turrets drop medals that grow from 100 to 1,000 points each; letting one fall off the bottom resets the chain. Bullets that skim past without hitting score graze points. Your hitbox is the cockpit, much smaller than the plane.
+
+Each front has a mid-boss halfway and a boss at the end of the route shown on the right panel; defeating the boss clears the front with a bonus for unused bombs and for flying it without a miss. Losing a plane costs one level of firepower. Four fronts complete the campaign. Relaxed gives five planes, four bombs and one shield hit per plane.
 
 ## Other inputs
 
