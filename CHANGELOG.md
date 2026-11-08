@@ -17,6 +17,15 @@
 - Add gameplay, input, deterministic replay, render-purity and packaging checks.
   Existing game rules and replay pins are unchanged. Browser coverage and executed
   evidence are recorded in `docs/ARCADE2_VERIFICATION.md`.
+- Keep Floodlight FC shots aimed beyond the opposing scoring plane, including
+  possession at either goal-line boundary.
+- Use explicit index files in hall navigation so links resolve from extracted
+  checkouts as well as nested HTTP hosting.
+- Prevent browser defaults on repeated gameplay keys while preserving fresh-press
+  requirements after pause or scene transitions.
+- Reclaim defeated Breach Protocol enemy slots before spawning the required boss,
+  and count only successful reinforcement spawns toward each compound's quota.
+- Add ten review regression checks and advance the offline cache revision.
 
 
 ## 0.5.0 — 2026-11-08

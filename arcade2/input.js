@@ -8,8 +8,11 @@
       window.addEventListener('keydown',e=>{
         if(e.ctrlKey||e.metaKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
         if((e.code==='Escape'||e.code==='KeyP')&&!e.repeat){if(this.pause())e.preventDefault();return;}
-        if(!this.enabled()||e.repeat||!bindings[e.code])return;
-        e.preventDefault();this.keys.set(e.code,bindings[e.code]);this.pending.add(bindings[e.code]);
+        if(!this.enabled()||!bindings[e.code])return;
+        e.preventDefault();
+        // Held game keys must not scroll, but repeats must not re-arm cleared input.
+        if(e.repeat)return;
+        this.keys.set(e.code,bindings[e.code]);this.pending.add(bindings[e.code]);
       });
       window.addEventListener('keyup',e=>{const action=this.keys.get(e.code);this.keys.delete(e.code);if(action)this.released.add(action);});
       for(const button of document.querySelectorAll('[data-input]')){

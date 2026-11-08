@@ -12,10 +12,11 @@
       this.announce('BREACH '+(this.stage+1)+' // KEEP YOUR HEAD DOWN',120);
     }
     spawn(boss=false){
-      if(this.enemies.length>=16)return;
+      if(this.enemies.length>=16)return false;
       const x=boss?320:80+this.random(480),y=boss?135:100+this.random(130);
       this.enemies.push({x:q(x),y:q(y),hp:boss?180+this.stage*40:28,maxHP:boss?180+this.stage*40:28,
         boss,cd:90+this.random(75),wind:0,target:0,flash:0});
+      return true;
     }
     damage(e,amount){
       if(e.hp<=0)return;e.hp=Math.max(0,e.hp-amount);e.flash=7;
@@ -38,8 +39,12 @@
         if(target)this.damage(target,14);
       }
       if(input.cPressed&&this.bombs>0){this.bombs--;for(const e of this.enemies)this.damage(e,70);this.burst(this.aim.x,this.aim.y,'#ffad65',35);this.emit('blast');}
-      if(this.stageTicks%100===1&&this.spawned<this.quota){this.spawn();this.spawned++;}
-      if(this.spawned===this.quota&&!this.enemies.some(e=>e.hp>0)&&!this.bossSpawned){this.spawn(true);this.bossSpawned=true;this.announce('HEAVY RESPONSE // AIM FOR THE CORE',110);}
+      // Reclaim defeated slots before testing capacity, especially after a grenade.
+      this.enemies=this.enemies.filter(e=>e.hp>0);
+      if(this.stageTicks%100===1&&this.spawned<this.quota&&this.spawn())this.spawned++;
+      if(this.spawned===this.quota&&!this.enemies.length&&!this.bossSpawned&&this.spawn(true)){
+        this.bossSpawned=true;this.announce('HEAVY RESPONSE // AIM FOR THE CORE',110);
+      }
       for(const e of this.enemies){
         if(e.hp<=0)continue;if(e.flash)e.flash--;
         if(e.wind){
@@ -55,7 +60,7 @@
           }
         }else if(--e.cd<=0){e.wind=e.boss?50:42;e.target=p.x;}
       }
-      this.enemies=this.enemies.filter(e=>e.hp>0);this.tracers=this.tracers.filter(t=>--t.life>0).slice(-32);
+      this.tracers=this.tracers.filter(t=>--t.life>0).slice(-32);
       if(this.bossSpawned&&!this.enemies.length)this.clearStage();
     }
     hud(){return{left:'ARMOUR '+this.hp+'   GRENADES '+this.bombs,right:'BREACH '+(this.stage+1)+'/3',objective:'Aim with arrows or mouse · Z fires · down takes cover · X rolls · Space grenades'};}

@@ -158,3 +158,35 @@ test('single-jump cabinets can cross the high-ledge gap and reach the final witn
   Object.assign(g.p,{x:q(1720),y:q(303),vy:0,grounded:true});tick(g,1,{cPressed:true});tick(g,35);assert.equal(g.p.y,q(241));assert.equal(g.p.grounded,true);
  }
 });
+
+for(const team of [0,1])test('soccer team '+team+' shoots forward throughout legal possession bounds and scores from the goal line',()=>{
+ const index=team?2:0,forward=team?-1:1;
+ for(const x of [46,320,594])for(const y of [69,188,302])for(const aimY of [-1,0,1]){
+  const g=make('soccer');Object.assign(g.players[index],{x:q(x),y:q(y)});
+  Object.assign(g.ball,{owner:index,x:q(x+forward*10),y:q(y)});
+  g.shoot(index,22,false,aimY);
+  assert.ok(g.ball.vx*forward>0,'shot reverses at '+x+','+y+' aim '+aimY);
+ }
+ for(const aimY of [-1,0,1]){
+  const g=make('soccer');g.serve=0;Object.assign(g.players[index],{x:q(team?46:594),y:q(188)});
+  Object.assign(g.ball,{owner:index,x:q(team?36:604),y:q(188)});
+  g.shoot(index,22,false,aimY);tick(g,4);
+  assert.equal(g.goals[team],1,'close-range shot must cross the correct scoring plane');
+ }
+});
+for(const stage of [1,2])test('Breach compound '+(stage+1)+' still requires its boss after a grenade clears a full pool',()=>{
+ const g=make('breach');g.stage=stage;g.setup();
+ for(let i=0;i<16;i++)g.spawn();g.spawned=g.quota;
+ tick(g,1,{cPressed:true});
+ assert.equal(g.status,'playing');assert.equal(g.bossSpawned,true);assert.equal(g.enemies.length,1);
+ assert.equal(g.enemies[0].boss,true);assert.equal(g.enemies[0].hp,180+stage*40);
+ for(let i=0;i<180&&g.status==='playing';i++)tick(g,1,{a:true,aim:{x:320,y:135}});
+ assert.equal(g.status,stage===2?'won':'stageclear','only damaging the boss completes the compound');
+});
+test('Breach capacity rejection preserves the wave quota until a reinforcement actually spawns',()=>{
+ const g=make('breach');g.stage=2;g.setup();
+ for(let i=0;i<16;i++)g.spawn();g.spawned=16;
+ tick(g);assert.equal(g.enemies.length,16);assert.equal(g.spawned,16);assert.equal(g.bossSpawned,false);
+ g.damage(g.enemies[0],999);g.stageTicks=100;tick(g);
+ assert.equal(g.enemies.length,16);assert.equal(g.spawned,17);assert.equal(g.bossSpawned,false);
+});

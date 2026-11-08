@@ -26,10 +26,12 @@
       this.emit('shot');
     }
     shoot(index, power = 22, sprint = false, aimY = 0) {
-      const b = this.ball, p = this.players[index], goalX = p.team ? q(38) : q(602);
+      const b = this.ball, p = this.players[index];
       if (b.owner !== index) return;
       b.owner = -1; this.charge = 0; this.emit('shot');
       if (!this.hoops) {
+        // Aim beyond the scoring planes (26 / 614), even at the possession limits.
+        const goalX = p.team ? q(10) : q(630);
         const goalY = q(188 + aimY * 28), dx = goalX - b.x, dy = goalY - b.y;
         const dist = Math.max(q(1), Math.abs(dx) + Math.abs(dy));
         b.vx = E.mulDiv(dx, q(10), dist); b.vy = E.mulDiv(dy, q(10), dist); b.lock = 14;

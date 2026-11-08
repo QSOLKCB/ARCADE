@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),path=require('node:path');
 function harness(){
- class Target{constructor(){this.handlers={};this.tagName='CANVAS';this.dataset={};this.held=false;this.classList={add:()=>this.held=true,remove:()=>this.held=false};}addEventListener(n,f){(this.handlers[n]??=[]).push(f);}fire(n,data={}){const event={target:this,preventDefault(){},...data};for(const f of this.handlers[n]||[])f(event);}setPointerCapture(){}getBoundingClientRect(){return{left:0,top:0,width:640,height:360};}}
+ class Target{constructor(){this.handlers={};this.tagName='CANVAS';this.dataset={};this.held=false;this.classList={add:()=>this.held=true,remove:()=>this.held=false};}addEventListener(n,f){(this.handlers[n]??=[]).push(f);}fire(n,data={}){const event={target:this,defaultPrevented:false,preventDefault(){this.defaultPrevented=true;},...data};for(const f of this.handlers[n]||[])f(event);return event;}setPointerCapture(){}getBoundingClientRect(){return{left:0,top:0,width:640,height:360};}}
  const canvas=new Target(),window=new Target(),buttons=['left','right','up','down','a','b','c','d'].map(action=>{const b=new Target();b.dataset.input=action;return b;});
  let enabled=true,pauses=0,pads=[];
  const context=vm.createContext({window,document:{querySelectorAll:selector=>selector.includes('.held')?buttons.filter(b=>b.held):buttons},navigator:{getGamepads:()=>pads},console});
@@ -34,4 +34,21 @@ test('controller connection and scene transitions require neutral, then map all 
 test('menu pad events have edges and mouse aim yields to keyboard direction',()=>{
  const h=harness(),p=pad();h.setPads([p]);h.input.pollMenu();p.buttons[9].pressed=true;assert.deepEqual([...h.input.pollMenu()],['pause']);assert.deepEqual([...h.input.pollMenu()],[]);
  h.canvas.dataset.aim='true';h.canvas.fire('pointermove',{clientX:300,clientY:100});assert.equal(h.input.sample().aim.x,300);h.key('ArrowLeft');assert.equal(h.input.sample().aim,null);
+});
+
+for(const code of ['ArrowDown','Space'])test(code+' repeats prevent scrolling without retriggering or re-arming after a transition',()=>{
+ const h=harness();assert.equal(h.key(code).defaultPrevented,true);h.input.sample();
+ assert.equal(h.key(code,'keydown',{repeat:true}).defaultPrevented,true);
+ let a=h.input.sample();assert.equal(a.cPressed,false);assert.equal(code==='Space'?a.c:a.y,code==='Space'?true:1);
+ h.input.clear();assert.equal(h.key(code,'keydown',{repeat:true}).defaultPrevented,true);
+ a=h.input.sample();assert.equal(a.y,0);assert.equal(a.c,false);assert.equal(a.cPressed,false);
+ h.key(code,'keyup');assert.equal(h.key(code).defaultPrevented,true);
+ a=h.input.sample();assert.equal(code==='Space'?a.cPressed:a.y,code==='Space'?true:1);
+});
+test('inactive cabinets, editable fields, shortcuts and unbound keys retain browser defaults',()=>{
+ const h=harness();h.setEnabled(false);assert.equal(h.key('ArrowDown','keydown',{repeat:true}).defaultPrevented,false);
+ h.setEnabled(true);
+ assert.equal(h.key('ArrowDown','keydown',{target:{tagName:'INPUT'},repeat:true}).defaultPrevented,false);
+ assert.equal(h.key('ArrowDown','keydown',{ctrlKey:true,repeat:true}).defaultPrevented,false);
+ assert.equal(h.key('KeyQ','keydown',{repeat:true}).defaultPrevented,false);
 });
