@@ -1,0 +1,19 @@
+{
+  "repository": "https://github.com/QSOLKCB/VANILLAJS",
+  "version": "1.2.0",
+  "commit": "c8d6e9972d2214e2f5330f80f7dee49750c2e776",
+  "archive": "VANILLAJS-1.2.0.zip",
+  "archiveSha256": "bd62f65f219c412fec7a2a076d8bc749fa0787ac2a29b32269d3d37228185a2d",
+  "modules": [
+    "integer-math",
+    "time"
+  ],
+  "localChanges": [],
+  "adapter": "../../../scripts/arcade2-engine.cjs removes export keywords and wraps modules in isolated functions",
+  "sha256": {
+    "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "NOTICE": "f2614639df44fb65f6b2c3f9ce4f3f1bcfd1ab703e78ef6304e83d77c8e68c44",
+    "modules/integer-math/index.js": "4c0bb66780bf9e810efb1963c0238d9356814abf79c959dcd1734164de57905f",
+    "modules/time/index.js": "de94c0bc04e6a269504c5742455ce114f824c2c0d9d59a2fd94555df5d9bb4a2"
+  }
+}

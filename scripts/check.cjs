@@ -2,6 +2,9 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),cp=require('node:child_process');
 const root=path.resolve(__dirname,'..');
 const runtime=['index.html','styles.css','manifest.webmanifest','assets/icon.svg','js/core.js','js/vanilla2d.js','js/cartridge.js','js/draw.js','js/input.js','js/audio.js','js/games/iron.js','js/games/heist.js','js/games/ninja.js','js/games/hockey.js','js/games/brawl.js','js/games/chrono.js','js/games/breaker.js','js/games/void.js','js/games/kestrel.js','js/app.js'];
+const arcade2=['index.html','style.css','engine.js','core.js','platforms.js','sports.js','kombat.js','breach.js','shooters.js','input.js','app.js','README.md'].map(f=>'arcade2/'+f);
+runtime.push(...arcade2);
+cp.execFileSync(process.execPath,[path.join(root,'scripts/arcade2-engine.cjs'),'--check']);
 for(const file of runtime){assert.ok(fs.existsSync(path.join(root,file)),file+' exists');if(file.endsWith('.js'))cp.execFileSync(process.execPath,['--check',path.join(root,file)]);}
 cp.execFileSync(process.execPath,['--check',path.join(root,'sw.js')]);
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
@@ -12,3 +15,14 @@ const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');for(const file of runti
 for(const file of runtime.filter(f=>f.endsWith('.js'))){const src=fs.readFileSync(path.join(root,file),'utf8');assert.ok(!/\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(/.test(src),file+' has no network game-data calls');}
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8'));assert.equal(manifest.start_url,'./');assert.equal(manifest.scope,'./');
 console.log('Static checks passed: syntax, local assets, cache coverage, subpath URLs, no runtime dependencies.');
+
+
+const hall2=fs.readFileSync(path.join(root,'arcade2/index.html'),'utf8');
+for(const match of hall2.matchAll(/(?:src|href)="([^"]+)"/g)){
+ const url=match[1];if(url.startsWith('#'))continue;
+ assert.ok(!/^(?:https?:|\/)/.test(url),'ARCADE2 relative runtime URLs');
+ assert.ok(fs.existsSync(path.resolve(root,'arcade2',url)),url+' exists');
+}
+assert.ok(!/type="module"/.test(hall2),'ARCADE2 file-open compatible');
+assert.ok(sw.includes("'./arcade2/'"),'nested hall navigation precached');
+console.log('ARCADE2 checks passed: source pin, generated adapter, local URLs and cache coverage.');

@@ -1,0 +1,162 @@
+VANILLAJS — Flight Lab, Interaction Lab, FPS Lab, RTS Lab, OMI Lab, The Brass Engine and The Clockwork Vault
+Copyright 2026 QSOL–IMC / Trent Slade and contributors.
+Distributed under the repository's existing Apache License 2.0.
+
+The Flight Lab code, environments, UI and procedural geometry were authored for
+this repository. No game assets, audio recordings or third-party runtime code
+are included. QUICKSCOPER and CorpoWars were consulted as QSOL architectural
+references; this milestone does not copy their source files. Mathematical
+algorithms use conventional vector, quaternion, slab-intersection and rigid-body
+integration methods. Development-only tools are not included in the runtime.
+
+Interaction Lab's modules, rules, UI and procedural geometry are original work
+for this repository. David Nate Breslauer's Reaction Rumble project description
+inspired explaining condition-dependent outcomes; no game source, artwork or
+dataset was copied. The symbolic hydrogen/oxygen and neon examples reference
+Purdue University and Royal Society of Chemistry educational material. Scientific
+facts, scope and source URLs are documented in docs/INTERACTION_LAB.md.
+
+FPS Lab's controller, weapon timers, courses, UI and procedural geometry were
+independently authored for this repository. No external game source, artwork,
+audio or runtime dependency was copied. Its upright AABB controller uses the
+repository's slab-intersection/slide solver, not a capsule or slope solver.
+
+FPS motion extensions, relative-motion queries, stance controls, Low passage
+and Tracking range geometry and scenarios are independently authored for this
+repository. No external game code or assets are included in these additions.
+
+Platform riding, kinematic movement queries, Clearance lift and Shuttle run
+are independently authored extensions. No external game code or assets are used.
+
+RTS routing, navigation grids, the A* implementation, formation destinations,
+Canvas 2D presentation and lab traffic rules were independently authored for
+this repository. A* and breadth-first traversal are conventional algorithms;
+no third-party game source, assets or runtime dependencies were copied.
+
+Shared flow fields, incremental multi-source breadth-first integration, convoy
+and evacuation recipes, and search-work measurements are original extensions
+authored for this repository. No external game source, assets or runtime code
+are included. Multi-source shortest-path integration is a conventional method.
+
+ARCH-OMI-001 credits Brian Thorne's ARCH OMI as its conceptual reference.
+The pinned OMI delta law and OMINO tetrahedral incidence notes are identified
+in docs/ARCH_OMI.md. The finite-word kernel is independently implemented from
+mathematical rules. Four-nibble packing, valued XOR edges, the census, independent
+arithmetic oracle and UI are authored for this repository. No donor source files,
+proofs or assets are copied, and full OMI protocol conformance is not claimed.
+
+The Brass Engine is an independently authored, fictional mechanical presentation
+of the same attributed OMI delta rule. Its SVG drums, cams, staged evaluator,
+replay format and browser controls are original work for this repository. No
+historical reconstruction, physical analog mechanism or donor assets are claimed.
+
+The Clockwork Vault chamber, six puzzle definitions, graph search, progression,
+UI, replay validation and procedural geometry are independently authored for
+this repository. It composes the existing game modules and Brass Engine model;
+Brian Thorne’s ARCH OMI attribution and source boundaries remain in force.
+No third-party game code, artwork, audio or runtime dependency is introduced.
+
+Rendering reuse adapts the invariant-driven reuse and signature-bound incremental
+execution patterns in QSOLKCB/OPT at 7556dd36acd53ed3ed538fd03b1db44e5c1ec869.
+The JavaScript implementation is original; no Wonderbuild or other donor source
+is copied. Provenance, exactness contracts and measured limits are recorded in
+docs/OPTIMIZATION.md. Existing OMI attribution remains unchanged.
+
+Terrain and ballistics modules (experimental): adapted under Apache-2.0 from
+QSOLKCB/Ski-Shooter site/src/world.js at
+9864a6cdd741a5cb9938d6de610711be7aaeedc9 and QSOLKCB/CorpoWars3d
+src/physics.js at 2bdc0e12d7f0e3f691a2efbc2ab612e871b5d534.
+These are source-attributed adaptations with bounded general-purpose APIs
+and independent test oracles. No donor game content, art, audio or other
+third-party runtime code is included; see docs/TERRAIN_BALLISTICS.md.
+
+The experimental adaptive serial collision and packed cuboid modules are
+source-inspired by QSOLKCB/GAMES LATTICE_CORSAIR/flight.js and optimization
+notes at 7e0a9019d07b491cffc9b698fa51acdb843c49cc, and by
+QSOLKCB/CorpoWars3d src/renderer.js and src/skins.js at
+8e86066686a575402ee2818378f1ec9323fb9ee6. Both sources are
+Apache-2.0. This repository retains only original bounded general-purpose
+implementations, test oracles and provenance: no game characters, skins,
+artwork, GPL/third-party engines or media are transplanted. The precise
+scope and original sources are documented in docs/ADAPTIVE_DONOR_EXTRACTION.md.
+
+The optional renderer-neutral appearance composition module is independently
+generalised from the Apache-2.0 colour-LUT, seeded-crowd-variant and
+high/low-detail cuboid emission design in QSOLKCB/CorpoWars3d PR #8,
+source commit 7b42cae4d7f46a36f00e86beee35cf4258994dab, merged as
+678da3a3d94e544c722a540ad218daf1535e7f9e.
+Only general-purpose bounded appearance interfaces are reimplemented here;
+no named characters, art, audio, skins, weapons, maps or game content are copied.
+See docs/APPEARANCE.md for contract and validation limitations.
+
+The experimental PooledPathfinder implementation is an independently adapted
+generic A* workspace inspired by QSOLKCB/QwakeTF PR #4
+(46367b7b946b0254aa7cbdbb4a454735b81e3052, merged as
+3852d20c9744350b883e38560f492a5683f2e492), documented in
+QSOLKCB/QwakeTF/docs/OPTIMIZATION.md (OPT-INV-001, OPT-POOL-001).
+It preserves VANILLAJS's previous result/tie-order contract; no QwakeTF game
+data, assets, rendering code or third-party runtime dependencies are copied.
+See docs/NAVIGATION_POOL.md for provenance and parity limits.
+
+The experimental opt-in FrameGate is independently implemented from
+QSOLKCB/ARCADE PR #2 and release v0.4.0 at
+430b16466e6c589bb92650d2a221772a3fd328d4 (Apache-2.0),
+drawing on its explicit frame invalidation and retained-terminal contracts.
+No arcade cabinet mechanics, artwork, music, game assets or runtime code were
+copied. See docs/FRAME_GATE.md for source pins and correctness limitations.
+
+Authorship and disputed attribution: VANILLAJS is a QSOL-IMC project under
+Trent Slade's maintainership. The maintainer expressly states that no work
+was stolen or copied from the X account shown in the COMMENT-001 capture.
+This is a maintainer statement, not a forensic finding. The screenshot
+contains an allegation without an identified matching source file, commit
+or asset; its presence does not demonstrate that the allegation is true.
+The record is identified by the original screenshot SHA-256
+7b575405c975030c952d04c12441e2e9b85d0d55acc7dfa472fdcf3e95e06654
+and a related dataset citation provided by the maintainer:
+Slade, T. (2026), COMMENT-001: YouTube comment incident and AI-mediated
+attribution claims — an image dataset, v1.1.0,
+DOI 10.5281/zenodo.24026140. See evidence/COMMENT-001/README.md.
+
+The opt-in BLOAT-OPS/NEXUS/UFF research kernels independently implement
+source-pinned general-purpose contracts from:
+- QSOLKCB/BLOAT-OPS 6f290dc818759ca49bcdec54b31d738b33c7946f
+  (strict replay/checkpoint completeness; Apache-2.0);
+- QSOLKCB/CorpoWars3d v1.2.0 merge 5701949e4ef7047b715db808b777450c3bf49d53
+  (conservative Euclidean axis early reject; PR #10 original head a81b7b0);
+- QSOLKCB/NEXUS ac9ef5ac79008b46be3351c57cab946b93dd37e8
+  (public mathematical cuboctahedral lattice contract, source MPL-2.0;
+   JavaScript code newly authored and tested independently);
+- QSOLKCB/UFF 596cd732df61587aa1a9801cad1ec13483b1347f
+  (Newtonian gravitational constant and classical point-mass dynamics;
+   Apache-2.0).
+No game assets, UFF empirical physics assertion, NEXUS Rust/Lean source files,
+or other donor-specific runtime code are transplanted. See
+docs/BLOAT_NEXUS_UFF.md for mathematical assumptions and limits.
+
+November 2026 opt-in donor upgrade:
+- BLOAT-OPS PR #6 (head 200234c764a49f30ab1b740b78ef70a746f3532e,
+  merged as b92ecf10036f371ea68929cb5eb7cacbb7aa4a71) and
+  ARCADE PR #3 (merge a3164f6c2c94332d7be10c324fe3cd4aa1c42fbe)
+  demonstrate the compensation needed when snapping browser frame timestamps.
+  VANILLAJS's float FixedClock gains its own opt-in drift-repayment variant.
+- Ski-Shooter v0.2.0 (cb384f8e2e806604fde93140d7a4c41563d6165b)
+  and AFTER-ZERO (406a45927b819f7383f71649d261de675552ca9c)
+  inform the independently authored, general-purpose lead-solver contract.
+- ARCADE v0.4.0, QwakeTF v0.2.0, CorpoWars v0.5.0,
+  CorpoWars3d v1.2.0, GAMES v1.4.0 and BLOAT-OPS PR #5
+  are considered for overlapping already-present routing, retained-geometry,
+  movement, gamepad, replay and frame-gating patterns rather than recopied.
+No donor gameplay, art, assets, audio, vendored code or nonstandard runtime
+packages were copied. See docs/DONOR_UPGRADE_2026_11.md for source pins.
+
+2D Foundry (November 2026) supplies original, experimental integer
+two-dimensional movement, four-channel procedural PCM sound and bounded
+ternary encoded TXT/JSON array storage. The source references are
+QSOLKCB/VANILLAJS navigation, navigation-pool, time and integer math;
+QSOLKCB/OPT@7556dd36acd53ed3ed538fd03b1db44e5c1ec869 (OPT-INV-001 and
+OPT-DSP-001 high-level patterns); SPECTRAL and TONELAB deterministic
+PCM/WAV laboratory contracts; and QEC's separate data/sonification receipts.
+No donor code, commercial audio assets, hardware QEC or native plugin runtime
+are copied/imported. The 3×3×3 and 8×8×8 mathematical information-lattice
+research remains a separate, proposed DEMO//SYNTH phase.
