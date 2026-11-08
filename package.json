@@ -1,6 +1,6 @@
 {
   "name": "qsol-arcade",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "description": "Nine original, offline browser games inspired by retro arcade experiences",
   "license": "Apache-2.0",

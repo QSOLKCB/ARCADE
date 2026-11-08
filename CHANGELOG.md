@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.4.1 — 2026-11-08
+
+Kestrel Strike graphics and explosions. No other cabinet changed: their 13 replay pins still match.
+
+- **Explosions:** every kill now has a layered blast.
+  - **Stages:** a white flash with a starburst, then a fireball of overlapping lobes that cools from white through yellow, orange and red to embers, then drifting smoke.
+  - **Debris:** spinning wreckage that trails smoke.
+  - **Size:** effects scale with the target. Fighters pop. Bombers and mid-bosses chain-explode along their wings with a shockwave ring.
+  - **Ground kills:** they leave scorch marks with dying embers, or an oil slick and foam ring at sea, which scroll away with the terrain.
+- **Boss finales:** a destroyed boss breaks up over about two seconds of chained explosions, then goes out in a final blast and white flash. Its escorts go down with it. Enemy bullets vanish and the plane cannot be hit during the sequence. The front clears when it ends instead of on the killing shot; this is the only rule change.
+- **Sprites:** every aircraft and ground unit is redrawn with shading, a dark edge, panel highlights and spinning propeller discs.
+  - **Player's plane:** it banks as it moves and shows engine exhaust flicker and muzzle flashes.
+  - **Ground units:** gunboats leave wakes, and tank treads roll.
+  - **Damage:** damaged bombers and mid-bosses trail smoke. Bosses break out in fires as they lose health.
+- **Weapons fire:** shots are glowing tracers. Rockets trail smoke. Enemy bullets have halos, and the large ones pulse.
+- **Items:** medals spin, and power-ups glow.
+- **Backgrounds:**
+  - **Coral Strait:** swells, sparkles, reefs, and islands with shallows and surf.
+  - **Amber Dunes:** shaded dune ridges, rocks, tracks, oases and mesas.
+  - **Storm Canopy:** parallax cloud layers and lightning.
+  - **Cinder Citadel:** riveted plating, hazard stripes, flowing lava channels and glowing vents.
+  - **All ground fronts:** cloud shadows pass over them.
+- **Instrument panels:** bevelled.
+- **Determinism:** explosions take their shapes from a hash of a counter, never from the game's random number generator. Their pools are bounded: 48 blasts, 64 debris and 24 scorch marks.
+- **Pins and tests:** the two Kestrel Strike pins were re-recorded because the snapshot now includes these pools. The simulation fields alone hash identically to v0.4.0. Three new Kestrel tests cover the boss sequence, randomness isolation and the bounded pools.
+
 ## 0.4.0 — 2026-11-08
 
 Collection 003: a ninth cabinet, the VANILLAJS 2D foundation and a readability pass for every original cabinet. Game rules of the eight existing cabinets are unchanged: all 13 replay pins from v0.3.1 still match.

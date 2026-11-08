@@ -1,5 +1,37 @@
 # Verification
 
+## Kestrel Strike graphics — v0.4.1, 8 November 2026
+
+### Automated checks
+
+- **Test suite:** `npm test`: **143 passed, 0 failed**. `npm run check`: passed.
+- **Replay pins:** the 13 pins for the other eight cabinets are unchanged. The two Kestrel Strike pins were re-recorded, because the hashed snapshot now includes the new `blasts`, `debris`, `scorch` and `wreck` fields.
+- **Simulation parity:** a separate script ran the v0.4.0 and v0.4.1 `kestrel.js` side by side and hashed every simulated second with the presentation fields removed (particles, effects, blasts, debris, scorch, the effect counter and the boss wreck). The hashes, scores and final states matched in four sessions:
+  - the two parity scripts (60 s each: Arcade game over at 3,380, Relaxed still playing at 11,750);
+  - two 75-second invulnerable runs.
+- **New tests in `tests/kestrel.test.cjs`:**
+  - **Boss finale:** a destroyed boss starts the breakup sequence. Bullets are cleared and escorts are destroyed. A bullet placed on the plane on every tick for one second costs no plane. The sequence peaks at five or more blasts, and the front clears afterwards.
+  - **Randomness and bounds:** 200 forced explosions leave the game's random sequence unchanged and stay within the pools. A ground kill leaves a scorch mark, and blasts, debris and scorch all clear within eight seconds.
+  - **Drawing:** the finite-coordinate check now also draws every front during a boss breakup.
+  - **Campaign:** the campaign test steps through each boss sequence before clearing the front.
+
+### Browser checks (headless Chromium)
+
+- **Gameplay:** Kestrel Strike was played from `file://` for about 16 seconds with fire held, weaving and a bomb. There were no page or console errors. Screenshots showed:
+  - layered kills over the sea;
+  - an oil slick with a foam ring after a gunboat kill;
+  - the bomb's flash and ring;
+  - the new sprites, wakes and panels.
+- **Visual inspection:** rendered scenes for all four fronts showed:
+  - shaded sprites, damage smoke, boss fires, scorch marks and the new backgrounds;
+  - frame strips of a fighter, a bomber, a turret and a boss exploding, from the flash through to smoke;
+  - each front's boss breakup and final blast.
+- **Render cost (Chromium software rendering):**
+  - **Typical:** 0.9–1.6 ms per frame for normal scenes and for boss finales (about 13 live blasts).
+  - **Worst case:** 8.6 ms with every pool full at once (48 large blasts, 64 debris, 260 enemy bullets, 30 scorch marks), still inside a 16.7 ms frame.
+
+Not verified: GPU-accelerated frame times, mobile devices, or human playtesting of how the finales feel.
+
 ## Collection 003 — v0.4.0, 8 November 2026
 
 ### Automated checks

@@ -47,4 +47,6 @@ Void Command keeps one retained 960 × 540 frame. `renderSignature()` serialises
 
 `kestrel.js` keeps the arcade's conventions: a 60 Hz fixed step, a seeded schedule per front (formations, couriers at fixed times, a mid-boss at the halfway point, the boss when the route ends and the mid-boss has gone), bounded pools (260 enemy bullets, 140 shots, 44 enemies, 24 items) and a renderer that is a pure function of state. The simulation uses field-local coordinates with +Y up, like motion2d. The renderer maps them onto a 240 × 245 playfield between two instrument panels.
 
+Kestrel Strike's explosions (v0.4.1) are bounded presentation pools on the game object: `blasts` (48), `debris` (64) and `scorch` (24). `explode()` derives each blast's shape and its debris from `hash()` of a running counter, never from `this.rand`. The pools advance in `update()`, so a frame is still a pure function of state and a replay reproduces every explosion. A boss kill sets `wreck`, which runs the finale for 2.9 s: chained blasts, a final blast at 2.1 s, then `clearStage()`.
+
 The per-cabinet readability additions in v0.4.0 read existing state only (for example Chrono Wing's radar reads enemy and courier positions, Neon Air's strike cue evaluates the exact strike condition). They add no fields to game objects, which is why the replay pins are unchanged.
