@@ -1,12 +1,12 @@
 # Verification
 
-## Kestrel Strike graphics — v0.4.1, 8 November 2026
+## Kestrel Strike graphics — v0.5.0 (QSOLKCB/ARCADE#5), 8 November 2026
 
 ### Automated checks
 
 - **Test suite:** `npm test`: **143 passed, 0 failed**. `npm run check`: passed.
 - **Replay pins:** the 13 pins for the other eight cabinets are unchanged. The two Kestrel Strike pins were re-recorded, because the hashed snapshot now includes the new `blasts`, `debris`, `scorch` and `wreck` fields.
-- **Simulation parity:** a separate script ran the v0.4.0 and v0.4.1 `kestrel.js` side by side and hashed every simulated second with the presentation fields removed (particles, effects, blasts, debris, scorch, the effect counter and the boss wreck). The hashes, scores and final states matched in four sessions:
+- **Simulation parity:** a separate script ran the `kestrel.js` from before and after the graphics pass side by side and hashed every simulated second with the presentation fields removed (particles, effects, blasts, debris, scorch, the effect counter and the boss wreck). The hashes, scores and final states matched in four sessions:
   - the two parity scripts (60 s each: Arcade game over at 3,380, Relaxed still playing at 11,750);
   - two 75-second invulnerable runs.
 - **New tests in `tests/kestrel.test.cjs`:**
@@ -32,7 +32,7 @@
 
 Not verified: GPU-accelerated frame times, mobile devices, or human playtesting of how the finales feel.
 
-## Collection 003 — v0.4.0, 8 November 2026
+## Collection 003 — v0.5.0 (QSOLKCB/ARCADE#4), 8 November 2026
 
 ### Automated checks
 
@@ -70,7 +70,7 @@ Not verified: GPU-accelerated frame times, mobile devices, or human playtesting 
 Not verified: a physical controller, a mobile device, audible output, native-GPU frame times, or human playtesting of Kestrel Strike's difficulty. Scripted pilots were used to tune it: a weaving pilot that never dodges dies on front 1, while a pilot steering away from bullets reaches the front 1 boss on Arcade and clears it on Relaxed.
 
 
-## Quality-of-life and performance pass — v0.3.1, 7 November 2026
+## Quality-of-life and performance pass — 0.3.1 (releases v0.4.0 and v0.4.1), 7 November 2026
 
 ### Automated checks
 

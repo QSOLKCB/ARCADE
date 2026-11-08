@@ -93,7 +93,7 @@
       this.particles.draw(c);this.effects.draw(c);
       if(p.inv<=0||Math.floor(p.inv*12)%2){c.save();if(p.roll>0){c.translate(p.x,p.y);c.scale(Math.cos(p.roll/.75*TAU)*.5+.55,1);plane(c,0,0,p.angle,'#8ff4e0',this.stage);}else plane(c,p.x,p.y,p.angle,'#8ff4e0',this.stage);c.restore();}
       c.restore();
-      // Edge radar (v0.4.0): arrows point to off-screen patrols, the flagship and couriers.
+      // Edge radar (v0.5.0): arrows point to off-screen patrols, the flagship and couriers.
       const radar=(x,y,color,size)=>{const X=x-p.x+240,Y=y-p.y+142;if(X>6&&X<474&&Y>30&&Y<266)return;const a=Math.atan2(Y-142,X-240),ex=A.clamp(X,10,470),ey=A.clamp(Y,34,262);
         c.save();c.translate(ex,ey);c.rotate(a);c.fillStyle=color;c.beginPath();c.moveTo(size,0);c.lineTo(-size*.7,-size*.7);c.lineTo(-size*.7,size*.7);c.closePath();c.fill();c.restore();};
       for(const enemy of this.enemies)if(enemy.hp>0)radar(enemy.x,enemy.y,enemy.boss?'#ff7a64':'#ffc79e',enemy.boss?8:4);

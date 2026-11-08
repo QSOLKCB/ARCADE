@@ -179,7 +179,7 @@
       D.text(c,'LIVES '+this.lives+'  BANK '+this.bank+'/22+'+this.bag(),8,6,'#e6e1cf',8);
       D.text(c,'ROUNDS '+this.ammo+'  '+(this.key?'KEY ':'')+(this.tnt?'TNT ':'')+(this.code?'417 ':''),472,6,this.ammo<3?'#ef967f':'#a9c6ee',8,'right');
       D.text(c,r.name,8,19,r.wall,7);D.text(c,r.dark?'TORCH '+Math.ceil(this.torch)+'s':'LOOSE GEMS '+r.items.filter(i=>!i.taken&&i.kind!=='key'&&i.kind!=='tnt'&&i.kind!=='code').reduce((n,i)=>n+i.value,0),472,19,'#b5b2bc',7,'right');
-      // Floor plan (v0.4.0): all seven screens, the current one framed, with the loose gems left in each.
+      // Floor plan (v0.5.0): all seven screens, the current one framed, with the loose gems left in each.
       this.rooms.forEach((room,i)=>{const x=163+i*22,gems=room.items.filter(q=>!q.taken&&q.kind==='gem').reduce((n,q)=>n+q.value,0),here=i===this.room;
         D.rect(c,x,4,19,13,here?'#2c2a3f':'#14141f');if(here){c.strokeStyle=room.wall;c.strokeRect(x+.5,4.5,18,12);}D.text(c,gems?String(gems):'·',x+9.5,7,gems?'#9ff0e2':'#4b4a5c',7,'center');});
       c.save();c.translate(8,30);

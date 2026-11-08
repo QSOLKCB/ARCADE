@@ -1,34 +1,12 @@
 # Changelog
 
-## 0.4.1 — 2026-11-08
+## 0.5.0 — 2026-11-08
 
-Kestrel Strike graphics and explosions. No other cabinet changed: their 13 replay pins still match.
+Published as GitHub release v0.5.0. It combines Collection 003 (QSOLKCB/ARCADE#4) and the Kestrel Strike graphics pass (QSOLKCB/ARCADE#5), which were developed as 0.4.0 and 0.4.1. GitHub releases v0.4.0 and v0.4.1 had already been published for the 0.3.1 work below, so both parts ship together as 0.5.0.
 
-- **Explosions:** every kill now has a layered blast.
-  - **Stages:** a white flash with a starburst, then a fireball of overlapping lobes that cools from white through yellow, orange and red to embers, then drifting smoke.
-  - **Debris:** spinning wreckage that trails smoke.
-  - **Size:** effects scale with the target. Fighters pop. Bombers and mid-bosses chain-explode along their wings with a shockwave ring.
-  - **Ground kills:** they leave scorch marks with dying embers, or an oil slick and foam ring at sea, which scroll away with the terrain.
-- **Boss finales:** a destroyed boss breaks up over about two seconds of chained explosions, then goes out in a final blast and white flash. Its escorts go down with it. Enemy bullets vanish and the plane cannot be hit during the sequence. The front clears when it ends instead of on the killing shot; this is the only rule change.
-- **Sprites:** every aircraft and ground unit is redrawn with shading, a dark edge, panel highlights and spinning propeller discs.
-  - **Player's plane:** it banks as it moves and shows engine exhaust flicker and muzzle flashes.
-  - **Ground units:** gunboats leave wakes, and tank treads roll.
-  - **Damage:** damaged bombers and mid-bosses trail smoke. Bosses break out in fires as they lose health.
-- **Weapons fire:** shots are glowing tracers. Rockets trail smoke. Enemy bullets have halos, and the large ones pulse.
-- **Items:** medals spin, and power-ups glow.
-- **Backgrounds:**
-  - **Coral Strait:** swells, sparkles, reefs, and islands with shallows and surf.
-  - **Amber Dunes:** shaded dune ridges, rocks, tracks, oases and mesas.
-  - **Storm Canopy:** parallax cloud layers and lightning.
-  - **Cinder Citadel:** riveted plating, hazard stripes, flowing lava channels and glowing vents.
-  - **All ground fronts:** cloud shadows pass over them.
-- **Instrument panels:** bevelled.
-- **Determinism:** explosions take their shapes from a hash of a counter, never from the game's random number generator. Their pools are bounded: 48 blasts, 64 debris and 24 scorch marks.
-- **Pins and tests:** the two Kestrel Strike pins were re-recorded because the snapshot now includes these pools. The simulation fields alone hash identically to v0.4.0. Three new Kestrel tests cover the boss sequence, randomness isolation and the bounded pools.
+### Collection 003
 
-## 0.4.0 — 2026-11-08
-
-Collection 003: a ninth cabinet, the VANILLAJS 2D foundation and a readability pass for every original cabinet. Game rules of the eight existing cabinets are unchanged: all 13 replay pins from v0.3.1 still match.
+Collection 003: a ninth cabinet, the VANILLAJS 2D foundation and a readability pass for every original cabinet. Game rules of the eight existing cabinets are unchanged: all 13 replay pins from 0.3.1 still match.
 
 - **Kestrel Strike (new):** an original vertical-scrolling propeller shooter inspired by 1943 (1987) and Raiden (1990).
   - **Fronts:** four of them (Coral Strait, Amber Dunes, Storm Canopy, Cinder Citadel), each with seeded formations, ground targets, a mid-boss and a phased boss.
@@ -53,7 +31,33 @@ Collection 003: a ninth cabinet, the VANILLAJS 2D foundation and a readability p
   All of these are drawn purely from existing state.
 - **Pins and tests:** 2 new replay pins (Kestrel Strike, Arcade and Relaxed); no existing pin changed. New `tests/kestrel.test.cjs` and `tests/vanilla2d.test.cjs`.
 
-## 0.3.1 — 2026-11-07
+### Kestrel Strike graphics and explosions
+
+Kestrel Strike graphics and explosions. No other cabinet changed: their 13 replay pins still match.
+
+- **Explosions:** every kill now has a layered blast.
+  - **Stages:** a white flash with a starburst, then a fireball of overlapping lobes that cools from white through yellow, orange and red to embers, then drifting smoke.
+  - **Debris:** spinning wreckage that trails smoke.
+  - **Size:** effects scale with the target. Fighters pop. Bombers and mid-bosses chain-explode along their wings with a shockwave ring.
+  - **Ground kills:** they leave scorch marks with dying embers, or an oil slick and foam ring at sea, which scroll away with the terrain.
+- **Boss finales:** a destroyed boss breaks up over about two seconds of chained explosions, then goes out in a final blast and white flash. Its escorts go down with it. Enemy bullets vanish and the plane cannot be hit during the sequence. The front clears when it ends instead of on the killing shot; this is the only rule change.
+- **Sprites:** every aircraft and ground unit is redrawn with shading, a dark edge, panel highlights and spinning propeller discs.
+  - **Player's plane:** it banks as it moves and shows engine exhaust flicker and muzzle flashes.
+  - **Ground units:** gunboats leave wakes, and tank treads roll.
+  - **Damage:** damaged bombers and mid-bosses trail smoke. Bosses break out in fires as they lose health.
+- **Weapons fire:** shots are glowing tracers. Rockets trail smoke. Enemy bullets have halos, and the large ones pulse.
+- **Items:** medals spin, and power-ups glow.
+- **Backgrounds:**
+  - **Coral Strait:** swells, sparkles, reefs, and islands with shallows and surf.
+  - **Amber Dunes:** shaded dune ridges, rocks, tracks, oases and mesas.
+  - **Storm Canopy:** parallax cloud layers and lightning.
+  - **Cinder Citadel:** riveted plating, hazard stripes, flowing lava channels and glowing vents.
+  - **All ground fronts:** cloud shadows pass over them.
+- **Instrument panels:** bevelled.
+- **Determinism:** explosions take their shapes from a hash of a counter, never from the game's random number generator. Their pools are bounded: 48 blasts, 64 debris and 24 scorch marks.
+- **Pins and tests:** the two Kestrel Strike pins were re-recorded because the snapshot now includes these pools. The simulation fields alone hash identically to the Collection 003 build. Three new Kestrel tests cover the boss sequence, randomness isolation and the bounded pools.
+
+## 0.3.1 — 2026-11-07 (published as GitHub releases v0.4.0 and v0.4.1)
 
 Quality-of-life and performance pass. Game rules, maps and scores are unchanged: every cabinet replays to the same state as v0.3.0.
 
@@ -61,6 +65,7 @@ Quality-of-life and performance pass. Game rules, maps and scores are unchanged:
 - **Controller safety:** unplugging a controller pauses the game. A controller that connects, or is held when a menu opens, must return to neutral before it responds; this now covers sticks as well as buttons.
 - **Smoother analog movement:** the stick deadzone is rescaled, so movement ramps up from the edge of the deadzone instead of jumping to 20%.
 - **Smoother 60 Hz play:** browsers round frame timestamps, which made one 60 Hz frame in three run no simulation step and the next run two. Frames within 0.5 ms of a whole number of steps now count as exactly that many, so every 60 Hz frame advances one step and every 30 Hz frame two.
+- **Exact 60 steps per second (release v0.4.1):** the time added or removed by snapping a frame to a whole number of steps is now paid back on a later frame. Before this, a steady 59 Hz display ran every game 1.7% slow and a 61 Hz display 1.7% fast.
 - **Less work when nothing moves:** a frame is redrawn only after a simulation step or a change such as a menu action. Paused and menu screens stopped redrawing 60 times a second, and tick-less frames on 120/144 Hz displays reuse the image already on screen.
 - **Void Command:** the terminal frame is reused until an order, map selection or campaign choice changes what it shows (0.62 → 0.19 ms per frame in Chromium software rendering, pixel-identical).
 - **Exactness checks:** an exact-replay parity test pins the full state of 13 scripted sessions across all eight cabinets, and a recording-canvas test proves that Void Command's cache key covers everything it draws.

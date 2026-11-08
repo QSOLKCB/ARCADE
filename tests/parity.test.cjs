@@ -61,9 +61,9 @@ const PINNED={
   "breaker:{\"difficulty\":\"arcade\"}": "755a509593f6746b5e8fc21c26429bba300f7c5f2b892200fd916641956f9e36",  // gameover 500
   "void:{\"difficulty\":\"arcade\"}": "15b1adf4a17461412348dd4f6da4973919fcda3ba705b4e8e5820373689d073e",  // playing 0
   "void:{\"difficulty\":\"relaxed\"}": "470180762e2fd0ae486740451fd3caab6308017935368fa5fa021f1c94ff7ab7",  // playing 0
-  // Added in v0.4.0 with the new ninth cabinet. Re-recorded in v0.4.1: the snapshot now includes the
-  // explosion, wreckage and scorch pools. Score and state are unchanged, and the simulation fields
-  // alone hash identically to v0.4.0 (see docs/VERIFICATION.md).
+  // Added in v0.5.0 with the new ninth cabinet, then re-recorded in the same release when the snapshot
+  // gained the explosion, wreckage and scorch pools. Score and state are unchanged, and the simulation
+  // fields alone hash identically to the build before the graphics pass (see docs/VERIFICATION.md).
   "kestrel:{\"difficulty\":\"arcade\"}": "baaf23417462d0dc4cc4cc9a7ca215817d8ab317f138e685ee0c60d8c1d155fd",  // gameover 3380
   "kestrel:{\"difficulty\":\"relaxed\"}": "2b545bb463279ae564127b13a3a85d8e0c122d5c592c0ceb5e35183ab43ad296",  // playing 11750
 };
