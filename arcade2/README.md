@@ -54,6 +54,11 @@ The cabinet always shows its own four control labels and objective.
   full rollback meter. Three one-round incidents form the ladder; each has a
   60-second clock. A health tie continues until broken. Simultaneous KO is a loss.
 
+**FX full / lite** (masthead) changes presentation only. Full adds glow, trails,
+floor reflections and a CRT pass; lite keeps every sprite, hazard, telegraph and
+readout. If full effects average more than 7 ms of paint time on a device, the hall
+switches to lite for that session and labels the button *FX lite (auto)*.
+
 Keyboard focus loss, hidden tabs and controller disconnect pause play. Resume is
 explicit. Inputs and unfinished shot charges are cancelled on transitions. A
 controller must return to neutral before it can control a new screen. D-pad/stick
@@ -73,7 +78,10 @@ The supplied release archive SHA-256 is
 `vendor/vanillajs/PROVENANCE.json` records the archive, exact source revision,
 selected modules and SHA-256 of every copied module/licence/notice. Source files
 are byte-for-byte copies from the supplied archive, also matched to the release
-ref. Both upstream LICENSE and NOTICE are retained.
+ref. Both upstream LICENSE and NOTICE are retained. `frame-gate` and `audio2d` were
+added in v0.6.0 with `git show` from the same pinned commit (the supplied archive was
+not re-read); `PROVENANCE.json` records this per module, and upstream `main`
+(`9e643c7`) has no module changes since the pin.
 
 - `integer-math` supplies checked Q16.16 conversion, exact rational multiplication,
   aiming, damping and seeded random state advancement. World coordinates and
@@ -82,6 +90,12 @@ ref. Both upstream LICENSE and NOTICE are retained.
   drawing, audio, frame timestamps and the sports stamina meter use Numbers.
 - `time` supplies a 60 Hz `FixedClock`, six-step catch-up limit and optional
   0.5 ms frame snapping with drift repayment. Hidden/paused time is discarded.
+- `frame-gate` (added in v0.6.0) supplies `FrameGate`. The shell presents each
+  frame under the complete key `generation|cabinet|tick|stage|status|tier`, so the
+  canvas is redrawn once per simulation step or shell change and idle frames are skipped.
+- `audio2d` (added in v0.6.0) renders the nine effects in `sound.js` as integer,
+  sample-indexed 48 kHz PCM16 scores on four non-overlapping lanes, once each on
+  first use. The previous oscillator recipes remain as a fallback.
 - `engine.js` is a generated classic-script adapter so `file://` remains usable.
   Only export keywords are removed; each source body is wrapped in its own scope.
   Regenerate with `node scripts/arcade2-engine.cjs`; verify with `--check`.
@@ -91,6 +105,26 @@ VANILLAJS subsystem is included or that all gameplay is formally verified.
 Rendering is independent of simulation and must not mutate game state. Tests
 compare seeded replay states within the tested runtime; cross-browser bit-exactness
 and device performance are not claimed.
+
+## Graphics (v0.6.0)
+
+`gfx.js` is the presentation layer: parallax cities with neon, haze and rain;
+nebula, planet and star parallax with cave terrain and force-field bulkheads;
+cached stadium, court, server-room and compound backdrops; shaded, outlined figures
+with walk cycles; fighter hulls, drones, tanks, mechs and core bosses; additive
+glow for projectiles, beams, tracers and sparks; floor reflections; a low-health
+alarm and a CRT pass. All of it is original procedural Canvas art.
+
+Drawing never runs inside the fixed tick and never writes state. The approach
+follows four [QSOLKCB/OPT](https://github.com/QSOLKCB/OPT) records:
+
+- **OPT-FAN-001 / OPT-INC-001:** static layers, sprites and glow kernels are painted
+  once into offscreen canvases under keys that name every paint input, then reused.
+  Even with far richer art, most cabinets now issue fewer canvas calls per frame
+  than v0.5.0 (for example Floodlight FC averages 98 calls rather than 755).
+- **OPT-CACHE-001:** three pixel-budgeted LRU caches (about 30 MB at most).
+- **OPT-APPROX-001:** the FX lite tier and its automatic fallback.
+- **OPT-BUDGET-001:** deterministic per-frame draw-call ceilings in the test suite.
 
 ## Packaging and offline play
 
@@ -109,6 +143,12 @@ node --test tests/*.test.cjs
 node scripts/check.cjs
 node scripts/arcade2-engine.cjs --check
 ```
+
+`tests/arcade2-parity.test.cjs` pins SHA-256 hashes of the complete simulation state
+for every cabinet (scripted sessions and full campaigns), recorded before the
+v0.6.0 graphics work, and replays each with drawing between ticks.
+`tests/arcade2-gfx.test.cjs` checks cache-key completeness, reuse, memory and
+draw-call budgets in both FX tiers, FrameGate pacing and the audio2d bank.
 
 `tests/arcade2.test.cjs` covers all ten simulations, seeded replays, pure rendering,
 bounded pools, fresh restarts, real goal/shot collisions, stage/exit gates, failure

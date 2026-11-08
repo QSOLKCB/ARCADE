@@ -24,5 +24,5 @@ out += `})(globalThis.Arcade2 = globalThis.Arcade2 || {});\n`;
 const target = path.join(root, 'arcade2/engine.js');
 if (process.argv.includes('--check')) {
   if (fs.readFileSync(target, 'utf8') !== out) throw new Error('Regenerate arcade2/engine.js');
-  console.log('ARCADE2 engine matches pinned VANILLAJS v1.2.0 source.');
+  console.log('ARCADE2 engine matches pinned VANILLAJS v'+manifest.version+' source: '+manifest.modules.join(', ')+'.');
 } else fs.writeFileSync(target, out);

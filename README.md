@@ -10,6 +10,9 @@ A second hall adds **ten original single-player cabinets** at [`arcade2/`](arcad
 using pinned VANILLAJS **v1.2.0** arithmetic and timing modules. Ninja action,
 football, 2-on-2 basketball, **DevOps Kombat**, a cover shooter, Spaced Invaders,
 run-and-gun action and two scrolling shooters bring the repository to 19 games.
+v0.6.0 redraws every ARCADE 2 cabinet — parallax scenery, shaded sprites, additive
+lighting and a CRT pass — with VANILLAJS `FrameGate` redraws and `audio2d` sound,
+while the 60 Hz simulation is pinned bit-for-bit to its previous state hashes.
 
 [**Enter ARCADE 2**](https://qsolkcb.github.io/ARCADE/arcade2/) ·
 [Cabinets, controls and engine provenance](arcade2/README.md) ·

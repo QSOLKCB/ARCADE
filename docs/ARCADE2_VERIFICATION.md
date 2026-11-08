@@ -1,5 +1,45 @@
 # ARCADE 2 verification record
 
+## v0.6.0 graphics pass — 8 November 2026
+
+Base: QSOLKCB/ARCADE `2a7d112` (main, after PR #7). Sources read: QSOLKCB/VANILLAJS
+`main` `9e643c7` (no module changes since the v1.2.0 pin `c8d6e99`) and QSOLKCB/OPT
+`main` `7556dd3` (catalogue v1.4.0). Environment: Node v22.23.4; the session's
+preinstalled Playwright Chromium, headless, software rasterisation.
+
+### Simulation unchanged
+
+Before any presentation change, `tests/arcade2-parity.test.cjs` recorded SHA-256
+hashes of the complete game state for all ten cabinets: one 5,400-tick scripted
+session each, and one complete policy-driven campaign each (all stages, bosses and
+transitions). After the work all 20 hashes still match. Each is also replayed with
+`draw()` and the post pass running between ticks, with identical results.
+
+### Executed
+
+| Check | Observed result |
+| --- | --- |
+| `npm test` | **237 passed, 0 failed**: 20 new parity pins, 9 graphics/sound checks, one new offline deep-link check; the previous 207 unchanged. |
+| `npm run check`, `node scripts/arcade2-engine.cjs --check` | Passed; the adapter matches four pinned modules (`integer-math`, `time`, `frame-gate`, `audio2d`). |
+| Cache-key completeness (OPT-INC-001) | Caches cleared before sampled frames of every campaign in both tiers; every re-painted key produced an identical draw log. |
+| Draw-call budget (OPT-BUDGET-001) | Peak calls/frame across campaigns: full 107–866, lite 63–231 (limits 1,000 / 300). Means fell from 200–815 (v0.5.0) to 98–338 (full). |
+| Chromium paint time per frame, draw + post + 1-px readback | v0.5.0 median 0.2–0.4 ms, p99 0.4–1.0 ms. v0.6.0 full: median 0.3–0.8 ms, p99 0.8–1.8 ms. Lite: median 0.2–0.6 ms, p99 0.3–1.3 ms. Isolated maxima of 4–10 ms occur when a stage's layers are first built. |
+| Real tick rate in the running app | Counted `tick()` calls over 5 s of wall time: Shadow Circuit, DevOps Kombat, Breach Protocol, Spaced Invaders and Ember Wing 60.00/s; Floodlight FC 60.19/s (window boundary). rAF interval while playing: median 16.70 ms, max 16.80 ms. |
+| Hall and all ten cabinets over HTTP | Ten previews rendered; each cabinet launched from its Play button, ran 2.5 s with held keys, paused and resumed with P, and returned to the hall. Sound on, FX toggled full → lite → full. No page or console errors. |
+| `file://` | Hall and Spaced Invaders played through the UI from the checkout; no errors. |
+| Offline | The worker installed `v0.6.0-r1-arcade2` with `gfx.js` and `sound.js`. With the local server shut down, reloading `arcade2/index.html#ember` loaded from cache and the cabinet ran. This **failed before the fix** (`ERR_CONNECTION_REFUSED`) because Chromium includes the `#fragment` in navigation request URLs. |
+| Phone layout (Playwright iPhone 13 profile) | Hall and playroom have no horizontal overflow at 390 px; the FX button fits the masthead. |
+
+### Not established
+
+Real GPUs and displays, Firefox and Safari, physical touch and controllers, and
+audible output. Headless Chromium created and played the audio2d buffers without
+errors, but nobody listened. Paint times are from one software-rendered
+environment, not device benchmarks. The automatic lite fallback was triggered by
+artificially adding 9 ms to Null Vector's full-tier draw in the page (label became
+*FX lite (auto)*, nothing was saved, the button restored full), not by a slow device.
+
+
 Implementation base: QSOLKCB/ARCADE
 `2296034a04c5417c4a8f6057c2dd73b06adccb8e` (main).
 Engine source: QSOLKCB/VANILLAJS v1.2.0

@@ -2,7 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),cp=require('node:child_process');
 const root=path.resolve(__dirname,'..');
 const runtime=['index.html','styles.css','manifest.webmanifest','assets/icon.svg','js/core.js','js/vanilla2d.js','js/cartridge.js','js/draw.js','js/input.js','js/audio.js','js/games/iron.js','js/games/heist.js','js/games/ninja.js','js/games/hockey.js','js/games/brawl.js','js/games/chrono.js','js/games/breaker.js','js/games/void.js','js/games/kestrel.js','js/app.js'];
-const arcade2=['index.html','style.css','engine.js','core.js','platforms.js','sports.js','kombat.js','breach.js','shooters.js','input.js','app.js','README.md'].map(f=>'arcade2/'+f);
+const arcade2=['index.html','style.css','engine.js','core.js','gfx.js','sound.js','platforms.js','sports.js','kombat.js','breach.js','shooters.js','input.js','app.js','README.md'].map(f=>'arcade2/'+f);
 runtime.push(...arcade2);
 cp.execFileSync(process.execPath,[path.join(root,'scripts/arcade2-engine.cjs'),'--check']);
 for(const file of runtime){assert.ok(fs.existsSync(path.join(root,file)),file+' exists');if(file.endsWith('.js'))cp.execFileSync(process.execPath,['--check',path.join(root,file)]);}

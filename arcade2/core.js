@@ -63,12 +63,7 @@
       this.stage++; this.status = 'playing'; this.hp = Math.min(this.maxHP, this.hp + 25);
       this.effects = []; this.setup();
     }
-    drawEffects(ctx, offset = 0) {
-      for (const e of this.effects) {
-        ctx.fillStyle = e.color; const s = e.life > 12 ? 3 : 2;
-        ctx.fillRect(Math.round(px(e.x) - offset), Math.round(px(e.y)), s, s);
-      }
-    }
+    drawEffects(ctx, offset = 0) { A.Gfx.sparks(ctx, this.effects, offset); }
     hud() { return {left: 'HULL ' + this.hp, right: 'SECTOR ' + (this.stage + 1), objective: ''}; }
   };
 
@@ -85,73 +80,6 @@
   D.bar = (c, x, y, w, value, max, color = '#bbf765') => {
     D.rect(c, x, y, w, 5, '#24323a'); D.rect(c, x, y, w * clamp(value / max, 0, 1), 5, color);
   };
-  const ninja = [
-    '0001111000', '0011111100', '0012222100', '0011111100', '0001111000',
-    '0033333300', '0333433330', '1333433331', '1003433001', '0003333000',
-    '0001111000', '0011001100', '0011001100', '0110000110', '0110000110',
-  ];
-  const trooper = [
-    '0001111000', '0011111100', '0012222100', '0012112100', '0001111000',
-    '0033333300', '0334443330', '1334443331', '1003333001', '0003333000',
-    '0001111000', '0011001100', '0011001100', '0110000110', '0110000110',
-  ];
-  D.person = (c, x, y, color = '#7fe3e0', face = 1, tick = 0, kind = 'ninja', scale = 2) => {
-    const art = kind === 'ninja' ? ninja : trooper;
-    const palette = ['transparent', '#141e2b', '#fff5d4', color, '#f8cf72'];
-    const stride = Math.floor(tick / 8) % 2;
-    c.save(); c.translate(Math.round(x), Math.round(y)); c.scale(face, 1);
-    D.ellipse(c, 0, 1, scale * 6, 3, '#0006');
-    for (let row = 0; row < art.length; row++) for (let col = 0; col < art[row].length; col++) {
-      const index = Number(art[row][col]); if (!index) continue;
-      const shift = row > 10 ? (col < 5 ? stride : -stride) : 0;
-      D.rect(c, (col - 5 + shift) * scale, (row - art.length) * scale, scale, scale, palette[index]);
-    }
-    if (kind === 'ninja') { D.rect(c, -13 * scale / 2, -24 * scale / 2, 8, 3, color); }
-    c.restore();
-  };
-  D.ship = (c, x, y, color, tick, vertical = false, scale = 1) => {
-    c.save(); c.translate(Math.round(x), Math.round(y)); if (vertical) c.rotate(-Math.PI / 2); c.scale(scale, scale);
-    D.rect(c, -23 - tick % 9, -3, 15 + tick % 9, 6, '#ff9848');
-    D.rect(c, -16, -6, 22, 12, '#233248'); D.rect(c, -10, -4, 28, 8, color);
-    D.rect(c, -15, -14, 10, 28, color); D.rect(c, -5, -8, 10, 16, '#edf7e7');
-    D.rect(c, 4, -3, 9, 6, '#0c1e2c'); D.rect(c, -19, -13, 6, 4, '#657581');
-    D.rect(c, -19, 9, 6, 4, '#657581'); c.restore();
-  };
-  D.drone = (c, x, y, color = '#ff7479', big = false, tick = 0) => {
-    const s = big ? 2 : 1;
-    D.ellipse(c, x, y, 14 * s, 9 * s, '#202a40');
-    D.rect(c, x - 18 * s, y - 3 * s, 36 * s, 6 * s, color);
-    D.rect(c, x - 7 * s, y - 9 * s, 14 * s, 18 * s, '#657581');
-    D.rect(c, x - 4 * s, y - 4 * s, 8 * s, 8 * s, tick % 60 < 40 ? color : '#fff');
-  };
-  D.city = (c, camera, theme = 0, tick = 0) => {
-    const palettes = [['#0a1024','#182541','#68d8d2'],['#15131e','#30243a','#fd9267'],['#091c25','#123943','#c4ef76']];
-    const [sky, building, light] = palettes[theme % palettes.length];
-    D.rect(c, 0, 0, 640, 360, sky); D.ellipse(c, 510, 73, 33, 33, '#e9e3ca');
-    D.rect(c, 488, 43, 45, 6, sky); D.rect(c, 482, 62, 60, 3, sky);
-    for (let i = -1; i < 13; i++) {
-      const x = i * 62 - (camera * .2 % 62), h = 65 + ((i + 29) * 73 % 110);
-      D.rect(c, x, 281 - h, 48, h, building);
-      for (let row = 0; row < h / 12 - 1; row++) for (let col = 0; col < 3; col++) {
-        if ((row + col * 3 + i + 30) % 4) D.rect(c, x + 7 + col * 12, 290 - h + row * 12, 5, 3, '#607176');
-      }
-    }
-    D.line(c, 0, 216, 640, 198, light, 1);
-    for (let i = 0; i < 5; i++) D.rect(c, (i * 151 - camera * .55 + 5000) % 760 - 60, 240, 35, 55, '#18232c');
-    D.rect(c, 0, 303, 640, 57, '#0b121a'); D.line(c, 0, 303, 640, 303, light, 2);
-    for (let x = -camera % 40; x < 640; x += 40) D.rect(c, x, 315, 24, 3, '#30404a');
-    for (let i = 0; i < 18; i++) { const x = (i * 79 + tick * 2) % 640, y = (i * 47 + tick * 4) % 300; D.line(c, x, y, x - 3, y + 9, '#a8dddf22'); }
-  };
-  D.space = (c, tick, vertical = false, hot = false) => {
-    D.rect(c, 0, 0, 640, 360, hot ? '#1d1229' : '#080e20');
-    for (let i = 0; i < 65; i++) {
-      const speed = i % 3 + 1;
-      const x = vertical ? i * 173 % 640 : (i * 173 - Math.floor(tick * speed / 3) % 640 + 640) % 640;
-      const y = vertical ? (i * 97 + Math.floor(tick * speed / 3)) % 360 : i * 97 % 360;
-      D.rect(c, x, y, speed === 3 ? 2 : 1, 1, ['#526078','#9da7ba','#dfdfcb'][i % 3]);
-    }
-    D.ellipse(c, 506, 120, 75, 75, hot ? '#482135' : '#132c45');
-    for (let i = 0; i < 5; i++) D.line(c, 451, 83 + i * 14, 557, 92 + i * 14, hot ? '#6a3039' : '#1d3c54', 5);
-  };
+  // Sprites, scenery and post effects live in gfx.js (presentation only).
   A.register = (meta, factory) => A.registry.push(Object.freeze({...meta, create: factory}));
 })(globalThis.Arcade2);

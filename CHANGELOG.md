@@ -1,5 +1,34 @@
 # Changelog
 
+## v0.6.0 — ARCADE 2 graphics pass (VANILLAJS + OPT)
+
+- Redraw all ten ARCADE 2 cabinets: three-layer parallax cities with neon signs,
+  haze, rain and moonlight; nebula/planet/star parallax for the shooters with cave
+  terrain and force-field bulkheads; cached stadium, court and arena backgrounds;
+  shaded 12 × 14 figures with walk cycles and outlines; a shaded fighter hull,
+  drones, tank, mech, core bosses, crates, cages, cover and an exit door; glowing
+  projectiles, beams, tracers, muzzle flashes, sword arcs, trails and sparks;
+  floor reflections in DevOps Kombat; a low-health alarm and a CRT pass.
+- Rendering only: no simulation file's tick, state or rules changed. New
+  `tests/arcade2-parity.test.cjs` pins 20 SHA-256 state hashes (10 scripted
+  sessions, 10 complete campaigns) recorded **before** this work, and re-runs each
+  with drawing between ticks to show rendering cannot alter state.
+- Vendor VANILLAJS v1.2.0 `frame-gate` and `audio2d` byte-for-byte from commit
+  `c8d6e9972d2214e2f5330f80f7dee49750c2e776` (unchanged on upstream `main`
+  `9e643c7`), with SHA-256 provenance. `FrameGate` decides redraws from a complete
+  primitive frame key; `audio2d` renders a deterministic PCM16 effects bank
+  (`arcade2/sound.js`) with the oscillator recipes kept as a fallback.
+- Apply QSOLKCB/OPT records in `arcade2/gfx.js`: OPT-FAN-001/INC-001 (scenery,
+  sprites and glow kernels materialised once per complete key), OPT-CACHE-001
+  (pixel-budgeted LRU caches), OPT-APPROX-001 (an **FX full / lite** control that
+  removes cosmetic glow, trails and CRT only, with an automatic fallback to lite if
+  average paint time exceeds 7 ms) and OPT-BUDGET-001 (deterministic per-frame
+  draw-call ceilings in `tests/arcade2-gfx.test.cjs`).
+- Fix offline deep links: the worker now strips `#fragment` before its URL check,
+  so ARCADE 2 (which sets `#cabinets` / `#<cabinet>`) reloads offline. Advance the
+  cache key to `v0.6.0-r1-arcade2` and precache `arcade2/gfx.js` and `arcade2/sound.js`.
+- Browser evidence for this pass is in `docs/ARCADE2_VERIFICATION.md`.
+
 ## Unreleased — ARCADE 2 / The Second Shift
 
 - Add a separate `arcade2/` hall with ten original single-player cabinets: Shadow
