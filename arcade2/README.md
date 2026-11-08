@@ -150,6 +150,10 @@ v0.6.0 graphics work, and replays each with drawing between ticks.
 `tests/arcade2-gfx.test.cjs` checks cache-key completeness, reuse, memory and
 draw-call budgets in both FX tiers, FrameGate pacing and the audio2d bank.
 
+On real hardware, the owner can dispatch **ARCADE 2 on RTX 5060 Ti** from the Actions
+tab (see `docs/ARCADE2_VERIFICATION.md`). It runs only on reviewed `main` on the
+owner's self-hosted GPU runner.
+
 `tests/arcade2.test.cjs` covers all ten simulations, seeded replays, pure rendering,
 bounded pools, fresh restarts, real goal/shot collisions, stage/exit gates, failure
 precedence and mechanic-specific rules. Scenario tests position state near events

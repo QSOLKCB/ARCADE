@@ -74,6 +74,37 @@ goal line and an overly wide high-platform gap. Both were fixed and now have
 specific regression checks. The checked arithmetic also caught a fractional
 half-width passed as an integer; it now uses `fromRatio(numerator, 2)`.
 
+## Owner RTX 5060 Ti hardware check
+
+`.github/workflows/rtx5060ti-arcade2.yml` adapts the VANILLAJS owner-hardware pattern.
+It runs only when `EmergentMonk` dispatches it on `main` and ticks
+*acknowledge_local_execution*, on a self-hosted runner labelled
+`[self-hosted, linux, x64, qsol-rtx5060ti]` with a visible desktop. It never installs
+anything. Playwright 1.64.0 must already exist outside the checkout (the same
+tooling the VANILLAJS workflows use), with system Chrome.
+
+`scripts/rtx5060ti-arcade2.mjs` then:
+
+1. requires `nvidia-smi` and the browser's WebGL renderer to name the RTX 5060 Ti,
+   and refuses SwiftShader, llvmpipe and lavapipe;
+2. presents 360 frames per cabinet, sampled across a complete campaign, one per
+   `requestAnimationFrame` on a visible canvas. It does this for the pre-graphics
+   baseline `2a7d112` and for v0.6.0 full and lite, recording submission time and
+   presented-frame intervals;
+3. plays each cabinet from its Play button for 5 s and counts real `tick()` calls
+   against the display's frame pacing;
+4. stops the local server and reloads a `#ember` deep link through the service worker.
+
+Gates: in-app tick rate within 59.5–60.5 per second, full-tier paint p99 at most 8 ms,
+no more than 5% long presented frames, no automatic lite fallback, no page errors and
+no external requests. Evidence (JSON report, `SUMMARY.md`, screenshots and
+`SHA256SUMS`) stays under `~/.local/state/qsol/arcade/rtx5060ti/`. It is uploaded only
+with *publish_evidence*. *play_sound* makes the effects audible on the desktop.
+
+A `--dry-run` of the harness in this session's container passed all gates using
+headless Chromium on SwiftShader. Its report is marked `dryRun:true` and is **not**
+hardware evidence. No result from the RTX 5060 Ti is recorded yet.
+
 ## PR #7 review corrections
 
 Regression tests were first executed against the reviewed head

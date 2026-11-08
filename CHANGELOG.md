@@ -28,6 +28,13 @@
   so ARCADE 2 (which sets `#cabinets` / `#<cabinet>`) reloads offline. Advance the
   cache key to `v0.6.0-r1-arcade2` and precache `arcade2/gfx.js` and `arcade2/sound.js`.
 - Browser evidence for this pass is in `docs/ARCADE2_VERIFICATION.md`.
+- Add an owner-dispatched hardware check at the maintainer's request:
+  `.github/workflows/rtx5060ti-arcade2.yml` runs `scripts/rtx5060ti-arcade2.mjs`
+  in headed Chrome on the owner's RTX 5060 Ti runner (reviewed `main`, actor
+  `EmergentMonk`, explicit consent; never on push, pull request or schedule). It
+  pairs paint cost against the pre-graphics commit, plays every cabinet, measures
+  tick rate and presented frames, checks offline reload and seals evidence outside
+  the checkout. `tests/rtx-workflow.test.cjs` guards those properties.
 
 ## Unreleased — ARCADE 2 / The Second Shift
 

@@ -1,0 +1,118 @@
+name: ARCADE 2 on RTX 5060 Ti (owner hardware check)
+
+# Owner-dispatched only, on reviewed main, on the owner's visible RTX 5060 Ti desktop.
+# Never triggered by push, pull_request or a schedule: a public repository must not
+# be able to run code on a personal workstation. Mirrors QSOLKCB/VANILLAJS RTX workflows.
+on:
+  workflow_dispatch:
+    inputs:
+      acknowledge_local_execution:
+        description: "Authorize ARCADE 2 to open a Chrome window and run on my RTX 5060 Ti runner"
+        type: boolean
+        required: true
+        default: false
+      play_sound:
+        description: "Turn ARCADE 2 sound on during the in-app run (audible on the desktop)"
+        type: boolean
+        required: true
+        default: false
+      publish_evidence:
+        description: "Upload the checksum-sealed report and screenshots as a 14-day artifact"
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qsol-rtx5060ti-arcade2-${{ github.repository }}-${{ github.actor }}
+  cancel-in-progress: false
+
+env:
+  # Last main commit before the v0.6.0 graphics pass: the paired paint baseline.
+  ARCADE2_BASELINE: 2a7d1120ac674d733dff5035e637f3cf8e36bdad
+
+jobs:
+  measure:
+    if: ${{ github.repository == 'QSOLKCB/ARCADE' && github.ref == 'refs/heads/main' && github.actor == 'EmergentMonk' && inputs.acknowledge_local_execution == true }}
+    runs-on: [self-hosted, linux, x64, qsol-rtx5060ti]
+    timeout-minutes: 40
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Recheck exact reviewed main, visible desktop and physical NVIDIA device
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+          git merge-base --is-ancestor "$ARCADE2_BASELINE" HEAD
+          test -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}"
+          command -v nvidia-smi
+          command -v node
+          nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
+          node --version
+          node --check scripts/rtx5060ti-arcade2.mjs
+          node scripts/rtx-playwright.mjs
+
+      - name: Run the repository checks (no installs)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/*.test.cjs
+          node scripts/check.cjs
+          node scripts/arcade2-engine.cjs --check
+
+      - name: Prepare baseline worktree and fresh evidence directory outside the checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          baseline="$RUNNER_TEMP/arcade2-baseline-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          evidence="$HOME/.local/state/qsol/arcade/rtx5060ti/arcade2-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          if test -e "$evidence"; then echo 'Evidence output exists; refuse overwrite' >&2; exit 1; fi
+          mkdir -m 700 -p "$(dirname "$evidence")"
+          git worktree add --detach "$baseline" "$ARCADE2_BASELINE"
+          echo "QSOL_ARCADE_BASELINE=$baseline" >> "$GITHUB_ENV"
+          echo "QSOL_ARCADE_EVIDENCE=$evidence" >> "$GITHUB_ENV"
+
+      - name: Headed Chrome on the RTX 5060 Ti — paired paint, real play, offline reload
+        shell: bash
+        env:
+          PLAY_SOUND: ${{ inputs.play_sound }}
+        run: |
+          set -euo pipefail
+          sound=()
+          if test "$PLAY_SOUND" = true; then sound=(--sound); fi
+          node scripts/rtx5060ti-arcade2.mjs \
+            --expected-head "$GITHUB_SHA" \
+            --baseline "$QSOL_ARCADE_BASELINE" \
+            --out "$QSOL_ARCADE_EVIDENCE" "${sound[@]}"
+
+      - name: Verify the sealed evidence and publish the summary
+        if: ${{ always() && env.QSOL_ARCADE_EVIDENCE != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$QSOL_ARCADE_EVIDENCE/SHA256SUMS"
+          (cd "$QSOL_ARCADE_EVIDENCE" && sha256sum -c SHA256SUMS)
+          cat "$QSOL_ARCADE_EVIDENCE/SUMMARY.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Evidence kept locally at $QSOL_ARCADE_EVIDENCE"
+
+      - name: Upload evidence only on explicit owner consent
+        if: ${{ always() && inputs.publish_evidence == true && env.QSOL_ARCADE_EVIDENCE != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: arcade2-rtx5060ti-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.QSOL_ARCADE_EVIDENCE }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Remove the baseline worktree
+        if: ${{ always() && env.QSOL_ARCADE_BASELINE != '' }}
+        shell: bash
+        run: git worktree remove --force "$QSOL_ARCADE_BASELINE" || true
