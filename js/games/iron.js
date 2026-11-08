@@ -133,7 +133,7 @@
       c.save();c.globalAlpha=.22;for(let i=0;i<24;i++){const x=(i*71+this.time*(this.stage===1?18:6))%480,y=(i*43+this.time*(this.stage===2?170:8)-this.cam*.2)%270;if(this.stage===2)D.rect(c,x,y,1,7,'#a7c6cf');else D.rect(c,x,y,this.stage===1?4:2,1,'#e2d6a1');}c.restore();
       this.players.forEach((p,i)=>{D.rect(c,10+i*112,30,105,22,'#13252bd9');D.text(c,'P'+(i+1)+'  '+Math.ceil(p.hp),15+i*112,34,i?'#abe0e1':'#f3d394',7);D.bar(c,15+i*112,45,94,p.hp,p.maxHP,i?'#8dcbd0':'#e7ca88');});
       const tank=this.enemies.find(e=>e.kind==='tank');
-      // Route map (v0.4.0): the whole contract on one strip, drawn purely from state.
+      // Route map (v0.5.0): the whole contract on one strip, drawn purely from state.
       {const mx=466,my=64,mh=168,Y=v=>my+A.clamp(v/this.height,0,1)*mh;D.rect(c,mx-2,my-4,14,mh+8,'#13252bd9');D.rect(c,mx+3,my,2,mh,'#3d5a57');
        D.rect(c,mx,Y(50),8,Y(98)-Y(50),'#2f7d62');c.strokeStyle='#f3d39480';c.lineWidth=1;c.strokeRect(mx-1.5,Y(this.cam)+.5,11,Y(this.cam+270)-Y(this.cam));
        for(const o of this.objectives)D.rect(c,mx+1,Y(o.y)-2,6,4,o.done?'#5f8d78':'#ffe08a');

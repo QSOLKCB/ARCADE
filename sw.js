@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 'use strict';
 const PREFIX='qsol-arcade:'+self.registration.scope+':';
-const CACHE=PREFIX+'v0.4.1-r1';
+const CACHE=PREFIX+'v0.5.0-r1';
 const FILES=['./','./index.html','./styles.css','./manifest.webmanifest','./assets/icon.svg','./js/core.js','./js/vanilla2d.js','./js/cartridge.js','./js/draw.js','./js/input.js','./js/audio.js','./js/games/iron.js','./js/games/heist.js','./js/games/ninja.js','./js/games/hockey.js','./js/games/brawl.js','./js/games/chrono.js','./js/games/breaker.js','./js/games/void.js','./js/games/kestrel.js','./js/app.js'];
 const URLS=new Set(FILES.map(path=>new URL(path,self.registration.scope).href));
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)));});

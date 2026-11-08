@@ -18,21 +18,21 @@
 
 These are new interpretations of the play experiences, **not exact ports or emulations**. Code, maps, characters, pixel art, sound effects and musical sequences are original to this project. No ROMs, original game assets or recorded soundtrack samples are required or included.
 
-## Collection 003 — v0.4.0
+## Collection 003 — v0.5.0
 
 **Kestrel Strike** joins as the ninth cabinet. It is a vertical-scrolling propeller shoot-'em-up in the spirit of 1943 and Raiden, with original aircraft, fronts, bosses and music. Its plane flies through the integer `shmup` movement profile of [QSOLKCB/VANILLAJS](https://github.com/QSOLKCB/VANILLAJS) `motion2d`: exactly 2 px per tick, so every replay is exact.
 
 The VANILLAJS 2D foundation now runs inside the arcade. `js/vanilla2d.js` is generated from the VANILLAJS modules by `scripts/vanilla2d.cjs`, so it still opens from disk with classic scripts:
 
 - **audio2d:** a deterministic, sample-indexed PCM16 sound bank (explosions, hits, pickups, banks, alerts, bombs, power-ups, medals, the loop and terminal keys) shared by every cabinet.
-- **range2d:** an exact collision prefilter (`A.near`) in the hot loops of Iron Meridian, Velvet Heist, Neon Ronin, Basement Brawl and Chrono Wing. All 13 replay pins from v0.3.1 still match, so no rule changed.
+- **range2d:** an exact collision prefilter (`A.near`) in the hot loops of Iron Meridian, Velvet Heist, Neon Ronin, Basement Brawl and Chrono Wing. All 13 replay pins from 0.3.1 still match, so no rule changed.
 - **ternary-store2d:** the new **Score cartridge** button packs your local best scores into a ternary grid file you can download, and restores them with strict validation. A restore only ever raises a score.
 
-![Kestrel Strike — browser screenshot, Coral Strait (v0.4.1 graphics)](docs/kestrel-strike-v041.png)
+![Kestrel Strike — browser screenshot, Coral Strait](docs/kestrel-strike-v041.png)
 
 Every original cabinet also gets a readability improvement drawn purely from its existing state:
 
-| Cabinet | New in v0.4.0 |
+| Cabinet | New in v0.5.0 |
 | --- | --- |
 | Iron Meridian | Route map: the squad, objectives, roadblock, extraction and camera window on one strip |
 | Velvet Heist | Floor plan of all seven screens with the loose gems left in each |

@@ -36,7 +36,7 @@ Void Command keeps one retained 960 × 540 frame. `renderSignature()` serialises
 
 `tests/parity.test.cjs` pins SHA-256 hashes of the complete state of 15 scripted sessions across all nine cabinets. Performance work must reproduce them exactly; the pins change only with an intentional rule change.
 
-## VANILLAJS 2D and Kestrel Strike (v0.4.0)
+## VANILLAJS 2D and Kestrel Strike (v0.5.0)
 
 `js/vanilla2d.js` publishes four QSOLKCB/VANILLAJS modules on `Arcade.V2D`. `scripts/vanilla2d.cjs` wraps each ES module, unchanged, in its own function scope, so the runtime stays classic-script and file:// compatible; the source commit is recorded in the file.
 
@@ -47,6 +47,6 @@ Void Command keeps one retained 960 × 540 frame. `renderSignature()` serialises
 
 `kestrel.js` keeps the arcade's conventions: a 60 Hz fixed step, a seeded schedule per front (formations, couriers at fixed times, a mid-boss at the halfway point, the boss when the route ends and the mid-boss has gone), bounded pools (260 enemy bullets, 140 shots, 44 enemies, 24 items) and a renderer that is a pure function of state. The simulation uses field-local coordinates with +Y up, like motion2d. The renderer maps them onto a 240 × 245 playfield between two instrument panels.
 
-Kestrel Strike's explosions (v0.4.1) are bounded presentation pools on the game object: `blasts` (48), `debris` (64) and `scorch` (24). `explode()` derives each blast's shape and its debris from `hash()` of a running counter, never from `this.rand`. The pools advance in `update()`, so a frame is still a pure function of state and a replay reproduces every explosion. A boss kill sets `wreck`, which runs the finale for 2.9 s: chained blasts, a final blast at 2.1 s, then `clearStage()`.
+Kestrel Strike's explosions (v0.5.0) are bounded presentation pools on the game object: `blasts` (48), `debris` (64) and `scorch` (24). `explode()` derives each blast's shape and its debris from `hash()` of a running counter, never from `this.rand`. The pools advance in `update()`, so a frame is still a pure function of state and a replay reproduces every explosion. A boss kill sets `wreck`, which runs the finale for 2.9 s: chained blasts, a final blast at 2.1 s, then `clearStage()`.
 
-The per-cabinet readability additions in v0.4.0 read existing state only (for example Chrono Wing's radar reads enemy and courier positions, Neon Air's strike cue evaluates the exact strike condition). They add no fields to game objects, which is why the replay pins are unchanged.
+The per-cabinet readability additions in v0.5.0 read existing state only (for example Chrono Wing's radar reads enemy and courier positions, Neon Air's strike cue evaluates the exact strike condition). They add no fields to game objects, which is why the replay pins are unchanged.
