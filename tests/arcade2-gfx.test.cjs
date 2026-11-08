@@ -140,3 +140,13 @@ test('audio2d effects bank is valid, bounded, unclipped and deterministic',()=>{
  assert.equal(S.pcm('unknown'),S.pcm('shot'));
  assert.equal(sha(parts.join('|')),'c2edae152c357357ed844b053d437cd234d359584d97b627b307dfb0fe8714c8','bank PCM pin');
 });
+
+test('Breach cover art shows rubble only at zero health, and full health is undamaged',()=>withLayers(()=>{
+ const ctx=recordingContext(),g=A.registry.find(m=>m.id==='breach').create();g.enemies=[];
+ const keyFor=hp=>{const keys=[];G.reset();G.onPaint=(cache,key)=>{if(key.startsWith('cover:'))keys.push(key);};
+  for(const wall of g.cover)wall.hp=hp;frame(ctx,g);G.onPaint=null;return [...new Set(keys)];};
+ assert.deepEqual(keyFor(0),['cover:3'],'destroyed');
+ assert.deepEqual(keyFor(100),['cover:0'],'full health is intact');
+ for(let hp=1;hp<=100;hp++){const [key]=keyFor(hp);assert.notEqual(key,'cover:3','hp '+hp+' still protects, so it must not look destroyed');}
+ assert.deepEqual([keyFor(67),keyFor(66),keyFor(34),keyFor(33),keyFor(1)].flat(),['cover:0','cover:1','cover:1','cover:2','cover:2']);
+}));

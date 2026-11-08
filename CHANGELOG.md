@@ -26,8 +26,10 @@
   draw-call ceilings in `tests/arcade2-gfx.test.cjs`).
 - Fix offline deep links: the worker now strips `#fragment` before its URL check,
   so ARCADE 2 (which sets `#cabinets` / `#<cabinet>`) reloads offline. Advance the
-  cache key to `v0.6.0-r1-arcade2` and precache `arcade2/gfx.js` and `arcade2/sound.js`.
+  cache key to `v0.6.0-r2-arcade2` and precache `arcade2/gfx.js` and `arcade2/sound.js`.
 - Browser evidence for this pass is in `docs/ARCADE2_VERIFICATION.md`.
+- Show Breach Protocol cover as rubble only at zero health; positive health now
+  has intact, cracked and battered art (review finding on PR #8, with a regression test).
 - Add an owner-dispatched hardware check at the maintainer's request:
   `.github/workflows/rtx5060ti-arcade2.yml` runs `scripts/rtx5060ti-arcade2.mjs`
   in headed Chrome on the owner's RTX 5060 Ti runner (reviewed `main`, actor

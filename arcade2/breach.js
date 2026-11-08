@@ -112,7 +112,8 @@
         if(e.wind){G.glow(c,x,y-48,16,'#ff4d4d',0.8);D.text(c,'!',x,y-43,'#ff756e',23,'center');}
       }
       for(const wall of this.cover){
-        const up=wall.hp>0,dmg=up?3-Math.min(3,Math.floor(wall.hp/34)):3;
+        // 0 intact (67-100), 1 cracked (34-66), 2 battered (1-33); rubble (3) only once hp is 0.
+        const up=wall.hp>0,dmg=!up?3:wall.hp>=67?0:wall.hp>=34?1:2;
         G.sprite(c,'cover:'+dmg,96,44,ctx=>{
           if(dmg===3){ctx.fillStyle='#3e4849';ctx.fillRect(2,34,92,9);for(let i=0;i<9;i++){ctx.fillStyle=i%2?'#59625f':'#4a5352';ctx.fillRect(4+i*10,30+(i%3),8,6);}return;}
           ctx.fillStyle='#0a0f17';ctx.fillRect(1,3,94,41);
