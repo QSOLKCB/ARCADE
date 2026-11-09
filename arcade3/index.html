@@ -7,13 +7,16 @@
   <meta name="description" content="ARCADE 3: nine original, offline arcade cabinets. Run-and-gun, haunted platformers, rail and river shooters, jet combat, brawl ball and boxing.">
   <title>ARCADE 3 — The Graveyard Shift</title>
   <link rel="stylesheet" href="../arcade2/style.css"><link rel="stylesheet" href="style.css">
-  <!-- ARCADE 3 shares the ARCADE 2 engine, presentation layer, audio bank, input and shell. -->
-  <script defer src="../arcade2/engine.js"></script><script defer src="../arcade2/core.js"></script><script defer src="../arcade2/gfx.js"></script><script defer src="../arcade2/sound.js"></script>
+  <!-- ARCADE 3 shares the ARCADE 2 engine, presentation layer, audio bank, input and shell.
+       The ?v= release query gives these shared scripts URLs of their own, so a service worker
+       from an older release (which caches the bare URLs) can never pair an old shell with
+       these cabinets. Bump it with the cache key in sw.js whenever a shared script changes. -->
+  <script defer src="../arcade2/engine.js?v=0.8.0"></script><script defer src="../arcade2/core.js?v=0.8.0"></script><script defer src="../arcade2/gfx.js?v=0.8.0"></script><script defer src="../arcade2/sound.js?v=0.8.0"></script>
   <script defer src="kit.js"></script><script defer src="hall.js"></script>
   <script defer src="commando.js"></script><script defer src="lantern.js"></script><script defer src="sleepwalker.js"></script>
   <script defer src="lancer.js"></script><script defer src="canal.js"></script><script defer src="skyline.js"></script>
   <script defer src="stratos.js"></script><script defer src="feud.js"></script><script defer src="knockout.js"></script>
-  <script defer src="../arcade2/input.js"></script><script defer src="../arcade2/app.js"></script>
+  <script defer src="../arcade2/input.js?v=0.8.0"></script><script defer src="../arcade2/app.js?v=0.8.0"></script>
 </head>
 <body>
   <header class="masthead">

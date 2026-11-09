@@ -47,10 +47,10 @@ for(const id of IDS)test(id+' replay is deterministic, rendering is pure, pools 
 const PINS={
  commando:'60124f410951a81765d71b080aa93827095f64f6f3f76abc9b656f2eb54638a3',
  lantern:'f0817eaefeb91f2da7ea1c682e2708f77d0e5a05325a0841892ab5a41c3914f3',
- sleepwalker:'d32992a736a729d318851eb09a08fd1c1b55ae88b0dfa65bc6cc6fa063e85b51',
+ sleepwalker:'cf55e265068d44d620b7023a288327feeeed4017c200dbe3a088fd186e0e4f25',
  lancer:'b7dd057a823d40b4055957aa71b894cd1940fa54f7eb9c4c04b0151fcb7efce8',
  canal:'8c6e56e41f17cd10841b77d3b3d30546ab26c765dca88333ec2eaab7197b07cc',
- skyline:'9d9c36ed69cfadd2d284083e58cf7775436253a706029c81c7a213fd1c20b59c',
+ skyline:'bec8b7b310db2e59b54360428c1317ccb77cf5f81dc66d8d019bb7572297b7e2',
  stratos:'7f42a84418081db3a788f9bde643cb79af2f22cd0fc37e61a99bb36bfe801100',
  feud:'2e6df869d47d3a8ee5c129b517d7eea0b133ff6b0227102d03c4f96fd0b5c7a6',
  knockout:'1c1e859abc9111e63b7294ac98c02d7062708290780ca4df6f129231f6465b09',
@@ -173,6 +173,27 @@ test('Skyline Overdrive: missiles need a lock, and a locked target is destroyed'
  g.foes=[{kind:'fighter',x:0,y:0,bx:0,by:0,z:1500,vz:0,hp:1,age:0,cd:999,uid:77}];
  run(g,1);assert.deepEqual(g.locks,[77]);run(g,1,{bPressed:true});assert.equal(g.missiles.length,1);
  run(g,30);assert.equal(g.kills,1);
+});
+
+test('Skyline Overdrive: a target locks exactly when it appears inside the drawn reticle (PR #11 review)',()=>{
+ const g=make('skyline'),c=recordingContext();
+ const inBox=f=>{const [rx,ry]=g.project(g.p.x,g.p.y,1800),[sx,sy]=g.project(f.x,f.y,f.z);return Math.abs(sx-rx)<36&&Math.abs(sy-ry)<28;};
+ for(const [x,y,z] of [[190,0,700],[300,0,3000],[0,0,1500],[120,60,2600],[-80,-40,900],[400,100,3300]]){
+  const f={kind:'fighter',x,y,bx:x,by:y,z,hp:1,uid:1};
+  assert.equal(g.inReticle(f),inBox(f),'target at '+[x,y,z]);
+ }
+ assert.equal(g.inReticle({x:190,y:0,z:700}),false,'a near target off to the side is outside the reticle');
+ assert.equal(g.inReticle({x:300,y:0,z:3000}),true,'a far target inside the reticle locks');
+ g.draw(c);assert.ok(c.calls.includes('strokeRect'));
+});
+
+test('Pixel Sleepwalker: the extra-life crystal reward is reachable (PR #11 review)',()=>{
+ const g=make('sleepwalker');let blocks=0;
+ for(let s=0;s<3;s++){g.stage=s;g.setup();blocks+=g.blocks.filter(k=>k.kind==='s').length;}
+ const h=make('sleepwalker'),lives=h.lives;
+ for(let i=0;i<6;i++)h.gainCrystal({x:100,y:200});
+ assert.equal(h.lives,lives+1,'six crystals earn a life');
+ assert.ok(blocks>=18,'enough crystal blocks for three extra lives: '+blocks);
 });
 
 test('Stratos Ward: crystals level the weapon, ward bombs clear the sky',()=>{

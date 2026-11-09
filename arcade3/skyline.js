@@ -8,6 +8,9 @@
   // World units: lateral x ±600, height y ±300 (+y down), depth z ahead of the camera.
   // The player's jet flies at depth PLANE; everything is projected with focal length F.
   const F = 300, PLANE = 300, FAR = 4200, GROUND = 520;
+  // The reticle: a screen box of half-size RET_W x RET_H around the point straight ahead
+  // of the jet at depth RET_Z. Lock-on uses exactly this box, so what you see is what locks.
+  const RET_Z = 1800, RET_W = 36, RET_H = 28;
   const SORTIES = [{quota: 32, gap: 110, hp: 30}, {quota: 40, gap: 96, hp: 44}, {quota: 48, gap: 84, hp: 60}];
   A.Skyline = class extends A.Game {
     constructor(mode = 'extended') { super('skyline', 8807, mode); this.lives = 4; this.setup(); }
@@ -18,6 +21,14 @@
     }
     get cam() { return {x: Math.trunc(this.p.x * 6 / 10), y: Math.trunc(this.p.y * 6 / 10)}; }
     project(x, y, z) { const c = this.cam, k = F / Math.max(40, z); return [320 + (x - c.x) * k, 180 + (y - c.y) * k, k]; }
+    // Whether a target's projected screen position lies inside the drawn reticle. Integer
+    // form of |(f - c)·F/z − (p − c)·F/RET_Z| < half-size, multiplied through by z·RET_Z
+    // (all terms stay far below 2^53, so the comparison is exact).
+    inReticle(f) {
+      const c = this.cam, p = this.p, zz = f.z * RET_Z;
+      return Math.abs((f.x - c.x) * F * RET_Z - (p.x - c.x) * F * f.z) < RET_W * zz &&
+        Math.abs((f.y - c.y) * F * RET_Z - (p.y - c.y) * F * f.z) < RET_H * zz;
+    }
     spawnWave() {
       const s = this.stage, kind = this.random(4) === 0 && s ? 'bomber' : 'fighter', n = kind === 'bomber' ? 2 : 3;
       const bx = this.random(900) - 450, by = this.random(360) - 180, phase = this.random(120);
@@ -41,7 +52,7 @@
       if (p.cd) p.cd--; if (p.mcd) p.mcd--;
       if (input.a && !p.cd && this.shots.length < 12) { this.shots.push({x: p.x, y: p.y + 8, z: PLANE + 40}); p.cd = 5; this.emit('shot'); }
       // Lock-on: up to two targets inside the reticle cone (the box straight ahead of the jet).
-      this.locks = this.foes.filter(f => f.z > 600 && f.z < 3400 && Math.abs(f.x - p.x) < 200 && Math.abs(f.y - p.y) < 150 && !this.missiles.some(m => m.target === f.uid))
+      this.locks = this.foes.filter(f => f.z > 600 && f.z < 3400 && this.inReticle(f) && !this.missiles.some(m => m.target === f.uid))
         .sort((u, v) => u.z - v.z).slice(0, 2).map(f => f.uid);
       if (input.bPressed && !p.mcd && p.missiles > 0 && this.locks.length) {
         for (const uid of this.locks) if (p.missiles > 0) { p.missiles--; this.missiles.push({target: uid, x: p.x, y: p.y + 16, z: PLANE, eta: 22}); }
@@ -162,7 +173,7 @@
       for (const m of this.missiles) { const [sx, sy, k] = this.project(m.x, m.y, m.z); G.glow(c, sx, sy, 8 + 10 * k, '#c2f874', 0.8); D.ellipse(c, sx, sy, 2 + 4 * k, 2 + 4 * k, '#f4ffd0'); }
       for (const b of this.shots) { const [sx, sy, k] = this.project(b.x, b.y, b.z); D.rect(c, sx - 1, sy - 1, 2 + 3 * k, 2 + 3 * k, '#fff3c4'); }
       // The reticle (lock cone) straight ahead of the jet.
-      const [rx, ry] = this.project(p.x, p.y, 1800), rw = 200 * F / 1800 * 2.2, rh = 150 * F / 1800 * 2.2;
+      const [rx, ry] = this.project(p.x, p.y, RET_Z), rw = RET_W * 2, rh = RET_H * 2;
       c.strokeStyle = G.rgba('#c2f874', 0.7); c.lineWidth = 1.5; c.strokeRect(rx - rw / 2, ry - rh / 2, rw, rh); D.line(c, rx - 6, ry, rx + 6, ry, '#c2f874', 1); D.line(c, rx, ry - 6, rx, ry + 6, '#c2f874', 1);
       if (this.status !== 'lost' && this.inv % 8 < 5) {
         const [sx, sy] = this.project(p.x, p.y, PLANE);

@@ -30,10 +30,18 @@ assert.ok(sw.includes("'./arcade2/'"),'nested hall navigation precached');
 console.log('ARCADE2 checks passed: source pin, generated adapter, local URLs and cache coverage.');
 
 const hall3=fs.readFileSync(path.join(root,'arcade3/index.html'),'utf8');
+const release=(sw.match(/'\.\/arcade2\/app\.js\?(v=[^']+)'/)||[])[1];
+assert.ok(release,'service worker precaches the versioned shared shell');
 for(const match of hall3.matchAll(/(?:src|href)="([^"]+)"/g)){
  const url=match[1];if(url.startsWith('#'))continue;
  assert.ok(!/^(?:https?:|\/)/.test(url),'ARCADE3 relative runtime URLs');
- assert.ok(fs.existsSync(path.resolve(root,'arcade3',url)),url+' exists');
+ const [file,query]=url.split('?');
+ assert.ok(fs.existsSync(path.resolve(root,'arcade3',file)),url+' exists');
+ // Shared scripts carry the release query and are precached under exactly that URL.
+ if(file.startsWith('../arcade2/')&&file.endsWith('.js')){
+  assert.equal(query,release,url+' carries the current release query');
+  assert.ok(sw.includes("'./arcade2/"+path.basename(file)+'?'+query+"'"),url+' precached under its versioned URL');
+ }
 }
 for(const file of arcade3.filter(f=>f.endsWith('.js')))assert.ok(hall3.includes('src="'+path.basename(file)+'"'),file+' loaded by the ARCADE 3 hall');
 assert.ok(!/type="module"/.test(hall3),'ARCADE3 file-open compatible');

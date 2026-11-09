@@ -18,7 +18,7 @@
   shell. The shell now accepts a per-hall configuration (`Arcade2.HALL`) and
   per-cabinet mode lists, and hides the Mode menu for single-mode cabinets.
   ARCADE 2 behaviour and all of its pins are unchanged.
-- `tests/arcade3.test.cjs` (32 tests) covers:
+- `tests/arcade3.test.cjs` (34 tests) covers:
   - for every cabinet: replay determinism, render purity, bounded pools and
     terminal-state freeze
   - control-only completion of all nine campaigns (29 stages), with nine new
@@ -35,9 +35,20 @@
     campaign pin was re-recorded; the campaign still wins, in 13,545 ticks.
   - **Knockout Circuit:** a third knockdown landed on the final clock tick now wins
     the bout instead of going to a decision.
-  Both have regression tests.
+  - **Skyline Overdrive:** lock-on now uses the drawn reticle exactly: a target
+    locks when its projected position is inside the box. The old world-space box
+    disagreed with the drawing at most depths.
+  - **Pixel Sleepwalker:** the extra-life reward was set at 100 crystals, but the
+    three nights hold only 18. It is now a life every 6 crystals.
+  - **Offline:** ARCADE 3 loads its shared ARCADE 2 scripts with a `?v=0.8.0`
+    release query, and the service worker precaches those exact URLs. A visitor
+    whose browser still runs the v0.7.0 worker therefore fetches current scripts,
+    instead of an old shell that would crash on the new cabinets.
+    `scripts/check.cjs` enforces the query and the precache entries.
+  Skyline and Sleepwalker campaign pins were re-recorded for these rule changes.
+  Every fix has a regression test.
 - Links to ARCADE 3 from the original hall and ARCADE 2. The service worker cache key
-  is now `v0.8.0-r1-arcade3`, and it precaches the 15 ARCADE 3 files. The Pages
+  is now `v0.8.0-r1-arcade3`, and it precaches the 15 ARCADE 3 files and the six versioned shared scripts. The Pages
   workflow publishes `arcade3/`.
 
 ## v0.7.0 — ARCADE 2 modes: Legacy, Extended and Remix

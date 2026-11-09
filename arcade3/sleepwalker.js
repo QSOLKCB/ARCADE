@@ -7,6 +7,8 @@
   const {q, px, clamp, Draw: D, K3: K} = A;
   const L = 2800, GROUND = 303, T = 24; // block size in pixels
   const W = 7, H = 28; // half-width and height of the sleepwalker
+  // The three nights hold 18 crystal blocks (7, 6 and 5), so up to three extra lives can be earned.
+  const CRYSTAL_LIFE = 6;
   // Each row: [column, row from ground (1 = sits on the ground), kind]. Kinds:
   // b dream brick (breakable with Storm), s star block (crystal), S star block (Storm), w solid pillow.
   const LAYOUTS = [
@@ -59,7 +61,7 @@
     }
     gainCrystal(k) {
       this.crystals++; this.score += 100; K.push(this.pops, {x: q(k.x + 12), y: q(k.y - 6), vy: -q(3), life: 24, kind: 'crystal'}, 6); this.emit('pickup');
-      if (this.crystals % 100 === 0) { this.lives++; this.announce('ONE MORE DREAM // +1 LIFE', 80); }
+      if (this.crystals % CRYSTAL_LIFE === 0) { this.lives++; this.announce('ONE MORE DREAM // +1 LIFE', 80); }
     }
     tick(input) {
       if (!this.begin()) return;
@@ -177,7 +179,7 @@
   };
   A.register({id: 'sleepwalker', title: 'Pixel Sleepwalker', subtitle: 'Mind the nightmares. Find the door.', genre: 'DREAM PLATFORMER', color: '#e8b0fc', number: '03',
     modes: ['extended'], inspiredBy: 'The Great Giana Sisters',
-    controls: ['Move', 'Z · throw spark (Storm)', 'Space · jump · hold to run', '100 crystals · extra life'],
+    controls: ['Move', 'Z · throw spark (Storm)', 'Space · jump · hold to run', '6 crystals · extra life'],
     description: 'Three nights of dreaming. Stomp inkblots and moth-owls, head-butt star blocks and catch the Storm charm before morning comes.'},
   () => new A.Sleepwalker());
 })(globalThis.Arcade2);
