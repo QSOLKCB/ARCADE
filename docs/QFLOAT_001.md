@@ -85,6 +85,18 @@ math operation in performance-sensitive production code. Use the original
 raw-int functions directly there, and this API for readable authoring and
 inspection at slower boundaries.
 
+## Owner-run graphical browser witness
+
+After merging PR #16 and confirming the Pages deployment, the owner can run
+**Actions → QFLOAT-001 — owner desktop browser validation → Run workflow**
+on the main branch. This is manual-only on the existing self-hosted RTX
+runner. It checks actual headed Chromium, fixed-step keyboard controls,
+decimal quantization, live Canvas pixels, pause/reset and both the reviewed
+local page and the published page's exact source-hash-matched assets.
+No packages are installed. Screenshots and a sealed JSON report are retained
+locally; uploading them requires separate explicit consent.
+See [QFLOAT-RUNNER-001](QFLOAT_RUNNER_001.md).
+
 ## Test and preservation gate
 
     node --test tests/qfloat-illusion.test.cjs
