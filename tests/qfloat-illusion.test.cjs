@@ -90,6 +90,21 @@ test('fixed tick world state retains only integer Q16.16 and is independent of d
   assert.throws(()=>S.step(initial,{x:2,y:0}),/legal directional/);
   assert.throws(()=>S.create({speed:'20.1'}),RangeError);
 });
+test('tick exhaustion rejects before constructing any next state that violates check()',()=>{
+  const maxAccepted=2147483646;
+  const lastStepInput=Object.freeze({x:0,y:0});
+  const before=Object.freeze({x:0,y:0,speed:0,tick:maxAccepted-1});
+  const last=S.step(before,lastStepInput);
+  assert.equal(last.tick,maxAccepted);
+  assert.equal(S.check(last),last,'a successful step must validate itself');
+  assert.ok(Object.isFrozen(last));
+  const snapshot=JSON.stringify(last);
+  assert.throws(()=>S.step(last,lastStepInput),/tick exhausted/);
+  assert.equal(JSON.stringify(last),snapshot,'rejection must preserve caller state');
+  assert.equal(JSON.stringify(before),JSON.stringify({x:0,y:0,speed:0,tick:maxAccepted-1}));
+  assert.throws(()=>S.check({...last,tick:maxAccepted+1}),/tick exhausted/);
+});
+
 test('two independent runs produce identical SHA256 replay identities even with intervening presentation',()=>{
   const tape=Array.from({length:500},(_,i)=>({
     x:i%80<30?1:i%80<55?-1:0,
