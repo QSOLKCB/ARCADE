@@ -30,7 +30,8 @@ test('bounded Float64 is admitted only for exact intermediate integer products',
   assert.equal(M.guardedFloat64(...known).admitted,false);
   assert.deepEqual(M.guardedFloat64(60000,70000,1000),
     {admitted:true,value:4200000});
-  assert.throws(()=>M.guardedFloat64(2147483647,2147483647,1),RangeError);
+  assert.equal(M.guardedFloat64(2147483647,2147483647,1).admitted,false);
+  assert.throws(()=>M.guardedFloat64(2147483647,2,1),RangeError);
   assert.throws(()=>M.guardedFloat64(1,2,0),RangeError);
 });
 test('balanced-ternary representations are canonical and exact for signed 64-bit products',()=>{
