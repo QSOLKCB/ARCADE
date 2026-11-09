@@ -1,0 +1,61 @@
+name: ARCADE3-NUMSPEC-PERF-002 — safe Float64 and campaign gate
+on:
+  pull_request:
+    paths:
+      - arcade2/**
+      - arcade3/**
+      - scripts/arcade3-numspec*.cjs
+      - scripts/arcade3-fuzz.cjs
+      - tests/arcade3-policy.cjs
+      - tests/arcade3.test.cjs
+      - tests/arcade3-numspec-perf.test.cjs
+      - .github/workflows/arcade3-numspec-perf.yml
+  push:
+    branches: [main]
+    paths:
+      - arcade2/**
+      - arcade3/**
+      - scripts/arcade3-numspec*.cjs
+      - scripts/arcade3-fuzz.cjs
+      - tests/arcade3-policy.cjs
+      - tests/arcade3.test.cjs
+      - tests/arcade3-numspec-perf.test.cjs
+      - .github/workflows/arcade3-numspec-perf.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: arcade3-numspec-perf-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  paired-cpu:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out pinned game and research sources
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Pin Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Numeric exactness, negative controls and isolated guest smoke
+        run: node --test tests/arcade3-numspec-perf.test.cjs
+      - name: Verify existing campaign/replay hashes independently
+        run: node --test tests/arcade3.test.cjs
+      - name: Profile two arithmetic paths and replay all 29 stages
+        run: |
+          set -euo pipefail
+          node scripts/arcade3-numspec-perf.cjs --rounds 9 --iterations 8 --out artifacts/arcade3-numspec-perf-002.json
+          (cd artifacts && sha256sum -c NUMSPEC_PERF_SHA256SUMS)
+      - name: Preserve byte-identical CPU receipts or failure evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: arcade3-numspec-perf-002-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/arcade3-numspec-perf-002.json
+            artifacts/NUMSPEC_PERF_SHA256SUMS
+          if-no-files-found: warn
+          retention-days: 14
