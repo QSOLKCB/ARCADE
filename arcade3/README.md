@@ -1,5 +1,11 @@
 # ARCADE 3 — The Graveyard Shift
 
+## QFLOAT-001 — The Floating Illusion Lab (development)
+
+[**Open the QFloat Lab**](qfloat-lab.html) — a separate offline visual experiment illustrating how game authors can enter and read decimal-looking values while authoritative world coordinates and operations remain checked signed Q16.16 integers. The lab is not a tenth cabinet and does not alter any of the nine existing games or campaign pins.
+
+The example 0.1 + 0.2 displays as 0.300 at three decimal places while the exact quantized Q16.16 sum is 0.2999877929687500. The distinction is deliberate and inspectable. See [QFLOAT-001 contracts](../docs/QFLOAT_001.md).
+
 Nine original single-player cabinets in `arcade3/`, alongside the original hall and
 ARCADE 2. Open `arcade3/index.html` from an extracted checkout, or visit `arcade3/`
 beneath the repository's Pages URL. There is no runtime build, package installation,
