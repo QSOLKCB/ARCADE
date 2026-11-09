@@ -130,3 +130,12 @@ test('Legacy games carry none of the new state fields',()=>{
   for(const e of g.enemies||[])assert.ok(!('kind' in e),m.id+' legacy enemies have no kind');
  }
 });
+test('Remix Null Vector: a piercing beam hits each enemy once and reaches the one behind',()=>{
+ const g=make('vector','remix');g.inv=999;tick(g,16,{a:true});tick(g,1,{aReleased:true});const beam=g.shots.find(b=>b.beam);
+ const drone=(dx)=>({x:beam.x+q(dx),y:beam.y,hp:999,maxHP:999,boss:false,age:0,cd:999,base:beam.y+q(21),phase:0,drop:false,flash:0,shield:false,uid:dx});
+ g.enemies=[drone(12),drone(70)];g.shots=[beam]; // the pod's ordinary 8-damage shot is not under test
+ for(let i=0;i<12;i++)tick(g);
+ const [front,back]=g.enemies;
+ assert.equal(999-front.hp,65,'the front drone takes one full-power hit, not four');
+ assert.equal(999-back.hp,32,'the halved beam reaches the drone behind');
+});

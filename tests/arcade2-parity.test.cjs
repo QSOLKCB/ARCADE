@@ -85,7 +85,8 @@ for(const id of Object.keys(PINS)){
 }
 
 // v0.7.0 rule sets. These pins were recorded when Extended and Remix were introduced;
-// the Legacy pins above are the v0.6.0 values and did not change.
+// the Legacy pins above are the v0.6.0 values and did not change. Remix Null Vector was
+// re-pinned when piercing beams were limited to one hit per enemy (PR #10 review).
 const MODE_PINS={
  extended:{
   shadow:'d9203e11c58d18bdf869576bf5db8bfce704fdc83a6836ff2238178e46d43829',
@@ -108,7 +109,7 @@ const MODE_PINS={
   breach:'7572dbdc10065fc175776d5f7fe11abe8b4685cb47a64f5422d9ea7a402d29fb',
   invaders:'ffa188f140a868dc82aa0110870482f0c10b4567e76942b17f9e30ed01317c30',
   iron:'4b27e9e37b432f0203b9fed4319ae3d29388056a83285c22eb56281e905029f0',
-  vector:'91642a032a85c23375a99779ddedf48522099b5a0908f4b67ff58fa6b11d88cd',
+  vector:'4558e81f2b5ac755421975fcaf6769220ac0ecb159ad23c876e36f966d92e2bd',
   ember:'c1cbdab3e79244db87d4b05e2e6e4e02600ab762a6595622d0571e5deec8ff9e',
  },
 };

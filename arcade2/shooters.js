@@ -44,6 +44,8 @@
       this.enemies.push({x:q(this.vertical?lane:672),y:q(this.vertical?-30:lane),hp,maxHP:hp,boss,age:0,cd:boss?50:70,
         base:q(lane),phase:this.random(100),drop:!boss&&this.stageTicks%270===0,flash:0,shield:false});
       if(kind)this.enemies.at(-1).kind=kind;
+      // Remix (Null Vector): numeric IDs let a piercing beam hit each enemy only once.
+      if(this.rules.remix&&this.id==='vector'){this.uid=(this.uid||0)+1;this.enemies.at(-1).uid=this.uid;}
       if(boss){const e=this.enemies.at(-1);e.x=q(this.vertical?320:550);e.y=q(this.vertical?95:180);this.announce('CORE EXPOSES BETWEEN VOLLEYS',140);}
     }
     tick(input){
@@ -118,10 +120,10 @@
           if(this.id==='vector'&&!this.podCD&&A.near(b,pod,16)){b.life=0;this.podCD=10;this.burst(pod.x,pod.y,'#baf77a',4);}
           else if(A.near(b,this.p,12)){this.hurt(b.damage);b.life=0;}
         }else{
-          for(const e of this.enemies)if(e.hp>0&&Math.abs(b.x-e.x)<q(e.boss?52:24)&&Math.abs(b.y-e.y)<q(e.boss?44:19)){
+          for(const e of this.enemies)if(e.hp>0&&!(b.hits&&b.hits.includes(e.uid))&&Math.abs(b.x-e.x)<q(e.boss?52:24)&&Math.abs(b.y-e.y)<q(e.boss?44:19)){
             this.damage(e,b.damage);
-            // Remix (Null Vector): a beam pierces, halving its power with each hit.
-            if(b.beam&&this.rules.remix&&this.id==='vector'&&b.damage>=16)b.damage=Math.floor(b.damage/2);else b.life=0;
+            // Remix (Null Vector): a beam pierces, halving its power with each new enemy it hits.
+            if(b.beam&&this.rules.remix&&this.id==='vector'&&b.damage>=16){b.damage=Math.floor(b.damage/2);(b.hits||(b.hits=[])).push(e.uid);}else b.life=0;
             break;
           }
         }
