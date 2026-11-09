@@ -1,5 +1,11 @@
 # Changelog
 
+## Development — ARCADE3-NUMSPEC-PERF-002 (not a production optimization)
+
+- Add a candidate safe-product Float64 path with original exact Q16.16 fallback, independent scalar/BigInt parity tests, and source-bound AB/BA CPU benchmarking of safe, wide and actual campaign arithmetic inputs.
+- Re-execute all nine original campaigns in isolated reference/candidate VM contexts; their 29 stages must win and preserve every original SHA-256 pin.
+- Preserve raw timing samples and evidence manifest; no change to authoritative runtime, release tags or gameplay.
+
 ## Development — ARCADE3-NUMSPEC-001 (experimental, unreleased)
 
 - Add independent signed-int32 BigInt reference for checked Q16.16 multiply-divide, with a guarded Float64 safe-product path and an intentionally failing naive Float64 negative control.
