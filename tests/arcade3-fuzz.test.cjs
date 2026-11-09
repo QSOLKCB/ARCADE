@@ -69,6 +69,29 @@ test('each cabinet executes deterministic randomized smoke with and without rend
     }
   }
 });
+test('artificial render-only crash yields a complete original tape and reducible witness',()=>{
+  const before=A.Commando.prototype.draw;
+  try{
+    A.Commando.prototype.draw=function injectedFailure(){
+      throw new Error('synthetic draw fault for witness test');
+    };
+    const tape=inputTape('commando',41,40);
+    const first=executeTape('commando',41,tape,{draw:true});
+    assert.equal(first.ok,false);
+    assert.equal(first.failure.tick,0);
+    assert.match(first.failure.stack,/synthetic draw fault/);
+    assert.equal(executeTape('commando',41,tape,{draw:false}).ok,true,
+      'no-render reference must not trigger a rendering-only injected fault');
+    const report=fuzz({seeds:1,ticks:40,cabinets:['commando']});
+    assert.equal(report.status,'FAIL');
+    assert.equal(report.failingRun,'with-render');
+    assert.equal(report.failure.tick,0);
+    assert.equal(report.originalTape.length,1);
+    assert.match(report.originalTapeSha256,/^[0-9a-f]{64}$/);
+    assert.equal(report.proofOfReproduction.ok,false);
+    assert.equal(validInputSequence(report.minimized.inputs),true);
+  }finally{A.Commando.prototype.draw=before;}
+});
 test('bounded fuzz aggregation retains source-bound PASS summaries',()=>{
   const report=fuzz({seeds:2,ticks:100});
   assert.equal(report.kind,witnessKind);
@@ -76,6 +99,10 @@ test('bounded fuzz aggregation retains source-bound PASS summaries',()=>{
   assert.equal(report.plannedCases,18);
   assert.equal(report.executedTicks,1800);
   assert.equal(report.cases.length,18);
+  assert.match(report.source.gitHead??'',/^[0-9a-f]{40}$/);
+  assert.equal(report.source.nodeVersion,process.version);
+  assert.ok(report.source.sourceFiles.some(f=>f.path==='arcade2/engine.js'&&
+    /^[0-9a-f]{64}$/.test(f.sha256)));
   assert.throws(()=>fuzz({seeds:0,ticks:100}),RangeError);
   assert.throws(()=>fuzz({seeds:1,ticks:1,cabinets:['unknown']}),RangeError);
 });
