@@ -20,7 +20,13 @@
       // Nodes at every section boundary; each reach ends on a narrow gate under a bridge.
       this.nodes = [GATE];
       for (let r = 0; r < reaches; r++) {
-        for (let k = 1; k < REACH; k++) this.nodes.push(SHAPES[(this.random(SHAPES.length) + r + k) % SHAPES.length]);
+        // The section after each bridge (a restart point) never forks, so a restart is never
+        // straight onto an island tip.
+        for (let k = 1; k < REACH; k++) {
+          let shape = SHAPES[(this.random(SHAPES.length) + r + k) % SHAPES.length];
+          if (k === 1 && shape[2]) shape = SHAPES[(SHAPES.indexOf(shape) + 1) % SHAPES.length];
+          this.nodes.push(shape);
+        }
         this.nodes.push(GATE);
       }
       this.nodes.push(GATE);
@@ -96,7 +102,7 @@
       }
       for (const b of this.shots) {
         b.wy += 9 + this.speed;
-        if (b.wy - this.dist > 320) b.gone = true;
+        if (b.wy - this.dist > SHIP_Y) b.gone = true; // Rounds burn out at the top of the screen.
         for (const f of this.foes) {
           if (f.gone || b.gone) continue;
           const hit = f.kind === 'bridge' ? b.wy >= f.wy - 6 && b.wy <= f.wy + 14 : Math.abs(f.x - b.x) < HALF[f.kind] && Math.abs(f.wy - b.wy) < 12;

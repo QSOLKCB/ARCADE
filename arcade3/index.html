@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#120f1a">
+  <meta name="description" content="ARCADE 3: nine original, offline arcade cabinets. Run-and-gun, haunted platformers, rail and river shooters, jet combat, brawl ball and boxing.">
+  <title>ARCADE 3 — The Graveyard Shift</title>
+  <link rel="stylesheet" href="../arcade2/style.css"><link rel="stylesheet" href="style.css">
+  <!-- ARCADE 3 shares the ARCADE 2 engine, presentation layer, audio bank, input and shell. -->
+  <script defer src="../arcade2/engine.js"></script><script defer src="../arcade2/core.js"></script><script defer src="../arcade2/gfx.js"></script><script defer src="../arcade2/sound.js"></script>
+  <script defer src="kit.js"></script><script defer src="hall.js"></script>
+  <script defer src="commando.js"></script><script defer src="lantern.js"></script><script defer src="sleepwalker.js"></script>
+  <script defer src="lancer.js"></script><script defer src="canal.js"></script><script defer src="skyline.js"></script>
+  <script defer src="stratos.js"></script><script defer src="feud.js"></script><script defer src="knockout.js"></script>
+  <script defer src="../arcade2/input.js"></script><script defer src="../arcade2/app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="index.html" aria-label="Arcade 3 home"><span class="brand-mark" aria-hidden="true">A<span>3</span></span><span>QSOL<span class="brand-sub">INDEPENDENT ARCADE SYSTEMS</span></span></a>
+    <nav aria-label="Arcade navigation"><a href="../index.html">Original hall <span aria-hidden="true">↗</span></a><a href="../arcade2/index.html">ARCADE 2 <span aria-hidden="true">↗</span></a><button id="fx" type="button" aria-pressed="true" title="Full: glow, trails and CRT pass. Lite: same game, fewer cosmetic effects.">FX full</button><button id="audio" type="button" aria-pressed="false">Sound off</button><button id="update" type="button" hidden>Update ready</button></nav>
+  </header>
+  <main>
+    <section id="hall">
+      <div class="hero">
+        <div class="hero-copy"><p class="eyebrow"><span class="status-dot"></span> COLLECTION 005 / NINE NEW CABINETS</p><h1>THE GRAVEYARD<br><span>SHIFT.</span></h1><p class="hero-description">The lights are low and the floor is yours.<br>Nine original games. Every credit on the house.</p><a class="primary-link" href="#cabinets">FIND YOUR CABINET <span aria-hidden="true">↓</span></a><div class="hero-facts"><span>9 <small>GAMES</small></span><span>29 <small>STAGES</small></span><span>∞ <small>FREE PLAY</small></span></div></div>
+        <div class="feature"><div class="feature-top"><span>NOW ATTRACTING</span><span>NO. 09</span></div><div class="feature-marquee">KNOCKOUT<br><span>CIRCUIT</span></div><div class="feature-screen"><canvas id="feature-art" width="640" height="360" aria-label="Knockout Circuit gameplay preview"></canvas></div><div class="feature-bottom"><span>READ THE TELL.</span><button type="button" id="featured-play">PLAY NOW <span aria-hidden="true">↗</span></button></div><div class="cabinet-controls" aria-hidden="true"><i></i><b></b><b></b><b></b></div></div>
+      </div>
+      <div class="ticker" aria-hidden="true"><span>NO QUARTERS REQUIRED</span><span>LOCAL HIGH SCORES</span><span>KEYBOARD · TOUCH · GAMEPAD</span><span>SAME ENGINE AS ARCADE 2</span></div>
+      <section id="cabinets" aria-labelledby="catalogue-title"><div class="section-heading"><div><p class="eyebrow">PICK YOUR NEXT BAD HABIT</p><h2 id="catalogue-title">The back room<span> / 09</span></h2></div><p>All originals. All playable. All yours.</p></div><div class="filters" role="group" aria-label="Filter games"><button type="button" data-filter="all" aria-pressed="true">All cabinets <span>9</span></button><button type="button" data-filter="action" aria-pressed="false">Action</button><button type="button" data-filter="sport" aria-pressed="false">Sports</button><button type="button" data-filter="shooter" aria-pressed="false">Shooters</button></div><div id="cards" class="cards"></div></section>
+      <section class="about"><span class="about-badge">AFTER<br>HOURS.</span><div><h2>Familiar genres.<br>Nothing copied.</h2><p>Each cabinet is an original game built around the mechanics of a classic: new names, worlds, rivals, art and sound. No accounts, installation or subscriptions. Keep the folder for offline play, or return here after the first complete load.</p></div><div class="about-note"><span>THE ENGINE ROOM</span><p>The ARCADE 2 engine, shared.<br>60 fixed ticks per second.<br>Checked 16.16 movement.<br>FrameGate redraws · audio2d sound.<br>Every campaign proven finishable.</p><a href="README.md">Controls &amp; credits ↗</a></div></section>
+    </section>
+    <section id="playroom" hidden aria-labelledby="game-title">
+      <div class="game-heading"><div><p id="game-genre" class="eyebrow"></p><h1 id="game-title"></h1></div><div class="game-actions"><label class="mode-pick"><span>Mode</span><select id="mode" aria-label="Rule set"></select></label><button id="pause" type="button">Pause <kbd>P</kbd></button><button id="restart" type="button">Restart</button><button id="leave" type="button">Cabinets ↗</button></div></div>
+      <div class="monitor"><div class="monitor-top"><span id="hud-left"></span><span id="hud-score"></span><span id="hud-right"></span></div><div class="screen"><canvas id="screen" width="640" height="360" tabindex="0" aria-label="Arcade game playfield"></canvas><div id="overlay" class="overlay" hidden><div class="overlay-content"><p id="overlay-kicker" class="eyebrow"></p><h2 id="overlay-title"></h2><p id="overlay-copy"></p><button id="continue" class="primary" type="button">Resume</button><button id="overlay-leave" type="button">Back to cabinets</button></div></div></div><div class="monitor-bottom"><span id="objective"></span><span class="free-play">FREE PLAY</span></div></div>
+      <p id="announcement" class="announcement" role="status" aria-live="polite"></p>
+      <div class="play-help"><div id="control-guide" class="control-guide"></div><span id="best"></span></div>
+      <div class="touch-controls" aria-label="Touch game controls"><div class="dpad"><button type="button" data-input="up" aria-label="Up">↑</button><button type="button" data-input="left" aria-label="Left">←</button><button type="button" data-input="down" aria-label="Down">↓</button><button type="button" data-input="right" aria-label="Right">→</button></div><div class="touch-actions"><button type="button" data-input="a" aria-label="Primary action Z">Z</button><button type="button" data-input="b" aria-label="Secondary action X">X</button><button type="button" data-input="c" aria-label="Jump, turbo or special, Space">SPACE</button><button type="button" data-input="d" aria-label="Rollback C">C</button></div></div>
+      <p class="pad-guide">GAMEPAD: left stick / D-pad moves · A = Z · B = X · X = Space · Y = C · Start pauses. Release controls after switching screens.</p>
+    </section>
+    <noscript><p class="no-script">Enable JavaScript to play these local arcade games.</p></noscript>
+  </main>
+  <footer><a class="footer-brand" href="index.html">ARCADE<span>3</span></a><p>QSOL-IMC / TRENT SLADE<br><span>Original games. Apache-2.0. Made for the love of it.</span></p><span class="footer-stamp">INSERT NOTHING.<br>PLAY EVERYTHING.</span></footer>
+</body>
+</html>

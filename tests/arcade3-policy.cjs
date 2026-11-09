@@ -104,7 +104,7 @@ function policy(id){
    for(let k=0;k<=90;k+=10){const c2=side(d+k);lo=Math.max(lo,c2[0]+11);hi=Math.min(hi,c2[1]-11);}
    if(lo>hi){const m=(lo+hi)/2;lo=hi=m;}
    let want=(ch[0]+ch[1])/2;
-   const low=g.fuel<1600,buoy=g.foes.filter(f=>f.kind==='buoy'&&ahead(f)>-4&&ahead(f)<240&&f.x>=ch[0]&&f.x<=ch[1]).sort((u,v)=>ahead(u)-ahead(v))[0];
+   const low=g.fuel<1900,buoy=g.foes.filter(f=>f.kind==='buoy'&&ahead(f)>-4&&ahead(f)<240&&f.x>=ch[0]&&f.x<=ch[1]).sort((u,v)=>ahead(u)-ahead(v))[0];
    const threats=g.foes.filter(f=>HALF[f.kind]&&f.kind!=='buoy'&&ahead(f)>-14&&ahead(f)<260).sort((u,v)=>ahead(u)-ahead(v));
    const close=threats.find(f=>ahead(f)<70&&Math.abs(f.x-x)<HALF[f.kind]+16);
    if(low&&buoy)want=buoy.x;
@@ -118,7 +118,9 @@ function policy(id){
    want=Math.max(lo,Math.min(hi,want));
    if(Math.abs(want-x)>2)a.x=sign(want-x);
    const bridge=g.foes.find(f=>f.kind==='bridge'&&ahead(f)<300);
-   a.a=!(buoy&&low&&Math.abs(buoy.x-x)<16&&!threats.some(f=>Math.abs(f.x-x)<HALF[f.kind]&&ahead(f)<ahead(buoy)));
+   // Hold fire while the first thing in the firing column is a buoy the cell still needs.
+   const first=[...g.foes,...g.plan.slice(g.cursor,g.cursor+6)].filter(f=>HALF[f.kind]&&ahead(f)>0&&ahead(f)<420&&Math.abs(f.x-x)<HALF[f.kind]+3).sort((u,v)=>ahead(u)-ahead(v))[0];
+   a.a=!(first&&first.kind==='buoy'&&g.fuel<2200);
    a.y=bridge&&ahead(bridge)<220||close||(low&&buoy&&ahead(buoy)<60)?1:0;
    if(!a.y&&!threats.length&&!bridge&&g.fuel>800&&!(low&&buoy))a.y=0;
   }

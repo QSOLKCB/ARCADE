@@ -26,6 +26,12 @@ identify those inspirations. No commercial game assets or source are included.
 Selected QSOLKCB/VANILLAJS v1.2.0 modules are preserved under
 arcade2/vendor/vanillajs with their full LICENSE, NOTICE and pinned provenance.
 
+ARCADE 3 adds nine original cabinets inspired by the gameplay of titles requested
+by Trent Slade. Those titles are listed in arcade3/README.md solely to identify the
+inspirations; no names, characters, levels, maps, art, music, sound or source from
+those games are included, and no endorsement is implied. ARCADE 3 reuses the
+ARCADE 2 runtime from arcade2/ and adds no third-party code.
+
 ARCADE 2 v0.7.0:
 - The integer CORDIC/BAM sine and cosine in arcade2/core.js (A.sinCosQ30) is a
   JavaScript port of sin_cos_q30 from QSOLKCB/GALAXY retro/src/lib.rs (Apache-2.0),

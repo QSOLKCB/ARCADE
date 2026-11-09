@@ -8,6 +8,7 @@ on:
       - styles.css
       - js/**
       - arcade2/**
+      - arcade3/**
       - assets/**
       - sw.js
       - manifest.webmanifest
@@ -20,6 +21,7 @@ on:
       - styles.css
       - js/**
       - arcade2/**
+      - arcade3/**
       - assets/**
       - sw.js
       - manifest.webmanifest
@@ -72,7 +74,7 @@ jobs:
         run: |
           mkdir _site
           cp index.html styles.css manifest.webmanifest sw.js .nojekyll LICENSE NOTICE _site/
-          cp -R js assets arcade2 _site/
+          cp -R js assets arcade2 arcade3 _site/
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - name: Upload static arcade

@@ -3,7 +3,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 const {pathToFileURL,fileURLToPath}=require('node:url');
 const root=path.resolve(__dirname,'..');
 // URL/filesystem checks, not browser execution. Directory auto-indexing is HTTP-only.
-for(const page of ['index.html','arcade2/index.html'])test(page+' navigation resolves to real files under file:// and nested HTTP hosting',()=>{
+for(const page of ['index.html','arcade2/index.html','arcade3/index.html'])test(page+' navigation resolves to real files under file:// and nested HTTP hosting',()=>{
  const html=fs.readFileSync(path.join(root,page),'utf8'),fileBase=pathToFileURL(path.join(root,page));
  const prefix='/nested/ARCADE/',httpBase='https://example.test'+prefix+page;
  let checked=0;

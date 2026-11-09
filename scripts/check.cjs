@@ -4,6 +4,8 @@ const root=path.resolve(__dirname,'..');
 const runtime=['index.html','styles.css','manifest.webmanifest','assets/icon.svg','js/core.js','js/vanilla2d.js','js/cartridge.js','js/draw.js','js/input.js','js/audio.js','js/games/iron.js','js/games/heist.js','js/games/ninja.js','js/games/hockey.js','js/games/brawl.js','js/games/chrono.js','js/games/breaker.js','js/games/void.js','js/games/kestrel.js','js/app.js'];
 const arcade2=['index.html','style.css','engine.js','core.js','gfx.js','sound.js','platforms.js','sports.js','kombat.js','breach.js','shooters.js','input.js','app.js','README.md'].map(f=>'arcade2/'+f);
 runtime.push(...arcade2);
+const arcade3=['index.html','style.css','kit.js','hall.js','commando.js','lantern.js','sleepwalker.js','lancer.js','canal.js','skyline.js','stratos.js','feud.js','knockout.js','README.md'].map(f=>'arcade3/'+f);
+runtime.push(...arcade3);
 cp.execFileSync(process.execPath,[path.join(root,'scripts/arcade2-engine.cjs'),'--check']);
 for(const file of runtime){assert.ok(fs.existsSync(path.join(root,file)),file+' exists');if(file.endsWith('.js'))cp.execFileSync(process.execPath,['--check',path.join(root,file)]);}
 cp.execFileSync(process.execPath,['--check',path.join(root,'sw.js')]);
@@ -26,3 +28,14 @@ for(const match of hall2.matchAll(/(?:src|href)="([^"]+)"/g)){
 assert.ok(!/type="module"/.test(hall2),'ARCADE2 file-open compatible');
 assert.ok(sw.includes("'./arcade2/'"),'nested hall navigation precached');
 console.log('ARCADE2 checks passed: source pin, generated adapter, local URLs and cache coverage.');
+
+const hall3=fs.readFileSync(path.join(root,'arcade3/index.html'),'utf8');
+for(const match of hall3.matchAll(/(?:src|href)="([^"]+)"/g)){
+ const url=match[1];if(url.startsWith('#'))continue;
+ assert.ok(!/^(?:https?:|\/)/.test(url),'ARCADE3 relative runtime URLs');
+ assert.ok(fs.existsSync(path.resolve(root,'arcade3',url)),url+' exists');
+}
+for(const file of arcade3.filter(f=>f.endsWith('.js')))assert.ok(hall3.includes('src="'+path.basename(file)+'"'),file+' loaded by the ARCADE 3 hall');
+assert.ok(!/type="module"/.test(hall3),'ARCADE3 file-open compatible');
+assert.ok(sw.includes("'./arcade3/'"),'ARCADE 3 hall navigation precached');
+console.log('ARCADE3 checks passed: shared engine, local URLs and cache coverage.');

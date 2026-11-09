@@ -1,0 +1,8 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* ARCADE 3 reuses ../arcade2/style.css; this sheet only re-tints it for the graveyard shift. */
+:root{--bg:#120f1a;--panel:#1c1726;--line:#3a3150;--lime:#7affb0}
+.feature{background:#211b2e;border-color:#4f4466}.feature-top,.cabinet-controls{border-color:#4f4466}.cabinet-controls{background:#1a1524}
+.feature-marquee span{color:#c88aff}.feature-bottom button{background:#7affb0}.feature-screen{border-color:#4f4466;box-shadow:inset 0 0 0 4px #181324}
+.card{background:#18141f}.monitor{background:#211b2e;border-color:#5a4e72}.monitor-top,.monitor-bottom{color:#d6cbe8}
+.primary-link:hover,.primary:hover{background:#a8ffd0}.overlay{background:#120f1adf}
+.touch-controls button{background:#241d31;border-color:#5a4e72}.touch-actions [data-input=a]{border-color:#7affb0}.touch-actions [data-input=b]{border-color:#c88aff}

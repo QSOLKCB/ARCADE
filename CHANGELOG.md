@@ -1,5 +1,36 @@
 # Changelog
 
+## v0.8.0 — ARCADE 3: The Graveyard Shift
+
+- A third hall at `arcade3/` adds nine original cabinets. Each is built around the
+  mechanics of a requested classic; the titles appear in `arcade3/README.md` only
+  as inspiration. No names, characters, levels, art, music or code are copied.
+  - **Overclock Commando** (run-and-gun)
+  - **Tin Lantern** (haunted platformer, committed jumps)
+  - **Pixel Sleepwalker** (dream platformer)
+  - **Lattice Lancer** (five-rail shooter)
+  - **Canal Cutter** (river run with fuel and bridges)
+  - **Skyline Overdrive** (into-the-screen jet combat)
+  - **Stratos Ward** (colour-weapon vertical shooter)
+  - **Hard Court Feud** (two-on-two brawl ball)
+  - **Knockout Circuit** (behind-the-boxer boxing)
+- ARCADE 3 reuses the ARCADE 2 engine, presentation layer, audio2d bank, input and
+  shell. The shell now accepts a per-hall configuration (`Arcade2.HALL`) and
+  per-cabinet mode lists, and hides the Mode menu for single-mode cabinets.
+  ARCADE 2 behaviour and all of its pins are unchanged.
+- `tests/arcade3.test.cjs` (30 tests) covers:
+  - for every cabinet: replay determinism, render purity, bounded pools and
+    terminal-state freeze
+  - control-only completion of all nine campaigns (29 stages), with nine new
+    campaign pins
+  - that a naive input pattern does not finish the campaigns (Hard Court Feud is
+    exempt)
+  - draw-call ceilings (full peak 764, lite peak 290)
+  - mechanics for every cabinet, including level-fairness checks
+- Links to ARCADE 3 from the original hall and ARCADE 2. The service worker cache key
+  is now `v0.8.0-r1-arcade3`, and it precaches the 15 ARCADE 3 files. The Pages
+  workflow publishes `arcade3/`.
+
 ## v0.7.0 — ARCADE 2 modes: Legacy, Extended and Remix
 
 - Every ARCADE 2 cabinet now has three rule sets, chosen from a **Mode** menu in the
