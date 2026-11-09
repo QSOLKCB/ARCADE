@@ -11,6 +11,7 @@ const {recordingContext,mockCanvas}=require('./arcade2-mock-canvas.cjs');
 const {policy}=require('./arcade3-policy.cjs');
 const make=id=>A.registry.find(m=>m.id===id).create();
 const run=(g,n,input={})=>{for(let i=0;i<n;i++)g.tick({...A.empty(),...input});};
+const LEFT3=140; // Stratos Ward playfield edge
 const STAGES={commando:3,lantern:3,sleepwalker:3,lancer:4,canal:3,skyline:3,stratos:3,feud:3,knockout:4};
 
 test('nine distinct original cabinets with their own hall, controls and inspirations',()=>{
@@ -50,7 +51,7 @@ const PINS={
  lancer:'b7dd057a823d40b4055957aa71b894cd1940fa54f7eb9c4c04b0151fcb7efce8',
  canal:'8c6e56e41f17cd10841b77d3b3d30546ab26c765dca88333ec2eaab7197b07cc',
  skyline:'9d9c36ed69cfadd2d284083e58cf7775436253a706029c81c7a213fd1c20b59c',
- stratos:'03f82a9cb511934cab280736c0c715fba0a6651888de0defb7190d84332f1384',
+ stratos:'7f42a84418081db3a788f9bde643cb79af2f22cd0fc37e61a99bb36bfe801100',
  feud:'2e6df869d47d3a8ee5c129b517d7eea0b133ff6b0227102d03c4f96fd0b5c7a6',
  knockout:'1c1e859abc9111e63b7294ac98c02d7062708290780ca4df6f129231f6465b09',
 };
@@ -179,6 +180,18 @@ test('Stratos Ward: crystals level the weapon, ward bombs clear the sky',()=>{
  g.items=[{kind:'crystal',x:g.p.x,y:g.p.y,vx:0,vy:0,age:g.tickCount+1-90}];run(g,1);
  assert.equal(g.p.weapon,'blue');assert.equal(g.p.level,2);
  g.bullets=[{x:q(200),y:q(100),vx:0,vy:0}];run(g,1,{bPressed:true});assert.equal(g.bullets.length,0);assert.equal(g.p.bombs,2);
+});
+
+test('Stratos Ward: a crystal dropped above or beside the playfield drifts back within reach (PR #11 review)',()=>{
+ const g=make('stratos');g.inv=999;
+ g.items=[{kind:'crystal',x:q(LEFT3+2),y:q(10),vx:-q(1,2),vy:q(1,2),age:0}];run(g,80);
+ assert.ok(px(g.items[0].y)>=30&&px(g.items[0].x)>=LEFT3+10,'crystal re-entered the reachable range');
+});
+
+test('Knockout Circuit: a third knockdown on the final tick wins the bout instead of going to a decision (PR #11 review)',()=>{
+ const g=make('knockout');Object.assign(g.r,{state:'open',t:30,downs:2,hp:1});g.clock=7;const lives=g.lives;
+ run(g,1,{aPressed:true});run(g,200);
+ assert.equal(g.status,'stageclear');assert.equal(g.lives,lives);
 });
 
 test('Hard Court Feud: an elbow stuns and strips a carrier, but never right after an inbound',()=>{

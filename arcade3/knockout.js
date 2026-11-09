@@ -70,7 +70,8 @@
         if (r.downs >= 3) { this.score += 5000 + this.lives * 1000 + Math.trunc(this.clock / 60) * 20; this.clearStage(RIVALS.length - 1); return; }
         Object.assign(r, {state: 'idle', t: R.rest, hp: Math.trunc(R.hp * [100, 75, 55][r.downs] / 100)}); this.announce('UP AT NINE!', 50);
       }
-      if (this.clock <= 0 && this.status === 'playing') this.decision();
+      // A knockdown on the final tick is counted out before the judges' decision.
+      if (this.clock <= 0 && this.status === 'playing' && r.state !== 'down') this.decision();
     }
     strike() {
       const p = this.p, r = this.r, move = MOVES[r.attack], def = this.defence();

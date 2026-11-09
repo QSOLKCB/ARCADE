@@ -119,8 +119,9 @@
       }
       for (const it of this.items) {
         it.x += it.vx; it.y += it.vy;
-        if (it.x < q(LEFT + 10) || it.x > q(RIGHT - 10)) it.vx = -it.vx;
-        if (it.kind === 'crystal' && (it.y < q(30) || it.y > q(300))) it.vy = -it.vy;
+        // Reflect only when moving out of range, so an item dropped outside it drifts back in.
+        if ((it.x < q(LEFT + 10) && it.vx < 0) || (it.x > q(RIGHT - 10) && it.vx > 0)) it.vx = -it.vx;
+        if (it.kind === 'crystal' && ((it.y < q(30) && it.vy < 0) || (it.y > q(300) && it.vy > 0))) it.vy = -it.vy;
         if (A.near(it, p, 16)) {
           if (it.kind === 'crystal') { const c = COLORS[((this.tickCount - it.age) / 90 | 0) % 3]; p.level = Math.min(4, p.level + 1); p.weapon = c; this.announce(c.toUpperCase() + ' // LEVEL ' + p.level, 60); }
           else if (it.kind === 'bomb') p.bombs = Math.min(5, p.bombs + 1);

@@ -18,7 +18,7 @@
   shell. The shell now accepts a per-hall configuration (`Arcade2.HALL`) and
   per-cabinet mode lists, and hides the Mode menu for single-mode cabinets.
   ARCADE 2 behaviour and all of its pins are unchanged.
-- `tests/arcade3.test.cjs` (30 tests) covers:
+- `tests/arcade3.test.cjs` (32 tests) covers:
   - for every cabinet: replay determinism, render purity, bounded pools and
     terminal-state freeze
   - control-only completion of all nine campaigns (29 stages), with nine new
@@ -27,6 +27,15 @@
     exempt)
   - draw-call ceilings (full peak 764, lite peak 290)
   - mechanics for every cabinet, including level-fairness checks
+- Review fixes (PR #11):
+  - **Stratos Ward:** an item dropped outside the playfield's reflect range
+    (above y 30 or within 10 px of a wall) could flip direction every tick and
+    never come within reach. Items now reflect only when moving out of range, so
+    they drift back in. This is an intentional rule change, so Stratos Ward's
+    campaign pin was re-recorded; the campaign still wins, in 13,545 ticks.
+  - **Knockout Circuit:** a third knockdown landed on the final clock tick now wins
+    the bout instead of going to a decision.
+  Both have regression tests.
 - Links to ARCADE 3 from the original hall and ARCADE 2. The service worker cache key
   is now `v0.8.0-r1-arcade3`, and it precaches the 15 ARCADE 3 files. The Pages
   workflow publishes `arcade3/`.
