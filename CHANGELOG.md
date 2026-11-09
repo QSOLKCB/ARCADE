@@ -1,5 +1,13 @@
 # Changelog
 
+## Development — ARCADE3-NUMSPEC-001 (experimental, unreleased)
+
+- Add independent signed-int32 BigInt reference for checked Q16.16 multiply-divide, with a guarded Float64 safe-product path and an intentionally failing naive Float64 negative control.
+- Implement canonical balanced-ternary addition and multiplication as a separate alternative-radix experiment; exact quotient remains BigInt.
+- Implement strict truncated-binary interpolative and delta-varint storage for ordered entity IDs, measured against actual cabinet pool data.
+- Replay real seeded ARCADE 3 cabinet inputs through shadow-instrumented original engine and compare exact state hashes with unmodified ARCADE3-FUZZ-001. Gameplay always receives original Q16.16 results.
+- Add isolated proof-of-execution CI and SHA-256 source-bound JSON evidence; no production rules, campaign pins or cached browser runtime assets changed.
+
 ## Development — ARCADE3-FUZZ-001 verification harness (unreleased)
 
 - Add deterministic valid-input randomized fuzzing for all nine ARCADE 3 cabinets, with a 32-seed × 2,000-tick source-bound CI witness.
