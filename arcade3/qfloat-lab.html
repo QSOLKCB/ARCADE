@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b101b">
+<meta name="description" content="ARCADE3 QFloat Lab — float-like editing with signed Q16.16 integer-only authoritative simulation.">
+<title>QFLOAT-001 | The Floating Illusion</title>
+<link rel="stylesheet" href="qfloat-lab.css">
+<script defer src="../arcade2/engine.js?v=0.8.0"></script>
+<script defer src="../arcade2/qfloat.js"></script>
+<script defer src="qfloat-sim.js"></script>
+<script defer src="qfloat-lab.js"></script>
+</head><body>
+<header class="top"><a class="brand" href="index.html"><strong>ARCADE<span>3</span></strong> / QFLOAT LAB</a>
+<nav><a href="index.html">← Nine cabinets</a><a href="../index.html">Original hall ↗</a></nav></header>
+<main>
+<div class="intro"><p class="eyebrow">QFLOAT-001 / INTEGER WORLD · FLOAT-LIKE VIEW</p>
+<h1>THE FLOATING<br><em>ILLUSION.</em></h1>
+<p>Float-style authoring. Integer math underneath. Exactly the same Q16.16 arithmetic as the existing cabinets—no new floating-point physics engine.</p>
+</div>
+<div class="layout">
+<section class="scope" aria-label="Live integer physics">
+<div class="panel-top"><span><i></i> 60 Hz FIXED STEP</span><span>+Y DOWN · Q16.16 PIXELS</span></div>
+<canvas id="field" width="640" height="360" tabindex="0" aria-label="Move the glowing square with WASD or arrow keys. Simulation coordinates are signed Q16.16 integers."></canvas>
+<div class="panel-bottom"><span>WASD / ARROWS TO MOVE</span><span id="tick-label">TICK 0</span></div>
+<div class="controls">
+<button type="button" id="play">▶ Run</button><button type="button" id="pause" disabled>Pause</button>
+<button type="button" id="single">Step</button><button type="button" id="reset">Reset</button>
+<label>Speed per tick <input id="speed" value="1.25" inputmode="decimal" maxlength="24" aria-label="QFloat decimal speed input"></label>
+</div>
+<div class="touch" aria-label="Touch movement"><button data-direction="up" aria-label="Up">↑</button>
+<div><button data-direction="left" aria-label="Left">←</button><button data-direction="down" aria-label="Down">↓</button><button data-direction="right" aria-label="Right">→</button></div></div>
+<p id="status" class="status" role="status" aria-live="polite">Ready. Every simulation coordinate is an int32.</p>
+</section>
+<aside class="telemetry" aria-label="Numeric inspection">
+<h2>Two ways to see one world.</h2><p class="muted">Decimal-looking numbers are an output format. The engine owns checked integers.</p>
+<div class="metric"><span>X · DISPLAY</span><strong id="x-view">320.000</strong><small id="x-raw">RAW 20971520</small></div>
+<div class="metric"><span>Y · DISPLAY</span><strong id="y-view">180.000</strong><small id="y-raw">RAW 11796480</small></div>
+<div class="metric"><span>RAW INTEGER STATE TOKEN</span><strong id="token">00000000</strong><small>FNV-1a display token · not a cryptographic receipt</small></div>
+<div class="exact"><h3>Representation boundary</h3>
+<div><span>X exact decimal</span><code id="x-exact">320.0000000000000000</code></div>
+<div><span>Y exact decimal</span><code id="y-exact">180.0000000000000000</code></div>
+</div>
+</aside>
+</div>
+<section class="experiment" aria-label="Decimal illusion demonstration">
+<div><p class="eyebrow">A FALSIFIABLE EXAMPLE</p><h2>The 0.1 + 0.2 test.</h2>
+<p>Try different decimal inputs. The text is parsed exactly as a rational number, then truncated toward zero into Q16.16 subunits. The rounded display is <em>not</em> the authoritative value.</p></div>
+<div class="calc"><div class="calc-inputs"><label>Decimal A<input id="operand-a" value="0.1" inputmode="decimal" maxlength="24"></label>
+<span>+</span><label>Decimal B<input id="operand-b" value="0.2" inputmode="decimal" maxlength="24"></label>
+<button id="calculate" type="button">Calculate</button></div>
+<dl><div><dt>Float-like display (3 digits)</dt><dd id="result-view">0.300</dd></div>
+<div><dt>Exact Q16.16 decimal</dt><dd><code id="result-exact">0.2999877929687500</code></dd></div>
+<div><dt>Authoritative signed integer</dt><dd id="result-raw">19660</dd></div></dl>
+<p class="muted">For 0.1 and 0.2, the apparent 0.300 result is quantized. If an author requires exact decimal 0.3, use an explicitly decimal numeric domain—not Q16.16.</p></div>
+</section>
+</main>
+<footer>QSOL-IMC · Make amazing alien tech and put it under an Apache 2.0 license. · No CDNs, accounts, telemetry or runtime dependencies.</footer>
+</body></html>
