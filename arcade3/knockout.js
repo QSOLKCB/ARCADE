@@ -148,7 +148,13 @@
         D.ellipse(c, cx + lean, cy - 18, 26, 30, tone); D.rect(c, cx - 12 + lean, cy - 24, 8, 4, '#1a1010'); D.rect(c, cx + 4 + lean, cy - 24, 8, 4, '#1a1010');
         if (r.state === 'open') { D.text(c, '@ @', cx + lean, cy - 18, '#1a1010', 10, 'center'); for (let k = 0; k < 3; k++) D.text(c, '*', cx - 30 + k * 30 + Math.sin(tick * 0.2 + k) * 8, cy - 56, '#ffd27a', 14, 'center'); }
         // Gloves.
-        const glove = (gx, gy, big = 1) => { G.glow(c, gx, gy, 18 * big, '#ff4a3a', 0.25); D.ellipse(c, gx, gy, 17 * big, 15 * big, '#c8302a'); D.ellipse(c, gx - 4 * big, gy - 5 * big, 6 * big, 4 * big, '#ff8a7a'); };
+        const arm = G.shade(R.skin, -0.2);
+        const glove = (gx, gy, big = 1) => {
+          // Upper arm from the near shoulder, then the glove.
+          const sx = cx + lean + (gx < cx + lean ? -48 : 48), sy = cy + 12;
+          D.line(c, sx, sy, gx, gy, arm, 15 * Math.min(big, 1.4)); D.ellipse(c, sx, sy, 10, 10, arm);
+          G.glow(c, gx, gy, 18 * big, '#ff4a3a', 0.25); D.ellipse(c, gx, gy, 17 * big, 15 * big, '#c8302a'); D.ellipse(c, gx - 4 * big, gy - 5 * big, 6 * big, 4 * big, '#ff8a7a');
+        };
         if (r.state === 'recover' && r.attack) {
           const side = r.attack === 'hookL' ? -1 : r.attack === 'hookR' ? 1 : 0;
           glove(cx + side * 40, cy + 70 + (r.attack === 'upper' ? -30 : 0), 2.2); glove(cx - side * 30 + (side ? 0 : 36), cy + 10);
@@ -168,7 +174,10 @@
       c.beginPath(); c.moveTo(px0 - 74, py0 + 70); c.lineTo(px0 - 58, py0 - 4); c.lineTo(px0 + 58, py0 - 4); c.lineTo(px0 + 74, py0 + 70); c.closePath(); c.fill();
       D.ellipse(c, px0, py0 - 26, 22, 26, '#3a2418'); D.rect(c, px0 - 14, py0 - 4, 28, 10, '#a07050');
       const punching = p.state === 'punch', reach = punching ? (p.punch === 'super' ? 70 : 52) : 0, high = p.punch === 'head' || p.punch === 'super';
-      const pg = (gx, gy, big) => { D.ellipse(c, gx, gy, 18 * big, 16 * big, '#2a8a5a'); D.ellipse(c, gx - 4, gy - 5, 7 * big, 4 * big, '#7affb0'); };
+      const pg = (gx, gy, big) => {
+        const sx = px0 + (gx < px0 ? -50 : 50), sy = py0 + 4;
+        D.line(c, sx, sy, gx, gy, '#8a5a3a', 16); D.ellipse(c, gx, gy, 18 * big, 16 * big, '#2a8a5a'); D.ellipse(c, gx - 4, gy - 5, 7 * big, 4 * big, '#7affb0');
+      };
       if (punching) { pg(px0 + 40, py0 - reach - (high ? 50 : 0), p.punch === 'super' ? 1.5 : 1.1); pg(px0 - 52, py0 - 10, 1); }
       else if (p.state === 'guard') { pg(px0 - 26, py0 - 46, 1.1); pg(px0 + 26, py0 - 46, 1.1); }
       else { pg(px0 - 54, py0 - 14, 1); pg(px0 + 54, py0 - 14, 1); }
