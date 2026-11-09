@@ -11,8 +11,8 @@
     $('status').style.color=warning?'#ffb49c':'';
   };
   function controls(){
-    const down=new Set(keys);
-    for(const key of touch.values())down.add(key);
+    const down=new Set(touch.values());
+    for(const code of keys)down.add(keyMap[code]);
     const held=dir=>down.has(dir);
     return {x:Number(held('right'))-Number(held('left')),
       y:Number(held('down'))-Number(held('up'))};
@@ -47,7 +47,9 @@
   function redraw(){labels();paint();}
   function pause(){
     if(!running)return;
-    running=false;last=null;debt=0;keys.clear();touch.clear();redraw();
+    running=false;last=null;debt=0;
+    if(frameId!==null){cancelAnimationFrame(frameId);frameId=null;}
+    keys.clear();touch.clear();redraw();
     say('Paused. Authoritative state retained exactly.');
   }
   function frame(now){
@@ -97,10 +99,10 @@
   window.addEventListener('keydown',event=>{
     if(event.target instanceof HTMLElement&&event.target.matches('input,textarea,select'))return;
     const code=keyMap[event.code];if(!code)return;
-    event.preventDefault();keys.add(code);
+    event.preventDefault();keys.add(event.code);
   });
   window.addEventListener('keyup',event=>{
-    const code=keyMap[event.code];if(code){event.preventDefault();keys.delete(code);}
+    const code=keyMap[event.code];if(code){event.preventDefault();keys.delete(event.code);}
   });
   for(const button of document.querySelectorAll('[data-direction]')){
     button.addEventListener('pointerdown',event=>{
