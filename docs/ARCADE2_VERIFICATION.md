@@ -98,7 +98,9 @@ tooling the VANILLAJS workflows use), with system Chrome.
 ### Runner setup
 
 ARCADE asks for `[self-hosted, linux, x64, qsol-rtx5060ti]`, the same labels as all
-ten VANILLAJS self-hosted workflows. VANILLAJS evidence (runs 42203888152 to
+ten VANILLAJS self-hosted workflows, and uses the same `actions/checkout` (v4,
+`11d5960a`) and `actions/upload-artifact` (v4, `ea165f8d`) commits as the six
+VANILLAJS RTX workflows whose sealed evidence came from this runner. VANILLAJS evidence (runs 42203888152 to
 42364527661) shows that runner using Playwright 1.64.0, Google Chrome 156, Node
 v22.18.0 and the renderer `ANGLE (NVIDIA Corporation, NVIDIA GeForce RTX 5060
 Ti/PCIe/SSE2, OpenGL ES 3.2)`. ARCADE's harness accepts all of these. The evidence
