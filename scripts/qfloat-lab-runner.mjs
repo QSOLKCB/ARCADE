@@ -81,7 +81,7 @@ function allowedResource(url,base){
   return parsed.search===''||(path==='arcade2/engine.js'&&parsed.search==='?v=0.8.0');
 }
 async function verifyPublished(manifest){
-  const result=[];
+  const result=[],resources=new Map();
   for(const file of manifest){
     const url=SITE+file.path+(file.path==='arcade2/engine.js'?'?v=0.8.0':'');
     const response=await fetch(url,{redirect:'error',cache:'no-store',
@@ -99,8 +99,9 @@ async function verifyPublished(manifest){
         ' (expected '+file.sha256+', received '+digest+
         '). Wait for Pages deployment, then dispatch again.');
     result.push({path:file.path,bytes:payload.length,sha256:digest});
+    resources.set(new URL(url).pathname,payload);
   }
-  return result;
+  return {manifest:result,resources};
 }
 function server(){
   const root=realpathSync(ROOT);
@@ -143,7 +144,7 @@ async function start(srv){
 async function stop(srv){
   if(srv.listening)await new Promise(done=>srv.close(done));
 }
-async function witness(browser,base,name,out){
+async function witness(browser,base,name,out,pinned=null){
   const context=await browser.newContext({viewport:{width:1360,height:940},
     serviceWorkers:'block',reducedMotion:'reduce'});
   let page;
@@ -152,7 +153,19 @@ async function witness(browser,base,name,out){
   try{
     await context.route('**/*',async route=>{
       const url=route.request().url();
-      if(allowedResource(url,base))return route.continue();
+      if(allowedResource(url,base)){
+        if(!pinned)return route.continue(); // loopback checkout server
+        const key=new URL(url).pathname;
+        const body=pinned.get(key);
+        if(!body){
+          errors.push('no verified Pages byte snapshot for '+key);
+          return route.abort();
+        }
+        // Run the exact HTTPS response bytes verified against main before
+        // the browser opens. A Pages TOCTOU change cannot inject new code.
+        return route.fulfill({status:200,body,
+          contentType:MIME[extname(key)]??'application/octet-stream'});
+      }
       if(new URL(url).pathname.endsWith('/favicon.ico'))
         return route.fulfill({status:204,body:''});
       errors.push('unexpected request: '+url);
@@ -195,11 +208,11 @@ async function witness(browser,base,name,out){
     record('keyboard and exact single step',{firstTickXRaw:21053440,stationaryNextTick:true});
 
     // Two aliases for the same direction: releasing one must not cancel the other.
-    await page.keyboard.down('ArrowRight');await page.keyboard.down('KeyD');
+    await page.keyboard.down('ArrowRight');await page.keyboard.down('d');
     await page.keyboard.up('ArrowRight');
     await page.locator('#single').click();
     assert.equal(await page.locator('#x-raw').innerText(),'RAW 21135360');
-    await page.keyboard.up('KeyD');
+    await page.keyboard.up('d');
     record('concurrent key aliases',{xRaw:21135360});
 
     const tickBefore=Number((await page.locator('#tick-label').innerText()).slice(5));
@@ -310,8 +323,9 @@ async function main(args=process.argv.slice(2)){
     report.browser={version:browser.version()};
     report.targets.push(await witness(browser,local,'local',baseEvidence));
     if(opts.target==='both'){
-      report.pagesManifest=await verifyPublished(report.source.files);
-      report.targets.push(await witness(browser,SITE,'pages',baseEvidence));
+      const pages=await verifyPublished(report.source.files);
+      report.pagesManifest=pages.manifest;
+      report.targets.push(await witness(browser,SITE,'pages',baseEvidence,pages.resources));
     }
     report.status='PASS';
   }catch(error){
