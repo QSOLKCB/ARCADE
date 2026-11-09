@@ -14,3 +14,5 @@ Read this file, docs/INVARIANTS.md and docs/ARCHITECTURE.md before changing code
 - Bump the release cache key in sw.js whenever changing a runtime resource. Keep its precache list complete.
 
 - ARCADE3-NUMSPEC-PERF-002 is a research-only promotion gate. Keep the generated arcade2/engine.js, game source and replay pins unchanged. Never substitute a candidate without independent exactness evidence, nine-cabinet full-campaign parity and owner-approved production PR.
+
+- QFLOAT-RUNNER-001 runs only by explicit owner workflow_dispatch on clean reviewed main, never from PR/push/schedule. Keep the Playwright tooling preinstalled and outside the checkout, pin published HTML/CSS/JS bytes to main before executing on the owner workstation, and preserve sealed screenshots and FAIL records without claiming a browser execution before it runs.

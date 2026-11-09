@@ -1,0 +1,32 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+:root{font:14px/1.5 system-ui,Arial,sans-serif;color:#e9f5f4;background:#0b101b;color-scheme:dark;--line:#293a50;--mint:#7dfbd0;--muted:#98aebe}
+*{box-sizing:border-box}body{margin:0;min-height:100vh}a{color:var(--mint);text-decoration:none}a:hover{text-decoration:underline}
+.top{min-height:68px;border-bottom:1px solid var(--line);background:#0d1826;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px max(22px,calc((100vw - 1180px)/2));flex-wrap:wrap}
+.top nav{display:flex;gap:20px}.brand{letter-spacing:1.5px;color:white;font:12px ui-monospace,monospace}.brand strong{font-size:23px}.brand span{color:var(--mint)}
+main{width:min(1180px,calc(100% - 36px));margin:auto}
+.intro{padding:35px 0 25px}.eyebrow{color:var(--mint);font:12px ui-monospace,monospace;letter-spacing:2px}.intro h1{font:900 clamp(36px,7vw,72px)/.94 system-ui,Arial,sans-serif;letter-spacing:-2px;margin:16px 0}.intro h1 em{color:var(--mint);font-style:normal}.intro>p:last-child{max-width:740px;color:#abbfce}
+.layout{display:grid;grid-template-columns:minmax(360px,1.8fr) minmax(260px,1fr);gap:20px;align-items:start}
+.scope,.telemetry,.experiment{border:1px solid var(--line);background:#101d2b;border-radius:8px;overflow:hidden}
+.panel-top,.panel-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;font:11px ui-monospace,monospace;color:#a5bfd0;flex-wrap:wrap}
+.panel-top i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint)}
+#field{display:block;width:100%;aspect-ratio:16/9;height:auto;background:#09121f;image-rendering:pixelated;touch-action:none}
+.controls{display:flex;align-items:end;gap:7px;padding:15px;flex-wrap:wrap;border-top:1px solid var(--line)}
+button{border:1px solid #3a6170;background:#1a3647;color:white;border-radius:5px;padding:9px 13px;cursor:pointer;font:inherit}
+button:hover{border-color:var(--mint)}button:disabled{opacity:.45;cursor:not-allowed}input{background:#061620;color:#e0fcf2;border:1px solid #466476;border-radius:5px;padding:9px;font:inherit;width:108px}
+label{color:var(--muted);display:flex;flex-direction:column;gap:4px;font-size:12px}
+button:focus-visible,input:focus-visible,canvas:focus-visible,a:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.status{margin:0;padding:12px 15px;border-top:1px solid var(--line);color:#b9d7d2;font-size:12px}
+.telemetry{padding:24px}.telemetry h2{font-size:20px;margin:0}.muted{color:var(--muted);font-size:12px}
+.metric{border:1px solid var(--line);background:#0b1825;padding:16px;margin-top:15px;display:flex;flex-direction:column;gap:5px}
+.metric span,.metric small,.exact span{font:11px ui-monospace,monospace;color:var(--muted)}
+.metric strong{font:700 clamp(25px,4vw,37px) ui-monospace,monospace;color:var(--mint)}
+.exact{border-top:1px solid var(--line);margin-top:20px;padding-top:8px}.exact h3{font-size:14px}.exact>div{margin:9px 0;display:flex;flex-direction:column;gap:4px}code{font:12px ui-monospace,monospace;color:#a9d5fb;overflow-wrap:anywhere}
+.experiment{display:grid;grid-template-columns:1fr 1.3fr;gap:30px;padding:28px;margin:24px 0 42px}.experiment h2{font-size:26px;margin:5px 0}.experiment p{color:var(--muted)}
+.calc-inputs{display:flex;gap:9px;align-items:end;flex-wrap:wrap}.calc-inputs span{padding-bottom:10px}.calc dl{margin-bottom:0}
+.calc dl>div{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);gap:8px;padding:10px 0}
+.calc dt{font-size:12px;color:var(--muted)}.calc dd{margin:0;color:var(--mint);font:17px ui-monospace,monospace;text-align:right}
+.touch{display:none;text-align:center;padding:10px}.touch>div{display:flex;justify-content:center;gap:8px;margin-top:6px}
+footer{text-align:center;color:#7e99a9;font:11px ui-monospace,monospace;padding:20px;border-top:1px solid var(--line)}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.telemetry{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.telemetry h2,.telemetry>.muted,.exact{grid-column:1/-1}.metric{margin:0}}
+@media(max-width:620px){.experiment{grid-template-columns:1fr;padding:16px}.intro{padding-top:20px}.telemetry{display:block}.metric{margin-top:10px}.touch{display:block}#field{max-height:70vh}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

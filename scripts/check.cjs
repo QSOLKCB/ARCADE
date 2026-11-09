@@ -6,6 +6,11 @@ const arcade2=['index.html','style.css','engine.js','core.js','gfx.js','sound.js
 runtime.push(...arcade2);
 const arcade3=['index.html','style.css','kit.js','hall.js','commando.js','lantern.js','sleepwalker.js','lancer.js','canal.js','skyline.js','stratos.js','feud.js','knockout.js','README.md'].map(f=>'arcade3/'+f);
 runtime.push(...arcade3);
+// QFLOAT-001 is opt-in, not a tenth cabinet and not part of the shared
+// arcade3/index.html deferred-script chain.
+const qfloat=['arcade2/qfloat.js','arcade3/qfloat-lab.html',
+  'arcade3/qfloat-lab.css','arcade3/qfloat-sim.js','arcade3/qfloat-lab.js'];
+runtime.push(...qfloat);
 cp.execFileSync(process.execPath,[path.join(root,'scripts/arcade2-engine.cjs'),'--check']);
 for(const file of runtime){assert.ok(fs.existsSync(path.join(root,file)),file+' exists');if(file.endsWith('.js'))cp.execFileSync(process.execPath,['--check',path.join(root,file)]);}
 cp.execFileSync(process.execPath,['--check',path.join(root,'sw.js')]);
@@ -47,3 +52,23 @@ for(const file of arcade3.filter(f=>f.endsWith('.js')))assert.ok(hall3.includes(
 assert.ok(!/type="module"/.test(hall3),'ARCADE3 file-open compatible');
 assert.ok(sw.includes("'./arcade3/'"),'ARCADE 3 hall navigation precached');
 console.log('ARCADE3 checks passed: shared engine, local URLs and cache coverage.');
+
+const qLab=fs.readFileSync(path.join(root,'arcade3/qfloat-lab.html'),'utf8');
+assert.ok(hall3.includes('href="qfloat-lab.html"'),'lab linked without altering cabinet registration');
+assert.ok(!/type="module"/.test(qLab),'QFloat lab supports file-open classic scripts');
+for(const match of qLab.matchAll(/(?:src|href)="([^"]+)"/g)){
+ const url=match[1];if(url.startsWith('#'))continue;
+ assert.ok(!/^(?:https?:|\/)/.test(url),'QFloat lab local resources only');
+ const [file,query]=url.split('?');
+ assert.ok(fs.existsSync(path.resolve(root,'arcade3',file)),url+' exists');
+ if(file==='../arcade2/engine.js')
+   assert.equal(query,release,'QFloat lab uses the same pinned Q16 engine revision');
+}
+for(const name of ['../arcade2/engine.js?v=0.8.0','../arcade2/qfloat.js',
+  'qfloat-sim.js','qfloat-lab.js']){
+ assert.ok(qLab.includes('src="'+name+'"'),'QFloat lab loads '+name);
+}
+assert.ok(!qLab.includes('src="https:')&&!qLab.includes('src="http:'),
+  'No remote assets in QFloat lab');
+assert.ok(sw.includes('v0.9.0-r2-qfloat-illusion'),'QFloat cache revision bumped');
+console.log('QFloat illusion lab: local scripts, pinned Q16 and offline cache passed.');

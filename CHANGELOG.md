@@ -1,5 +1,12 @@
 # Changelog
 
+## Development — QFLOAT-001: The Floating Illusion (unreleased)
+
+- Add an opt-in QFloat author-facing interface that parses decimal strings exactly and quantizes to signed Q16.16 raw integers with explicit truncation toward zero. Arithmetic delegates exclusively to the existing exact integer engine.
+- Add a standalone offline 60Hz canvas lab showing float-like decimal display, exact Q16.16 values, raw integers and a deterministic world-state token; no new game, numeric backend or gameplay physics is introduced.
+- Reject implicit Float64 coercion from authoritative scalar objects. Add guard/roundtrip and deterministic replay tests; retain every original cabinet and campaign pin.
+- Update offline precache revision for the newly introduced lab resources. No third-party dependencies, CDN or paid services.
+
 ## Development — ARCADE3-NUMSPEC-PERF-002 (not a production optimization)
 
 - Add a candidate safe-product Float64 path with original exact Q16.16 fallback, independent scalar/BigInt parity tests, and source-bound AB/BA CPU benchmarking of safe, wide and actual campaign arithmetic inputs.
