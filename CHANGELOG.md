@@ -72,7 +72,7 @@
   Skyline, Sleepwalker, Feud, Lancer, Commando and Lantern campaign pins were re-recorded for these rule changes.
   Every fix has a regression test.
 - Links to ARCADE 3 from the original hall and ARCADE 2. The service worker cache key
-  is now `v0.8.0-r1-arcade3`, and it precaches the 15 ARCADE 3 files and the six versioned shared scripts. The Pages
+  is now `v0.8.0-r2-arcade3`, and it precaches the 15 ARCADE 3 files and the six versioned shared scripts. The Pages
   workflow publishes `arcade3/`.
 
 ## v0.7.0 — ARCADE 2 modes: Legacy, Extended and Remix
