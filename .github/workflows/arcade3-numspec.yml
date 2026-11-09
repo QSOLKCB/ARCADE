@@ -1,0 +1,55 @@
+name: ARCADE3-NUMSPEC-001 — numerical representation observatory
+on:
+  pull_request:
+    paths:
+      - arcade2/**
+      - arcade3/**
+      - scripts/arcade3-fuzz.cjs
+      - scripts/arcade3-numspec*.cjs
+      - tests/arcade3-numspec.test.cjs
+      - .github/workflows/arcade3-numspec.yml
+  push:
+    branches: [main]
+    paths:
+      - arcade2/**
+      - arcade3/**
+      - scripts/arcade3-fuzz.cjs
+      - scripts/arcade3-numspec*.cjs
+      - tests/arcade3-numspec.test.cjs
+      - .github/workflows/arcade3-numspec.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: arcade3-numspec-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  numerical-oracle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Test numerical oracles and real cabinet replay
+        run: node --test tests/arcade3-numspec.test.cjs
+      - name: Execute source-bound numerical experiments
+        run: |
+          set -euo pipefail
+          node scripts/arcade3-numspec.cjs --samples 16000 --seeds 3 --ticks 300 --out artifacts/arcade3-numspec-001.json
+          (cd artifacts && sha256sum -c NUMSPEC_SHA256SUMS)
+      - name: Preserve report and failures even on failed research
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: arcade3-numspec-001-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/arcade3-numspec-001.json
+            artifacts/NUMSPEC_SHA256SUMS
+          if-no-files-found: warn
+          retention-days: 14
