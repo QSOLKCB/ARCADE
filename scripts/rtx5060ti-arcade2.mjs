@@ -143,7 +143,10 @@ async function main(){
   const policySource=readFileSync(join(ROOT,'tests/arcade2-policy.cjs'),'utf8');
   const srv=server(o.baseline);let browser;
   const report={kind:'qsol.arcade.arcade2.rtx5060ti.v1',dryRun:o.dryRun,head,baselineHead,
-    startedAt:new Date().toISOString(),host:{platform:os.platform(),release:os.release(),cpu:os.cpus()[0]?.model,cpus:os.cpus().length,nvidia},
+    startedAt:new Date().toISOString(),host:{platform:os.platform(),release:os.release(),cpu:os.cpus()[0]?.model,cpus:os.cpus().length,nvidia,
+      // Which self-hosted runner served the job (set by the Actions runner).
+      runner:{name:process.env.RUNNER_NAME||null,os:process.env.RUNNER_OS||null,arch:process.env.RUNNER_ARCH||null},
+      session:process.env.WAYLAND_DISPLAY?'wayland':process.env.DISPLAY?'x11':'none'},
     playwright:tool.version,gates:GATES};
   try{
     await new Promise((ok,bad)=>{srv.once('error',bad);srv.listen(0,'127.0.0.1',ok);});
@@ -253,7 +256,7 @@ function summary(r){
     return `| ${id} | ${b.median} / ${b.p99} · ${pct(b)} | ${f.median} / ${f.p99} · ${pct(f)} | ${l.median} / ${l.p99} · ${pct(l)} | ${p.ticksPerSecond??'—'} | ${p.frameIntervalMs?.median??'—'} / ${p.frameIntervalMs?.p95??'—'} · ${p.longFrames??'—'} |`;};
   return [`## ARCADE 2 on RTX 5060 Ti${r.dryRun?' — DRY RUN (not evidence)':''}`,'',
     `**${r.passed?'PASSED':'FAILED'}** · head \`${r.head}\` · baseline \`${r.baselineHead}\``,'',
-    `GPU: ${r.host.nvidia||'n/a'} · Browser renderer: ${r.identity?.renderer||'n/a'} · ${r.browser||''} · Playwright ${r.playwright} · display ${r.display?.width}×${r.display?.height}@${r.display?.dpr}x`,'',
+    `Runner: ${r.host.runner?.name||'n/a'} (${r.host.session} session) · GPU: ${r.host.nvidia||'n/a'} · Browser renderer: ${r.identity?.renderer||'n/a'} · ${r.browser||''} · Playwright ${r.playwright} · display ${r.display?.width}×${r.display?.height}@${r.display?.dpr}x`,'',
     '| Cabinet | Baseline paint ms (median / p99) · long frames | v0.6.0 full | v0.6.0 lite | Ticks/s in app | In-app rAF ms (median / p95) · long |',
     '| --- | --- | --- | --- | --- | --- |',...ids.map(row),'',
     `Offline deep-link reload with the server stopped: ${r.offline?.reloadedWithServerStopped?'yes':'no'}`,'',

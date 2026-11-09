@@ -52,7 +52,11 @@ jobs:
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test -z "$(git status --porcelain)"
           git merge-base --is-ancestor "$ARCADE2_BASELINE" HEAD
-          test -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}"
+          echo "Runner: ${RUNNER_NAME:-unknown} (${RUNNER_OS:-?}/${RUNNER_ARCH:-?})"
+          if test -z "${DISPLAY:-}${WAYLAND_DISPLAY:-}"; then
+            echo 'No desktop session: start this runner with ./run.sh inside the logged-in desktop, not as a systemd service.' >&2
+            exit 1
+          fi
           command -v nvidia-smi
           command -v node
           nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader

@@ -95,6 +95,26 @@ tooling the VANILLAJS workflows use), with system Chrome.
    against the display's frame pacing;
 4. stops the local server and reloads a `#ember` deep link through the service worker.
 
+### Runner setup
+
+ARCADE asks for `[self-hosted, linux, x64, qsol-rtx5060ti]`, the same labels as all
+ten VANILLAJS self-hosted workflows. VANILLAJS evidence (runs 42203888152 to
+42364527661) shows that runner using Playwright 1.64.0, Google Chrome 156, Node
+v22.18.0 and the renderer `ANGLE (NVIDIA Corporation, NVIDIA GeForce RTX 5060
+Ti/PCIe/SSE2, OpenGL ES 3.2)`. ARCADE's harness accepts all of these. The evidence
+does not record the runner's registration scope. GitHub assigns a job only to a
+runner registered to that repository, or to an organisation runner whose group
+grants access to it:
+
+- **Organisation runner:** add ARCADE to the runner group's repository access.
+- **Repository runner (VANILLAJS only):** register a second runner for ARCADE with the
+  label `qsol-rtx5060ti`, and avoid dispatching both repositories' GPU workflows at
+  once, because they share one GPU.
+
+The runner must run inside the logged-in desktop session (`./run.sh` in a terminal).
+A service started without a display fails the desktop check. Each report records the
+runner's name.
+
 Gates: in-app tick rate within 59.5–60.5 per second, full-tier paint p99 at most 8 ms,
 no more than 5% long presented frames, no automatic lite fallback, no page errors and
 no external requests. Evidence (JSON report, `SUMMARY.md`, screenshots and
