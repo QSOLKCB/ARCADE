@@ -1,0 +1,53 @@
+name: ARCADE3-FUZZ-001 — deterministic controls and replay
+on:
+  pull_request:
+    paths:
+      - arcade2/**
+      - arcade3/**
+      - scripts/arcade3-fuzz.cjs
+      - tests/arcade3-fuzz.test.cjs
+      - .github/workflows/arcade3-fuzz.yml
+  push:
+    branches: [main]
+    paths:
+      - arcade2/**
+      - arcade3/**
+      - scripts/arcade3-fuzz.cjs
+      - tests/arcade3-fuzz.test.cjs
+      - .github/workflows/arcade3-fuzz.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: arcade3-fuzz-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  nine-cabinets:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out reviewed source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Pin Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify coherent input and exact guard contracts
+        run: node --test tests/arcade3-fuzz.test.cjs
+      - name: Full nine-cabinet randomized fuzz (576000 simulated ticks; double replay)
+        run: |
+          set -euo pipefail
+          node scripts/arcade3-fuzz.cjs --seeds 32 --ticks 2000 --out artifacts/arcade3-fuzz-001.json
+          (cd artifacts && sha256sum -c SHA256SUMS)
+      - name: Preserve source-bound PASS or crash witness
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: arcade3-fuzz-001-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/arcade3-fuzz-001.json
+            artifacts/SHA256SUMS
+          if-no-files-found: warn
+          retention-days: 14

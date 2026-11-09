@@ -1,5 +1,11 @@
 # Changelog
 
+## Development — ARCADE3-FUZZ-001 verification harness (unreleased)
+
+- Add deterministic valid-input randomized fuzzing for all nine ARCADE 3 cabinets, with a 32-seed × 2,000-tick source-bound CI witness.
+- Compare drawn and nondrawn replay hashes; check finite state, pool bounds and terminal-state freeze, with reproducible crash tapes and optional failure shrinking.
+- No game mechanics, campaign hash pins or packaged runtime files are changed.
+
 ## v0.9.0 — Neon Ronin fighter select
 
 - After each district, Neon Ronin shows a fighter select. You start as KAGE. Defeated
