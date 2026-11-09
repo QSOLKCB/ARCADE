@@ -37,6 +37,10 @@
   pairs paint cost against the pre-graphics commit, plays every cabinet, measures
   tick rate and presented frames, checks offline reload and seals evidence outside
   the checkout. `tests/rtx-workflow.test.cjs` guards those properties.
+- Record the first RTX 5060 Ti results (two passing runs, no findings) and move the
+  RTX workflow to Node 24 action releases (checkout v6, upload-artifact v6). This
+  removes the Node 20 deprecation warning the v4 commits produced. Round the display
+  scale in the hardware summary.
 
 ## Unreleased — ARCADE 2 / The Second Shift
 
