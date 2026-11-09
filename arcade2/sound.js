@@ -31,6 +31,9 @@
     lose: score((at, run) => { run(0, 0, [392, 330, 262, 196, 147], 110, 'square', 3600); run(1, 0, [196, 165, 131, 98, 73], 110, 'triangle', 6000); at(3, 500, 160, 200, 'noise', 2600, 3); }),
     dash: score((at, run) => { at(3, 0, 120, 600, 'noise', 4200, 9); run(0, 0, [1200, 920, 700, 520, 340], 22, 'triangle', 3400); }),
     block: score((at, run) => { run(0, 0, [240, 190], 30, 'square', 3800); at(2, 0, 26, 1600, 'triangle', 2400); }),
+    // Boss entry (Extended): the (2,3) torus knot's 2:3 winding ratio heard as a rising
+    // perfect fifth over a low drone, after GLUBALL's sonification idea (no code reused).
+    boss: score((at, run) => { run(0, 0, [220, 330, 440, 660, 880], 70, 'square', 3000); run(1, 0, [110, 165, 110, 165], 90, 'triangle', 6200); at(3, 0, 360, 120, 'noise', 1500, 13); }),
   });
   const pcm = new Map();
   A.Sound = {

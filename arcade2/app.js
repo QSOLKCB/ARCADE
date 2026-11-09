@@ -6,7 +6,12 @@
   ctx.imageSmoothingEnabled=false;
   const read=(key,fallback)=>{try{const value=localStorage.getItem('qsol-arcade2:'+key);return value===null?fallback:JSON.parse(value);}catch(_){return fallback;}};
   const write=(key,value)=>{try{localStorage.setItem('qsol-arcade2:'+key,JSON.stringify(value));}catch(_){}};
-  const best=id=>{const n=read('best:'+id,0);return Number.isSafeInteger(n)&&n>=0&&n<1000000000?n:0;};
+  // Best scores per rule set. Legacy keeps the v0.6.0 key so existing scores carry over.
+  const MODE_LABEL={extended:'Extended',remix:'Remix',legacy:'Legacy'};
+  const bestKey=(id,mode)=>mode==='legacy'?'best:'+id:'best:'+id+':'+mode;
+  const best=(id,mode=currentMode)=>{const n=read(bestKey(id,mode),0);return Number.isSafeInteger(n)&&n>=0&&n<1000000000?n:0;};
+  const modeFor=id=>{const m=read('mode:'+id,'extended');return A.MODES.includes(m)?m:'extended';};
+  let currentMode='extended';
   let sound=read('sound',false)===true,audio=null,voices=[],buffers=new Map(),mode='hall',game=null,selected=null,last=null,lastMessage='';
   const G=A.Gfx;let fxChoice=read('fx','high')==='lite'?'lite':'high',fxAuto=false;G.setQuality(fxChoice);
   // VANILLAJS FrameGate: redraw only when the complete frame key changes. The key
@@ -66,14 +71,24 @@
     if(average>PAINT_BUDGET_MS){fxAuto=true;G.setQuality('lite');fxLabel();invalidate();redrawPreviews();}
   }
   function fxLabel(){const lite=G.quality()==='lite';$('fx').textContent=lite?(fxAuto?'FX lite (auto)':'FX lite'):'FX full';$('fx').setAttribute('aria-pressed',String(!lite));}
-  function launch(meta,ready=false){
-    selected=meta;game=meta.create();clock.reset();invalidate();$('hall').hidden=true;$('playroom').hidden=false;
-    $('game-title').textContent=meta.title;$('game-genre').textContent='CABINET '+meta.number+' / '+meta.genre;
+  function modeOptions(meta){
+    $('mode').replaceChildren(...meta.modes.map(m=>{const o=document.createElement('option');o.value=m;
+      o.textContent=m==='remix'?'Remix: '+meta.remix.name:m==='legacy'?'Legacy (v0.6)':'Extended';return o;}));
+  }
+  function modeCopy(meta,mode){
+    return mode==='remix'?'REMIX — '+meta.remix.name.toUpperCase()+': '+meta.remix.summary:
+      mode==='legacy'?'LEGACY — the original v0.6 rules, unchanged.':'EXTENDED — longer stages and matches, new enemies and boss patterns.';
+  }
+  function launch(meta,ready=false,mode=modeFor(meta.id)){
+    currentMode=A.MODES.includes(mode)?mode:'extended';write('mode:'+meta.id,currentMode);
+    selected=meta;game=meta.create(currentMode);clock.reset();invalidate();$('hall').hidden=true;$('playroom').hidden=false;
+    modeOptions(meta);$('mode').value=currentMode;
+    $('game-title').textContent=meta.title;$('game-genre').textContent='CABINET '+meta.number+' / '+meta.genre+' / '+MODE_LABEL[currentMode].toUpperCase();
     $('control-guide').replaceChildren(...meta.controls.map(label=>{const el=document.createElement('span');el.textContent=label;return el;}));
     $('best').textContent='BEST '+String(best(meta.id)).padStart(6,'0');canvas.dataset.aim=String(meta.id==='breach');
-    document.title=meta.title+' — ARCADE 2';try{history.replaceState(null,'','#'+meta.id);}catch(_){}
+    document.title=meta.title+' — ARCADE 2';try{history.replaceState(null,'','#'+meta.id+':'+currentMode);}catch(_){}
     setMode(ready?'paused':'playing');unlockAudio();paint();window.scrollTo({top:0,behavior:'instant'});
-    if(ready)showOverlay('FREE PLAY','READY PLAYER ONE',meta.description,'Start game');else canvas.focus({preventScroll:true});
+    if(ready)showOverlay('FREE PLAY','READY PLAYER ONE',meta.description+' '+modeCopy(meta,currentMode),'Start game');else canvas.focus({preventScroll:true});
   }
   function hall(){
     const returnId=selected?.id;setMode('hall');game=null;$('hall').hidden=false;$('playroom').hidden=true;document.title='ARCADE 2 — The Second Shift';
@@ -84,7 +99,7 @@
     setMode('result');paint();
     if(game.status==='stageclear')showOverlay('CABINET '+selected.number,'STAGE CLEAR','Score '+game.score.toLocaleString()+' · the next stage is waiting.','Next stage');
     else{
-      const previous=best(selected.id);if(game.score>previous)write('best:'+selected.id,game.score);
+      const previous=best(selected.id);if(game.score>previous)write(bestKey(selected.id,currentMode),game.score);
       const won=game.status==='won',title=won?(selected.id==='kombat'?'DEPLOYALITY!':'YOU CLEARED IT.'):'ANOTHER CREDIT?';
       showOverlay(won?'MISSION COMPLETE':'RUN ENDED',title,'Score '+game.score.toLocaleString()+(game.score>previous?' · new local best.':' · free play, always.'),'Play again');
       $('best').textContent='BEST '+String(best(selected.id)).padStart(6,'0');sfx(won?'win':'lose');
@@ -93,10 +108,12 @@
   $('continue').addEventListener('click',()=>{
     if(mode==='paused')resume();
     else if(game?.status==='stageclear'){game.next();setMode('playing');unlockAudio();paint();canvas.focus({preventScroll:true});}
-    else if(selected)launch(selected);
+    else if(selected)launch(selected,false,currentMode);
   });
   $('pause').addEventListener('click',()=>mode==='paused'?resume():pause());
-  $('restart').addEventListener('click',()=>{if(selected)launch(selected);});
+  $('restart').addEventListener('click',()=>{if(selected)launch(selected,false,currentMode);});
+  // Changing the rule set starts a fresh run in that mode (paused, with its description).
+  $('mode').addEventListener('change',()=>{if(selected)launch(selected,true,$('mode').value);});
   $('leave').addEventListener('click',hall);$('overlay-leave').addEventListener('click',hall);
   $('fx').addEventListener('click',()=>{fxAuto=false;fxChoice=G.quality()==='high'?'lite':'high';G.setQuality(fxChoice);write('fx',fxChoice);paintSamples=paintTotal=0;fxLabel();invalidate();redrawPreviews();if(game)paint();});fxLabel();
   $('audio').addEventListener('click',()=>{sound=!sound;write('sound',sound);audioLabel();if(sound){unlockAudio();sfx('pickup');}else quiet();});
@@ -115,11 +132,12 @@
     const top=document.createElement('div');top.className='card-top';const genre=document.createElement('span'),number=document.createElement('span');genre.textContent=meta.genre;number.textContent='NO. '+meta.number;top.append(genre,number);
     const art=document.createElement('div');art.className='card-preview';const screen=document.createElement('canvas');screen.width=640;screen.height=360;screen.setAttribute('aria-label',meta.title+' gameplay preview');screen.setAttribute('role','img');art.append(screen);
     const copy=document.createElement('div');copy.className='card-copy';const title=document.createElement('h3');title.textContent=meta.title;
+    const modes=document.createElement('p');modes.className='card-modes';modes.textContent='Remix: '+meta.remix.name+' — '+meta.remix.summary;
     const subtitle=document.createElement('p');subtitle.className='card-subtitle';subtitle.textContent=meta.subtitle;
     const description=document.createElement('p');description.className='card-description';description.textContent=meta.description;
     const foot=document.createElement('div');foot.className='card-footer';const tag=document.createElement('span');tag.textContent='1 PLAYER / FREE PLAY';
     const play=document.createElement('button');play.type='button';play.textContent='PLAY CABINET ↗';play.dataset.play=meta.id;play.setAttribute('aria-label','Play '+meta.title);play.addEventListener('click',()=>launch(meta));foot.append(tag,play);
-    copy.append(title,subtitle,description,foot);article.append(top,art,copy);$('cards').append(article);preview(meta,screen);
+    copy.append(title,subtitle,description,modes,foot);article.append(top,art,copy);$('cards').append(article);preview(meta,screen);
   }
   for(const button of document.querySelectorAll('[data-filter]'))button.addEventListener('click',()=>{
     const filter=button.dataset.filter;
@@ -152,7 +170,8 @@
     }else last=null;
     requestAnimationFrame(frame);
   }
-  const requested=A.registry.find(m=>m.id===location.hash.slice(1));if(requested)launch(requested,true);
+  const [hashId,hashMode]=location.hash.slice(1).split(':'),requested=A.registry.find(m=>m.id===hashId);
+  if(requested)launch(requested,true,A.MODES.includes(hashMode)?hashMode:modeFor(requested.id));
   requestAnimationFrame(frame);
   if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){
     navigator.serviceWorker.register('../sw.js').then(reg=>{

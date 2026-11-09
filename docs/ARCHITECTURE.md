@@ -102,3 +102,27 @@ existed, with and without drawing between ticks.
   frame at 1,000 (full) and 300 (lite) across complete campaigns, checks key
   completeness by forcing repaints from later states and comparing draw logs, and
   checks reuse ratio, pixel budgets and eviction.
+
+## ARCADE 2 rule sets (v0.7.0)
+
+`registry.create(mode)` accepts `'extended'` (default), `'remix'` or `'legacy'`. The
+rule set is stored as a non-enumerable, frozen `rules` object on the game
+(`{mode, legacy, extended, remix}`), so it never enters serialised state, replay
+hashes or the render-purity snapshots. Variable lengths are prototype getters
+(`len`, `waveEnd`, `lastOrbit`, `lastIncident`, `target`), not fields. Legacy runs the
+v0.6.0 code paths with the v0.6.0 constants. Fields that only Extended and Remix
+need (`kind`, `focus`, `focusing`, `pierce`, `long`, `shotAt`) are created only in
+those modes. `tests/arcade2-parity.test.cjs` therefore still reproduces the v0.6.0
+pins, alongside new Extended and Remix campaign pins.
+
+`A.sinCosQ30` is the integer CORDIC from QSOLKCB/GALAXY: 24 stages over 32-bit
+binary angles, Q2.30 results, with power-of-two floors so every engine gets the
+same integers. It fills a 1,024-step Q16.16 table once (`A.Trig`). `A.trefoil` uses
+the table and `mulDiv` to place Extended bosses on the projected (2,3) torus knot,
+`x = (2 + cos 3t) cos 2t`, `y = (2 + cos 3t) sin 2t`. Ember Wing's Remix "Focus"
+gates world updates (enemies, enemy fire, bulkheads, items, the wave schedule) to
+alternate ticks while Space is held and its meter lasts. The player and their fire
+keep full speed, which is the time-domains idea in integers.
+
+The shell's Mode menu restarts the run in the chosen mode, writes `mode:<id>`, and
+keys best scores by `best:<id>` (Legacy) or `best:<id>:<mode>`.

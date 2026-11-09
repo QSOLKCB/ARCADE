@@ -2,7 +2,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 for(const file of ['engine','core','gfx','platforms','sports','kombat','breach','shooters'])require('../arcade2/'+file+'.js');
 const A=globalThis.Arcade2,q=A.q,tick=(g,n=1,input={})=>{for(let i=0;i<n;i++)g.tick({...A.empty(),...input});};
-const make=id=>A.registry.find(m=>m.id===id).create();
+const make=(id,mode='legacy')=>A.registry.find(m=>m.id===id).create(mode);
 const ctx=new Proxy({globalAlpha:1},{get:(o,k)=>k in o?o[k]:(...args)=>{for(const a of args)if(typeof a==='number')assert.ok(Number.isFinite(a),'finite draw '+String(k));},set:(o,k,v)=>{o[k]=v;return true;}});
 
 test('ten distinct cabinets have unique identities, original controls and fixed source provenance',()=>{
@@ -13,9 +13,9 @@ test('ten distinct cabinets have unique identities, original controls and fixed 
  for(const [file,hash]of Object.entries(manifest.sha256))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,file))).digest('hex'),hash,file);
  assert.equal(A.Engine.multiply(q(3,2),q(2)),q(3));assert.throws(()=>A.Engine.add(2147483647,1),RangeError);
 });
-for(const id of A.registry.map(m=>m.id)){
- test(id+' replay is deterministic, rendering is pure, pools stay bounded and terminal states freeze',()=>{
-  const a=make(id),b=make(id);
+for(const mode of ['legacy','extended','remix'])for(const id of A.registry.map(m=>m.id)){
+ test(id+' ('+mode+') replay is deterministic, rendering is pure, pools stay bounded and terminal states freeze',()=>{
+  const a=make(id,mode),b=make(id,mode);
   for(let i=0;i<6000;i++){
    const input={...A.empty(),x:i%240<120?1:-1,y:i%180<90?1:-1,a:i%42<30,b:i%100<30,c:i%200<70,
     aPressed:i%42===0,aReleased:i%42===30,bPressed:i%100===0,cPressed:i%65===0,dPressed:i%190===0};
@@ -27,7 +27,7 @@ for(const id of A.registry.map(m=>m.id)){
   assert.ok(a.effects.length<=96);assert.ok(a.events.length<=8);assert.ok((a.shots?.length||0)<=180);assert.ok((a.enemies?.length||0)<=36);
   if(a.p){assert.ok(Number.isInteger(a.p.x));assert.ok(Number.isInteger(a.p.y));}
   a.status='lost';const old=JSON.stringify(a);tick(a,90,{a:true,x:1});assert.equal(JSON.stringify(a),old);
-  assert.equal(make(id).score,0);assert.equal(make(id).status,'playing');
+  assert.equal(make(id,mode).score,0);assert.equal(make(id,mode).status,'playing');
  });
 }
 for(const id of ['shadow','cache','iron']){

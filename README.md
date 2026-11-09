@@ -13,6 +13,8 @@ run-and-gun action and two scrolling shooters bring the repository to 19 games.
 v0.6.0 redraws every ARCADE 2 cabinet — parallax scenery, shaded sprites, additive
 lighting and a CRT pass — with VANILLAJS `FrameGate` redraws and `audio2d` sound,
 while the 60 Hz simulation is pinned bit-for-bit to its previous state hashes.
+v0.7.0 gives every cabinet three modes: **Legacy** (v0.6.0 exactly), **Extended**
+(longer levels, new enemies, trefoil-knot bosses) and **Remix** (one twist each).
 
 [**Enter ARCADE 2**](https://qsolkcb.github.io/ARCADE/arcade2/) ·
 [Cabinets, controls and engine provenance](arcade2/README.md) ·

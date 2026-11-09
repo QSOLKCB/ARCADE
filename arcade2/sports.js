@@ -3,9 +3,9 @@
   'use strict';
   const {q, px, clamp, Engine: E, Draw: D} = A;
   A.Sport = class extends A.Game {
-    constructor(id) {
-      super(id, id === 'soccer' ? 1103 : 2111); this.hoops = id === 'hoops';
-      this.goals = [0, 0]; this.streak = [0, 0]; this.timeLeft = 90 * 60;
+    constructor(id, mode = 'legacy') {
+      super(id, id === 'soccer' ? 1103 : 2111, mode); this.hoops = id === 'hoops';
+      this.goals = [0, 0]; this.streak = [0, 0]; this.timeLeft = (this.rules.extended ? 120 : 90) * 60;
       this.controlled = 0; this.stamina = 100; this.charge = 0; this.serve = 50; this.tackle = 0;
       this.setup();
     }
@@ -16,6 +16,8 @@
       this.ball = {x:q(250),y:q(180),vx:0,vy:0,owner:0,lock:0,flight:null};
       this.controlled = 0; this.charge = 0;
     }
+    // Score to win: v0.6.0 is 21 / 5; Extended plays to 25 / 6; Remix to 30 / 7.
+    get target() { return this.hoops ? (this.rules.remix ? 30 : this.rules.extended ? 25 : 21) : this.rules.remix ? 7 : this.rules.extended ? 6 : 5; }
     pass(index) {
       const b = this.ball, p = this.players[index];
       const mate = index < 2 ? (index === 0 ? 1 : 0) : (index === 2 ? 3 : 2);
@@ -35,6 +37,8 @@
         const goalY = q(188 + aimY * 28), dx = goalX - b.x, dy = goalY - b.y;
         const dist = Math.max(q(1), Math.abs(dx) + Math.abs(dy));
         b.vx = E.mulDiv(dx, q(10), dist); b.vy = E.mulDiv(dy, q(10), dist); b.lock = 14;
+        // Remix "Golden Boot": remember whether this was a long-range strike.
+        if (this.rules.remix) { b.long = p.team ? b.x > q(210) : b.x < q(430); b.shotAt = this.tickCount; }
       } else {
         const hx = p.team ? q(64) : q(576), hy = q(174), dist = Math.abs(hx - p.x) + Math.abs(hy - p.y);
         const dunk = sprint && dist < q(94);
@@ -42,7 +46,7 @@
         const green = power >= 15 && power <= 30;
         const chance = dunk ? 100 : clamp(42 + (green ? 36 : 0) + (this.streak[p.team] >= 3 ? 16 : 0) - (contested ? 22 : 0) - (dist > q(310) ? 23 : 0), 10, 96);
         b.flight = {fromX:b.x,fromY:b.y,toX:hx,toY:hy,t:0,duration:dunk?20:42,
-          good:this.random(100)<chance,points:dist>q(255)?3:2,team:p.team,dunk};
+          good:this.random(100)<chance,points:dist>q(255)?(this.rules.remix?4:3):2,team:p.team,dunk};
         b.vx = b.vy = 0;
         if (dunk) this.announce('SLAM DEPLOY!', 65);
       }
@@ -50,9 +54,9 @@
     point(team, points) {
       this.goals[team] += points; this.streak[team]++; this.streak[1-team] = 0;
       if (!team) this.score += points * 500;
-      this.announce(this.hoops ? (points === 3 ? 'THREE FROM DOWNTOWN!' : 'BUCKET!') : 'GOOOOAL!', 110);
+      this.announce(this.hoops ? (points === 4 ? 'FOUR FROM DOWNTOWN!' : points === 3 ? 'THREE FROM DOWNTOWN!' : 'BUCKET!') : points === 2 ? 'GOLDEN BOOT // DOUBLE GOAL!' : 'GOOOOAL!', 110);
       this.emit('win');
-      if (this.goals[team] >= (this.hoops ? 21 : 5)) { this.finish(team === 0); return; }
+      if (this.goals[team] >= this.target) { this.finish(team === 0); return; }
       this.setup(); this.ball.owner = team ? 0 : 2; this.serve = 70;
     }
     tick(input) {
@@ -125,7 +129,8 @@
         b.x += b.vx; b.y += b.vy;
         b.vx = E.mulDiv(b.vx, 995, 1000); b.vy = E.mulDiv(b.vy, 995, 1000);
         if (!this.hoops && b.y > q(151) && b.y < q(226) && (b.x < q(26) || b.x > q(614))) {
-          this.point(b.x > q(614) ? 0 : 1, 1);
+          const golden = this.rules.remix && b.long && this.tickCount - b.shotAt <= 70;
+          this.point(b.x > q(614) ? 0 : 1, golden ? 2 : 1);
         } else {
           const goalMouth = !this.hoops && b.y > q(151) && b.y < q(226);
           if (!goalMouth && (b.x < q(36) || b.x > q(604))) { b.x = clamp(b.x, q(36), q(604)); b.vx = -b.vx; }
@@ -136,10 +141,17 @@
           }
         }
       }
+      // Golden Boot: a ball someone holds is no longer a long-range strike in flight.
+      if (this.rules.remix && b.owner >= 0 && b.long) b.long = false;
       if (this.ball.lock > 0) this.ball.lock--;
       if (this.timeLeft === 0 && !this.ball.flight && this.goals[0] !== this.goals[1]) this.finish(this.goals[0] > this.goals[1]);
     }
-    hud() { return {left:'YOU ' + this.goals[0] + ' : ' + this.goals[1] + ' CPU', right:this.timeLeft ? Math.ceil(this.timeLeft/60) + ' SEC' : 'SUDDEN DEATH', objective:this.hoops ? 'First to 21 · hold Z into the green, release to shoot · turbo near hoop to dunk' : 'First to 5 · shoot into the right goal · X passes or switches teammate'}; }
+    hud() {
+      const t = this.target, remix = this.rules.remix;
+      return {left:'YOU ' + this.goals[0] + ' : ' + this.goals[1] + ' CPU', right:this.timeLeft ? Math.ceil(this.timeLeft/60) + ' SEC' : 'SUDDEN DEATH',
+        objective:this.hoops ? 'First to ' + t + (remix ? ' · Downtown: threes are worth 4' : '') + ' · hold Z into the green, release to shoot · turbo near hoop to dunk'
+          : 'First to ' + t + (remix ? ' · Golden Boot: long-range goals count double' : '') + ' · shoot into the right goal · X passes or switches teammate'};
+    }
     // Presentation only: reads state, never writes it (see tests/arcade2-parity.test.cjs).
     draw(c) {
       const G = A.Gfx, hoops = this.hoops, tick = this.tickCount;
@@ -255,6 +267,6 @@
       }
     }
   };
-  A.register({id:'soccer',title:'Floodlight FC',subtitle:'Small pitch. Big attitude.',genre:'ARCADE FOOTBALL',color:'#b4f383',number:'02',controls:['Move','Z · shoot / tackle','X · pass / switch','Space · turbo'],description:'Three-a-side football under the floodlights. Pass around the defence, pick a corner and race to five.'},()=>new A.Sport('soccer'));
-  A.register({id:'hoops',title:'Full Court.exe',subtitle:'Boom. Shaka. Deploy.',genre:'2-ON-2 BASKETBALL',color:'#ffad72',number:'03',controls:['Move','Hold / release Z · shoot','X · pass / switch','Space · turbo / dunk'],description:'Two-on-two streetball. Time your shot, slam from close range and sink three in a row to catch fire.'},()=>new A.Sport('hoops'));
+  A.register({id:'soccer', remix:{name:'Golden Boot',summary:'Goals struck from long range count double. First to seven.'},title:'Floodlight FC',subtitle:'Small pitch. Big attitude.',genre:'ARCADE FOOTBALL',color:'#b4f383',number:'02',controls:['Move','Z · shoot / tackle','X · pass / switch','Space · turbo'],description:'Three-a-side football under the floodlights. Pass around the defence, pick a corner and race to five.'},mode=>new A.Sport('soccer',mode));
+  A.register({id:'hoops', remix:{name:'Downtown',summary:'Shots from beyond the arc are worth four. First to thirty.'},title:'Full Court.exe',subtitle:'Boom. Shaka. Deploy.',genre:'2-ON-2 BASKETBALL',color:'#ffad72',number:'03',controls:['Move','Hold / release Z · shoot','X · pass / switch','Space · turbo / dunk'],description:'Two-on-two streetball. Time your shot, slam from close range and sink three in a row to catch fire.'},mode=>new A.Sport('hoops',mode));
 })(globalThis.Arcade2);

@@ -88,18 +88,19 @@ const quantiles=xs=>{const s=[...xs].sort((a,b)=>a-b),q=p=>s[Math.min(s.length-1
 // campaign (policy from tests/arcade2-policy.cjs). Each frame is drawn inside its own
 // requestAnimationFrame onto a visible canvas, so the browser flushes and presents
 // every frame on the real GPU. Records CPU-side submission time and rAF intervals.
-async function paintBenchmark(page,base,policySource,quality){
+async function paintBenchmark(page,base,policySource,quality,mode){
   await page.goto(base);
   await page.waitForFunction(()=>window.Arcade2&&window.Arcade2.registry.length===10);
   await page.addScriptTag({content:'(function(module){'+policySource+'})(window.__policy={});'});
-  return page.evaluate(async([quality,frames])=>{
+  return page.evaluate(async([quality,frames,mode])=>{
     const A=window.Arcade2;if(A.Gfx&&quality)A.Gfx.setQuality(quality);
     const canvas=document.createElement('canvas');canvas.width=640;canvas.height=360;
     canvas.style.cssText='position:fixed;left:0;top:0;width:640px;height:360px;z-index:2147483647;image-rendering:pixelated';
     document.body.append(canvas);
     const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;
     const raf=()=>new Promise(done=>requestAnimationFrame(done)),out={};
-    const run=(meta,visit)=>{const g=meta.create(),control=window.__policy.exports.policy(meta.id);let t=0;
+    // Builds before v0.7.0 take no mode argument and ignore it.
+    const run=(meta,visit)=>{const g=mode?meta.create(mode):meta.create(),control=window.__policy.exports.policy(meta.id);let t=0;
       const step=()=>{if(g.status==='stageclear')g.next();else{g.tick(control(g,t));g.events.length=0;}t++;};
       return {g,step,done:()=>t>=15000||g.status==='won'||g.status==='lost',get t(){return t;}};};
     for(const meta of A.registry){
@@ -115,7 +116,7 @@ async function paintBenchmark(page,base,policySource,quality){
       out[meta.id]={status:r.g.status,times:times.slice(5),intervals:intervals.slice(5)};
     }
     canvas.remove();return out;
-  },[quality||'',FRAMES]);
+  },[quality||'',FRAMES,mode||'']);
 }
 
 async function main(){
@@ -178,15 +179,16 @@ async function main(){
 
     // 2. Paint submission cost, paired: baseline, v0.6.0 full, v0.6.0 lite.
     report.paint={};
-    for(const [label,url,quality] of [['baseline',base+'/__baseline/arcade2/index.html',''],['full',base+'/arcade2/index.html','high'],['lite',base+'/arcade2/index.html','lite']]){
-      const raw=await paintBenchmark(page,url,policySource,quality);
+    const here=base+'/arcade2/index.html';
+    for(const [label,url,quality,mode] of [['baseline',base+'/__baseline/arcade2/index.html','',''],['full',here,'high','extended'],['lite',here,'lite','extended'],['remix',here,'high','remix']]){
+      const raw=await paintBenchmark(page,url,policySource,quality,mode);
       report.paint[label]=Object.fromEntries(Object.entries(raw).map(([id,r])=>{
         const frames=quantiles(r.intervals),long=r.intervals.filter(v=>v>frames.median*1.5).length;
         return [id,{campaign:r.status,...quantiles(r.times),frameIntervalMs:frames,longFrames:long,longFrameRatio:+(long/r.intervals.length).toFixed(4)}];}));
     }
-    for(const [id,q] of Object.entries(report.paint.full)){
-      if(q.p99>GATES.fullPaintP99Ms)fail(id+' full-tier paint p99 '+q.p99+' ms exceeds '+GATES.fullPaintP99Ms+' ms');
-      if(q.longFrameRatio>GATES.fullLongFrameRatio)fail(id+' full-tier long presented frames '+(q.longFrameRatio*100).toFixed(1)+'%');
+    for(const label of ['full','remix'])for(const [id,q] of Object.entries(report.paint[label])){
+      if(q.p99>GATES.fullPaintP99Ms)fail(id+' '+label+' paint p99 '+q.p99+' ms exceeds '+GATES.fullPaintP99Ms+' ms');
+      if(q.longFrameRatio>GATES.fullLongFrameRatio)fail(id+' '+label+' long presented frames '+(q.longFrameRatio*100).toFixed(1)+'%');
     }
     for(const [label,rows] of Object.entries(report.paint))for(const [id,q] of Object.entries(rows))if(q.campaign!=='won')fail(label+' '+id+' campaign ended '+q.campaign);
 
@@ -251,14 +253,14 @@ async function main(){
 
 function summary(r){
   const ids=Object.keys(r.paint?.full||{});
-  const row=id=>{const b=r.paint.baseline[id],f=r.paint.full[id],l=r.paint.lite[id],p=r.play?.[id]||{};
+  const row=id=>{const b=r.paint.baseline[id],f=r.paint.full[id],l=r.paint.lite[id],x=r.paint.remix[id],p=r.play?.[id]||{};
     const pct=q=>(q.longFrameRatio*100).toFixed(1)+'%';
-    return `| ${id} | ${b.median} / ${b.p99} · ${pct(b)} | ${f.median} / ${f.p99} · ${pct(f)} | ${l.median} / ${l.p99} · ${pct(l)} | ${p.ticksPerSecond??'—'} | ${p.frameIntervalMs?.median??'—'} / ${p.frameIntervalMs?.p95??'—'} · ${p.longFrames??'—'} |`;};
+    return `| ${id} | ${b.median} / ${b.p99} · ${pct(b)} | ${f.median} / ${f.p99} · ${pct(f)} | ${l.median} / ${l.p99} · ${pct(l)} | ${x.median} / ${x.p99} · ${pct(x)} | ${p.ticksPerSecond??'—'} | ${p.frameIntervalMs?.median??'—'} / ${p.frameIntervalMs?.p95??'—'} · ${p.longFrames??'—'} |`;};
   return [`## ARCADE 2 on RTX 5060 Ti${r.dryRun?' — DRY RUN (not evidence)':''}`,'',
     `**${r.passed?'PASSED':'FAILED'}** · head \`${r.head}\` · baseline \`${r.baselineHead}\``,'',
     `Runner: ${r.host.runner?.name||'n/a'} (${r.host.session} session) · GPU: ${r.host.nvidia||'n/a'} · Browser renderer: ${r.identity?.renderer||'n/a'} · ${r.browser||''} · Playwright ${r.playwright} · display ${r.display?.width}×${r.display?.height}@${r.display?.dpr}x`,'',
-    '| Cabinet | Baseline paint ms (median / p99) · long frames | v0.6.0 full | v0.6.0 lite | Ticks/s in app | In-app rAF ms (median / p95) · long |',
-    '| --- | --- | --- | --- | --- | --- |',...ids.map(row),'',
+    '| Cabinet | Pre-graphics baseline paint ms (median / p99) · long frames | Extended, full | Extended, lite | Remix, full | Ticks/s in app | In-app rAF ms (median / p95) · long |',
+    '| --- | --- | --- | --- | --- | --- | --- |',...ids.map(row),'',
     `Offline deep-link reload with the server stopped: ${r.offline?.reloadedWithServerStopped?'yes':'no'}`,'',
     `Paint = CPU-side Canvas 2D submission time of draw() + post pass for ${FRAMES} presented frames sampled across a complete campaign; not a GPU timer.`,
     'Long frames = presented rAF intervals over 1.5 × the median (GPU or compositor work that missed a refresh shows up here).',

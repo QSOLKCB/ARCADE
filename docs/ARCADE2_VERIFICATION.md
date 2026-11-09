@@ -1,5 +1,27 @@
 # ARCADE 2 verification record
 
+## v0.7.0 modes — 9 November 2026
+
+Sources read: QSOLKCB/VANILLAJS `main` `7695492` (new module `time-domains`; the
+four vendored modules are unchanged), QSOLKCB/OPT `7556dd3`, QSOLKCB/GALAXY
+`f219bb4` and QSOLKCB/GLUBALL `d25da2a`.
+
+| Check | Observed result |
+| --- | --- |
+| `npm test` | **319 passed, 0 failed**. |
+| Legacy pins | The 20 v0.6.0 pins in `tests/arcade2-parity.test.cjs` pass unchanged after every rule edit. |
+| Extended / Remix pins | 20 new campaign hashes, all distinct, each also replayed with drawing between ticks. |
+| Completion | The control-only policies complete all 30 cabinet/mode campaigns. Extended runs 40–50% longer than Legacy, for example Shadow Circuit 2,283 → 3,287 ticks and Null Vector 6,273 → 9,025. |
+| Mechanics | `tests/arcade2-modes.test.cjs`: the CORDIC port reproduces GALAXY's reference vectors exactly; the trefoil is bounded and closes; every Remix twist and the new Extended features are tested directly; Legacy games contain none of the new fields. |
+| Draw-call budgets | Every mode, both tiers: full peak 873, lite peak 297 (limits 1,000 / 350). |
+| Chromium, `file://` | Mode menu, Remix description, Focus meter draining while Space is held, per-cabinet remembered mode, `#kombat:extended` deep link and per-mode best scores, with no page errors. |
+
+[RTX run 42540918493](https://github.com/QSOLKCB/ARCADE/actions/runs/42540918493)
+on `main` `ae105c5` (v0.6.0 with Node 24 actions) passed with no findings and no
+Node 20 deprecation warning. Paint p99 was 0.2–0.5 ms full, ticks per second were
+59.97–60.32, the display read `1x`, and the offline deep link reloaded.
+
+
 ## v0.6.0 graphics pass — 8 November 2026
 
 Base: QSOLKCB/ARCADE `2a7d112` (main, after PR #7). Sources read: QSOLKCB/VANILLAJS
