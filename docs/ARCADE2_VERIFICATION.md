@@ -98,9 +98,10 @@ tooling the VANILLAJS workflows use), with system Chrome.
 ### Runner setup
 
 ARCADE asks for `[self-hosted, linux, x64, qsol-rtx5060ti]`, the same labels as all
-ten VANILLAJS self-hosted workflows, and uses the same `actions/checkout` (v4,
-`11d5960a`) and `actions/upload-artifact` (v4, `ea165f8d`) commits as the six
-VANILLAJS RTX workflows whose sealed evidence came from this runner. VANILLAJS evidence (runs 42203888152 to
+ten VANILLAJS self-hosted workflows. It uses `actions/checkout` v6 (`d23441a`) and
+`actions/upload-artifact` v6 (`b7c566a`), which declare `using: node24`. The v4 commits
+used by VANILLAJS declare the deprecated `node20`, and GitHub forced them onto Node 24
+with a warning on this runner. VANILLAJS evidence (runs 42203888152 to
 42364527661) shows that runner using Playwright 1.64.0, Google Chrome 156, Node
 v22.18.0 and the renderer `ANGLE (NVIDIA Corporation, NVIDIA GeForce RTX 5060
 Ti/PCIe/SSE2, OpenGL ES 3.2)`. ARCADE's harness accepts all of these. The evidence
@@ -125,7 +126,40 @@ with *publish_evidence*. *play_sound* makes the effects audible on the desktop.
 
 A `--dry-run` of the harness in this session's container passed all gates using
 headless Chromium on SwiftShader. Its report is marked `dryRun:true` and is **not**
-hardware evidence. No result from the RTX 5060 Ti is recorded yet.
+hardware evidence.
+
+### RTX 5060 Ti results — 9 November 2026
+
+The owner registered a second, ARCADE-scoped runner, `rtx5060ti-arcade`, because the
+existing runner is registered to VANILLAJS only. It is in the Default group, runs in
+the owner's Wayland desktop session and has the label `qsol-rtx5060ti`. Two dispatches
+at `main` `428826e` both **passed with no findings**:
+[run 42539388839](https://github.com/QSOLKCB/ARCADE/actions/runs/42539388839) (the
+owner touched the mouse once) and
+[run 42539856928](https://github.com/QSOLKCB/ARCADE/actions/runs/42539856928)
+(unattended). The earlier dispatch, 42538881407, was cancelled while it waited for a runner.
+
+Identity: `nvidia-smi` reported NVIDIA GeForce RTX 5060 Ti, driver 595.99.02, 16311
+MiB. Chrome 156.0.8078.79 drew through `ANGLE (NVIDIA Corporation, NVIDIA GeForce RTX
+5060 Ti/PCIe/SSE2, OpenGL ES 3.2)`, with Playwright 1.64.0.
+
+| Measure, all ten cabinets (run 42539856928) | Pre-graphics baseline | v0.6.0 full | v0.6.0 lite |
+| --- | --- | --- | --- |
+| Paint submission per presented frame, median | 0.1–0.2 ms | 0.1–0.2 ms | 0.1 ms |
+| Paint submission, p99 | 0.2–0.3 ms | 0.2–0.5 ms | 0.2–0.3 ms |
+| Presented frames over 1.5 × median interval | 0% | 0% | 0% |
+
+In-app play: 59.98–60.28 simulation ticks per second in every cabinet, and no long
+frames. The rAF median was 16.7 ms for eight cabinets and 17.0–17.6 ms for two. Which
+cabinets ran slightly long varied between the two runs: Floodlight FC, Null Vector
+and Ember Wing in the first; Shadow Circuit and Iron Comet in the unattended second.
+That points to Wayland compositor pacing, not to the game. The fixed clock held
+60 ticks per second either way. Offline deep-link reload succeeded in both runs. The
+sealed reports and screenshots stay on the owner's machine under
+`~/.local/state/qsol/arcade/rtx5060ti/`, and were not uploaded.
+
+These are CPU-side Canvas 2D submission times and presented-frame intervals on one
+machine and display, not GPU timer measurements.
 
 ## PR #7 review corrections
 

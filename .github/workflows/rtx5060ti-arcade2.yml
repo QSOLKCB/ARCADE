@@ -39,10 +39,11 @@ jobs:
     runs-on: [self-hosted, linux, x64, qsol-rtx5060ti]
     timeout-minutes: 40
     steps:
-      # Same action pins as the VANILLAJS RTX workflows whose sealed evidence
-      # (RTX5060TI-001..005, 2D-FOUNDRY-001) was produced on this runner.
+      # Node 24 actions. The v4 commits used by the VANILLAJS RTX workflows declare
+      # the deprecated node20 runtime; run 42539388839 on this runner showed GitHub
+      # forcing them onto Node 24, which this runner handles. Checkout v6 matches pages.yml.
       - name: Check out source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -111,7 +112,7 @@ jobs:
 
       - name: Upload evidence only on explicit owner consent
         if: ${{ always() && inputs.publish_evidence == true && env.QSOL_ARCADE_EVIDENCE != '' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: arcade2-rtx5060ti-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ env.QSOL_ARCADE_EVIDENCE }}

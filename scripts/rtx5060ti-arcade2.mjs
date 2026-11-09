@@ -170,7 +170,7 @@ async function main(){
       const ext=gl.getExtension('WEBGL_debug_renderer_info');
       return ext?{vendor:gl.getParameter(ext.UNMASKED_VENDOR_WEBGL),renderer:gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)}:{vendor:null,renderer:null};
     });
-    report.display=await page.evaluate(()=>({width:screen.width,height:screen.height,dpr:devicePixelRatio}));
+    report.display=await page.evaluate(()=>({width:screen.width,height:screen.height,dpr:Math.round(devicePixelRatio*100)/100}));
     if(!o.dryRun){
       if(!/NVIDIA/i.test(report.identity.vendor||'')||!/RTX\s*5060\s*Ti/i.test(report.identity.renderer||''))fail('browser renderer is not the RTX 5060 Ti: '+JSON.stringify(report.identity));
       if(/swiftshader|software|llvmpipe|lavapipe/i.test(report.identity.renderer||''))fail('software renderer in use');

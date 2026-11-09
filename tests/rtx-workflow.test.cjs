@@ -15,13 +15,14 @@ test('RTX workflow is owner-dispatched only, on reviewed main, with explicit con
   assert.match(yml,new RegExp(input+':[\\s\\S]*?type: boolean[\\s\\S]*?default: false'),input+' defaults to false');
  assert.match(yml,/runs-on: \[self-hosted, linux, x64, qsol-rtx5060ti\]/);
 });
-test('RTX workflow uses the runner labels and action pins proven by VANILLAJS RTX evidence',()=>{
- // VANILLAJS RTX5060TI-001..005 and 2D-FOUNDRY-001 were produced on the owner's runner with
- // these exact labels and action commits (checkout v4, upload-artifact v4).
+test('RTX workflow keeps the proven runner labels and uses Node 24 action commits',()=>{
+ // Labels match the VANILLAJS RTX workflows and the owner's rtx5060ti-arcade runner.
+ // checkout v6 (d23441a) and upload-artifact v6 (b7c566a) declare `using: node24`; the
+ // v4 commits declare the deprecated node20 runtime.
  const runsOn=[...yml.matchAll(/runs-on: (.*)/g)].map(m=>m[1]);
  assert.deepEqual(runsOn,['[self-hosted, linux, x64, qsol-rtx5060ti]']);
  const uses=[...yml.matchAll(/uses: (actions\/[\w-]+)@([0-9a-f]{40})/g)].map(m=>m[1]+'@'+m[2]);
- assert.deepEqual(uses.sort(),['actions/checkout@11d5960a326750d5838078e36cf38b85af677262','actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02']);
+ assert.deepEqual(uses.sort(),['actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803','actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f']);
 });
 test('RTX workflow is least-privileged, SHA-pinned and uploads only on consent',()=>{
  assert.match(yml,/^permissions:\n  contents: read\n/m);
