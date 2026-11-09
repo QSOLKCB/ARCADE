@@ -202,9 +202,13 @@ function evaluate(cabinet,seed,tape,draw=true){
     audits:a.observations};
 }
 // Preserve a complete unmodified failure prefix AND a smaller attempt.
+function reproduceFailure(cabinet,seed,tape,run){
+  if(run==='parity')return evaluate(cabinet,seed,tape);
+  return executeTape(cabinet,seed,tape,{draw:run!=='reference-no-render'});
+}
 // Delta debugging only accepts the SAME failure signature. No fix or rewrite
 // is attempted by the fuzzer; genuine unexpected crashes block CI.
-function shrink(cabinet,seed,tape,expected,{limit=48}={}){
+function shrink(cabinet,seed,tape,expected,{limit=48,run='with-render'}={}){
   let smallest=tape.slice(),attempts=0,parts=2;
   while(smallest.length>1&&attempts<limit){
     const chunk=Math.ceil(smallest.length/parts);let reduced=false;
@@ -215,7 +219,7 @@ function shrink(cabinet,seed,tape,expected,{limit=48}={}){
       // edge so every candidate remains an actually realizable input tape.
       const normalized=retime(candidate);
       attempts++;
-      const result=executeTape(cabinet,seed,normalized,{draw:true});
+      const result=reproduceFailure(cabinet,seed,normalized,run);
       if(!result.ok&&result.failure.signature===expected.signature){
         smallest=normalized;parts=Math.max(2,parts-1);reduced=true;break;
       }
@@ -252,12 +256,12 @@ function fuzz({seeds=32,ticks=2000,cabinets=IDS}={}){
       const prefix=tape.slice(0,Math.min(ticks,result.failure.tick+1));
       // First preserve the original replay verbatim; optional shortening
       // can never erase a source failure when the minimizer is imperfect.
-      const minimized=shrink(cabinet,n,prefix,result.failure);
+      const minimized=shrink(cabinet,n,prefix,result.failure,{run:result.run});
       return {kind:REPORT_KIND,status:'FAIL',plannedCases:cabinets.length*seeds,
         cases:results, failure:result.failure,
         failingRun:result.run,
         originalTape:prefix, originalTapeSha256:SHA(JSON.stringify(prefix)),
-        minimized,proofOfReproduction:executeTape(cabinet,n,prefix,{draw:true})};
+        minimized,proofOfReproduction:reproduceFailure(cabinet,n,prefix,result.run)};
     }
     results.push(result);
   }
@@ -293,7 +297,11 @@ function main(args=process.argv.slice(2)){
     if(data.kind!==REPORT_KIND||data.status!=='FAIL'||!data.failure||
        !Array.isArray(data.originalTape))throw new TypeError('invalid fuzz failure receipt');
     const {cabinet,seed,signature:expected}=data.failure;
-    const result=executeTape(cabinet,seed,data.originalTape,{draw:true});
+    if(!['with-render','reference-no-render','parity'].includes(data.failingRun))
+      throw new TypeError('unsupported replay phase');
+    if(SHA(JSON.stringify(data.originalTape))!==data.originalTapeSha256)
+      throw new TypeError('corrupted original replay tape');
+    const result=reproduceFailure(cabinet,seed,data.originalTape,data.failingRun);
     console.log(JSON.stringify({replayed:result.failure??null,
       matched:!result.ok&&result.failure.signature===expected}));
     if(result.ok||result.failure.signature!==expected)process.exitCode=1;
