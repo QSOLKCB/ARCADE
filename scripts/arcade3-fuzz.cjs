@@ -313,7 +313,14 @@ function main(args=process.argv.slice(2)){
   if(replay){
     const data=JSON.parse(fs.readFileSync(replay,'utf8'));
     if(data.kind!==REPORT_KIND||data.status!=='FAIL'||!data.failure||
-       !Array.isArray(data.originalTape))throw new TypeError('invalid fuzz failure receipt');
+       !Array.isArray(data.originalTape)||!Array.isArray(data.source?.sourceFiles))
+      throw new TypeError('invalid fuzz failure receipt');
+    const current=sourceIdentity();
+    if(data.source.sourceFiles.length!==current.sourceFiles.length||
+      data.source.sourceFiles.some((file,i)=>
+        file.path!==current.sourceFiles[i].path||
+        file.sha256!==current.sourceFiles[i].sha256))
+      throw new Error('replay source bytes differ from retained failure witness');
     const {cabinet,seed,signature:expected}=data.failure;
     if(!['with-render','reference-no-render','parity'].includes(data.failingRun))
       throw new TypeError('unsupported replay phase');
