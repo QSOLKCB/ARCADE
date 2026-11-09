@@ -52,7 +52,7 @@ const PINS={
  canal:'8c6e56e41f17cd10841b77d3b3d30546ab26c765dca88333ec2eaab7197b07cc',
  skyline:'d9ce9e47d894140305a46fbad4938f3e18537ef80a5ecb658da4e6547f960820',
  stratos:'7f42a84418081db3a788f9bde643cb79af2f22cd0fc37e61a99bb36bfe801100',
- feud:'a47d9a021be94beee285edf63ca90b4d6c970b81bfbef74c36bd28048f8ef51e',
+ feud:'128aa7ef6c0aab80c27a1cf61b4356aecb8d5f20d426fa07b1f9a80b9e08512f',
  knockout:'1c1e859abc9111e63b7294ac98c02d7062708290780ca4df6f129231f6465b09',
 };
 function campaign(id,draw){
@@ -274,6 +274,12 @@ test('Knockout Circuit: a third knockdown on the final tick wins the bout instea
  const g=make('knockout');Object.assign(g.r,{state:'open',t:30,downs:2,hp:1});g.clock=7;const lives=g.lives;
  run(g,1,{aPressed:true});run(g,200);
  assert.equal(g.status,'stageclear');assert.equal(g.lives,lives);
+});
+
+test('Hard Court Feud: the ball is in the inbounder\'s hands during every pause (PR #11 review)',()=>{
+ const g=make('feud'),held=()=>{const h=g.men[g.ball.holder];return Math.abs(g.ball.x-h.x)<=q(8)&&g.ball.y===h.y;};
+ assert.ok(g.pause>0&&held(),'opening pause');
+ g.pause=0;g.giveBall(1);g.pause=30;run(g,10);assert.ok(held(),'after a basket');
 });
 
 test('Hard Court Feud: an elbow stuns and strips a carrier, but never right after an inbound',()=>{

@@ -31,6 +31,7 @@
       const [c, d] = team ? [0, 1] : [2, 3];
       Object.assign(this.men[c], {x: q(team ? 300 : 340), y: q(290), z: 0}); Object.assign(this.men[d], {x: q(team ? 320 : 320), y: q(244), z: 0});
       this.ball = {holder: a, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, flight: null, safe: 75};
+      this.inHands();
     }
     holder() { return this.ball.holder >= 0 ? this.men[this.ball.holder] : null; }
     move(m, dx, dy, speed) {
@@ -119,9 +120,11 @@
       }
       if (ball.flight && ball.flight.kind !== 'pass') go(q(hx + (m.team ? 40 : -40)), q(hy + (k % 2 ? -20 : 20)));
     }
+    // Put a held ball in its carrier's hands (also during inbound pauses, when flyBall is idle).
+    inHands() { const b = this.ball, h = this.men[b.holder]; b.x = h.x + q(h.face * 8); b.y = h.y; b.z = h.z + q(22); }
     flyBall() {
       const b = this.ball, f = b.flight;
-      if (b.holder >= 0) { if (b.safe) b.safe--; const h = this.men[b.holder]; b.x = h.x + q(h.face * 8); b.y = h.y; b.z = h.z + q(22); return; }
+      if (b.holder >= 0) { if (b.safe) b.safe--; this.inHands(); return; }
       if (f) {
         f.t++;
         const k = f.t, T = f.T, lerp = i => f.from[i] + Math.trunc((f.to[i] - f.from[i]) * k / T);

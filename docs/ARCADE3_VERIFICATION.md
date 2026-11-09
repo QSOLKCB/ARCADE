@@ -9,7 +9,7 @@ Environment: Node v22.23.4, and the session's preinstalled Playwright Chromium
 
 | Check | Observed result |
 | --- | --- |
-| `npm test` | **365 passed, 0 failed**. 42 of these are in `tests/arcade3.test.cjs`; every ARCADE 2 and original-hall pin is unchanged. |
+| `npm test` | **366 passed, 0 failed**. 43 of these are in `tests/arcade3.test.cjs`; every ARCADE 2 and original-hall pin is unchanged. |
 | `npm run check` | Passed. This includes the new ARCADE 3 block: local relative URLs, every cabinet script loaded by the hall, and the service worker precaching `./arcade3/`. |
 | Completion | The control-only policies win all nine campaigns (29 stages). In ticks to win: Commando 7,378; Lantern 5,476; Sleepwalker 4,684; Lancer 7,148; Canal 12,288; Skyline 5,201; Stratos 13,545; Feud 16,842; Knockout 6,636. |
 | Policies do real work | A fixed naive input pattern loses every campaign except Hard Court Feud, where the AI teammate can carry a game; it still loses a credit there. |

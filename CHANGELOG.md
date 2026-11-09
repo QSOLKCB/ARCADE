@@ -18,7 +18,7 @@
   shell. The shell now accepts a per-hall configuration (`Arcade2.HALL`) and
   per-cabinet mode lists, and hides the Mode menu for single-mode cabinets.
   ARCADE 2 behaviour and all of its pins are unchanged.
-- `tests/arcade3.test.cjs` (42 tests) covers:
+- `tests/arcade3.test.cjs` (43 tests) covers:
   - for every cabinet: replay determinism, render purity, bounded pools and
     terminal-state freeze
   - control-only completion of all nine campaigns (29 stages), with nine new
@@ -49,7 +49,8 @@
     sideways back onto the bank. Ground landing now requires crossing the ground
     from above, as `K.land` does. The campaign pin is unchanged.
   - **Hard Court Feud:** a stunned ball carrier, human or AI, can no longer shoot
-    or pass until recovered.
+    or pass until recovered. During the opening and post-basket pauses, the ball
+    is now in the inbounder's hands; it used to sit at the corner or at the rim.
   - **Lattice Lancer:** rail spacing now uses the same depth factor as the vertical
     projection, so the painted rails are straight and every drone, block and shot
     sits exactly on its rail. Only cosmetic burst positions moved, which re-pins
