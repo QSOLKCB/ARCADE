@@ -12,3 +12,5 @@ Read this file, docs/INVARIANTS.md and docs/ARCHITECTURE.md before changing code
 - Keep the existing Pages publishing workflow minimal. It verifies and deploys static files; do not add unrelated CI or scheduled workflows without maintainer direction.
 - js/vanilla2d.js is generated: change VANILLAJS upstream and rerun `node scripts/vanilla2d.cjs /path/to/VANILLAJS`, never edit it by hand.
 - Bump the release cache key in sw.js whenever changing a runtime resource. Keep its precache list complete.
+
+- ARCADE3-NUMSPEC-PERF-002 is a research-only promotion gate. Keep the generated arcade2/engine.js, game source and replay pins unchanged. Never substitute a candidate without independent exactness evidence, nine-cabinet full-campaign parity and owner-approved production PR.

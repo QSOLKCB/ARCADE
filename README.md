@@ -43,7 +43,8 @@ with controls alone and pinned by state hash.
 [Cabinets, inspirations and controls](arcade3/README.md) ·
 [Verification record](docs/ARCADE3_VERIFICATION.md) ·
 [ARCADE3-FUZZ-001 valid-control fuzz protocol](docs/ARCADE3_FUZZ_001.md) ·
-[ARCADE3-NUMSPEC-001: exact Float64 / balanced-ternary observatory](docs/ARCADE3_NUMSPEC_001.md)
+[ARCADE3-NUMSPEC-001: exact Float64 / balanced-ternary observatory](docs/ARCADE3_NUMSPEC_001.md) ·
+[NUMSPEC-PERF-002: source-bound Float64 CPU/campaign promotion gate](docs/ARCADE3_NUMSPEC_PERF_002.md)
 
 ## The original hall
 
