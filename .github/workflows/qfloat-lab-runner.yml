@@ -1,0 +1,105 @@
+name: QFLOAT-001 — owner desktop browser validation
+
+# Owner-dispatched ONLY. Never execute public PRs/pushes/schedules on a
+# personal workstation. Run on reviewed main after PR #16 and Pages deploy.
+on:
+  workflow_dispatch:
+    inputs:
+      acknowledge_local_execution:
+        description: "I authorize headed Chromium on my logged-in RTX 5060 Ti desktop"
+        type: boolean
+        required: true
+        default: false
+      verify_pages:
+        description: "Also verify the live GitHub Pages lab (after Pages deployment), with exact source-hash checks"
+        type: boolean
+        required: true
+        default: true
+      publish_evidence:
+        description: "Upload screenshots and SHA-256-sealed evidence to GitHub for 14 days"
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qsol-owner-qfloat-${{ github.repository }}-${{ github.actor }}
+  cancel-in-progress: false
+
+jobs:
+  qfloat-browser:
+    if: ${{ github.repository == 'QSOLKCB/ARCADE' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.actor == 'EmergentMonk' && inputs.acknowledge_local_execution == true }}
+    runs-on: [self-hosted, linux, x64, qsol-rtx5060ti]
+    timeout-minutes: 20
+    steps:
+      - name: Check out reviewed main only — credentials not retained
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Verify local desktop identity and pinned preinstalled browser tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+          test "$GITHUB_REF" = 'refs/heads/main'
+          if test -z "$DISPLAY$WAYLAND_DISPLAY"; then
+            echo 'No graphical desktop: run ./run.sh in a logged-in session, not via SSH/systemd.' >&2
+            exit 1
+          fi
+          node --version
+          node --check scripts/qfloat-lab-runner.mjs
+          node scripts/rtx-playwright.mjs
+          echo "Hardware session: $RUNNER_NAME"
+
+      - name: Verify QFloat numerical and local runner contracts (no downloads)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/qfloat-illusion.test.cjs tests/qfloat-runner.test.cjs
+          node scripts/check.cjs
+
+      - name: Reserve fresh evidence path outside the working tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$HOME/.local/state/qsol/arcade/qfloat"
+          mkdir -m 700 -p "$root"
+          evidence="$root/qfloat-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          test ! -e "$evidence"
+          echo "QSOL_QFLOAT_EVIDENCE=$evidence" >> "$GITHUB_ENV"
+
+      - name: Headed Chromium — local lab and optional source-pinned live Pages
+        shell: bash
+        env:
+          VERIFY_PAGES: ${{ inputs.verify_pages }}
+        run: |
+          set -euo pipefail
+          target=local
+          if [[ "$VERIFY_PAGES" == 'true' ]]; then target=both; fi
+          node scripts/qfloat-lab-runner.mjs \
+            --expected-head "$GITHUB_SHA" \
+            --out "$QSOL_QFLOAT_EVIDENCE" \
+            --target "$target"
+
+      - name: Verify sealed report; show exact execution summary
+        if: ${{ always() && env.QSOL_QFLOAT_EVIDENCE != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$QSOL_QFLOAT_EVIDENCE/SHA256SUMS"
+          (cd "$QSOL_QFLOAT_EVIDENCE" && sha256sum -c SHA256SUMS)
+          cat "$QSOL_QFLOAT_EVIDENCE/SUMMARY.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "Local evidence retained: $QSOL_QFLOAT_EVIDENCE"
+
+      - name: Publish evidence only with explicit owner permission
+        if: ${{ always() && inputs.publish_evidence == true && env.QSOL_QFLOAT_EVIDENCE != '' }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: qfloat-owner-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.QSOL_QFLOAT_EVIDENCE }}
+          if-no-files-found: error
+          retention-days: 14
