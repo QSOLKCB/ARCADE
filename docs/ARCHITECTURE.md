@@ -126,3 +126,30 @@ keep full speed, which is the time-domains idea in integers.
 
 The shell's Mode menu restarts the run in the chosen mode, writes `mode:<id>`, and
 keys best scores by `best:<id>` (Legacy) or `best:<id>:<mode>`.
+
+## ARCADE 3 (v0.8.0)
+
+`arcade3/` is a third hall that reuses the ARCADE 2 runtime rather than adding one.
+`arcade3/index.html` loads `../arcade2/engine.js`, `core.js`, `gfx.js` and
+`sound.js`, then this hall's `kit.js`, `hall.js` and nine cabinet files, then
+`../arcade2/input.js` and `../arcade2/app.js`.
+
+- **Shell configuration.** `hall.js` defines `Arcade2.HALL` before the shell starts:
+  title, storage prefix (`qsol-arcade3:`), featured cabinet, preview runners and
+  filter categories. The shell merges it over the ARCADE 2 defaults.
+- **Single mode.** `A.register` accepts `meta.modes`. ARCADE 3 cabinets register
+  `['extended']`, so the shell hides the Mode menu and best scores stay keyed by
+  `best:<id>`. The ARCADE 2 registry is unchanged.
+- **Shared helpers.** `kit.js` (`Arcade2.K3`) holds eight-way aim, landing on
+  ledges and over pits, and bounded pool helpers.
+- **Coordinates.** The platformers and Stratos Ward use Q16.16 positions, like
+  ARCADE 2. The pseudo-3D cabinets (Lattice Lancer, Canal Cutter and Skyline
+  Overdrive) keep depth, rail slots, world distance and fuel as plain integers.
+  They project to the screen only in `draw()` and for cosmetic burst positions,
+  which are rounded.
+- **Determinism.** Each cabinet draws gameplay randomness only from its own seeded
+  `random()`. Canal Cutter builds its whole spawn plan at stage setup, and a restart
+  rewinds a cursor into that plan, so a replayed section is identical.
+- **Completability.** `tests/arcade3-policy.cjs` holds one control-only policy per
+  cabinet. `tests/arcade3.test.cjs` requires each policy to finish its campaign,
+  pins the resulting state hash, and replays the campaign with drawing between ticks.

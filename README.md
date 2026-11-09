@@ -20,6 +20,29 @@ v0.7.0 gives every cabinet three modes: **Legacy** (v0.6.0 exactly), **Extended*
 [Cabinets, controls and engine provenance](arcade2/README.md) ·
 [Verification record](docs/ARCADE2_VERIFICATION.md)
 
+## ARCADE 3 — The Graveyard Shift
+
+A third hall at [`arcade3/`](arcade3/) adds **nine original cabinets** on the shared
+ARCADE 2 engine, bringing the repository to 28 games:
+
+- a run-and-gun
+- a haunted platformer with committed jumps
+- a dream platformer
+- a five-rail shooter
+- a river run with fuel and bridges
+- an into-the-screen jet shooter
+- a colour-weapon vertical shooter
+- two-on-two brawl ball
+- behind-the-boxer boxing
+
+Each is an original game built around the mechanics of a classic. No names,
+characters, levels, art or music are copied. Every campaign is proven finishable
+with controls alone and pinned by state hash.
+
+[**Enter ARCADE 3**](https://qsolkcb.github.io/ARCADE/arcade3/) ·
+[Cabinets, inspirations and controls](arcade3/README.md) ·
+[Verification record](docs/ARCADE3_VERIFICATION.md)
+
 ## The original hall
 
 | Cabinet | Historical inspiration | This implementation |

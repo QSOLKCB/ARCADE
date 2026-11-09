@@ -93,7 +93,7 @@
   // Sprites, scenery and post effects live in gfx.js (presentation only).
   // create(mode) builds a fresh game; the default for players is 'extended'.
   A.register = (meta, factory) => A.registry.push(Object.freeze({...meta,
-    modes: Object.freeze(['extended', 'remix', 'legacy']),
+    modes: Object.freeze(meta.modes || ['extended', 'remix', 'legacy']),
     create: (mode = 'extended') => factory(A.MODES.includes(mode) ? mode : 'extended')}));
 
   // Integer trigonometry. Ported from QSOLKCB/GALAXY retro/src/lib.rs (Apache-2.0):

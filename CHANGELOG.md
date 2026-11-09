@@ -1,5 +1,80 @@
 # Changelog
 
+## v0.8.0 — ARCADE 3: The Graveyard Shift
+
+- A third hall at `arcade3/` adds nine original cabinets. Each is built around the
+  mechanics of a requested classic; the titles appear in `arcade3/README.md` only
+  as inspiration. No names, characters, levels, art, music or code are copied.
+  - **Overclock Commando** (run-and-gun)
+  - **Tin Lantern** (haunted platformer, committed jumps)
+  - **Pixel Sleepwalker** (dream platformer)
+  - **Lattice Lancer** (five-rail shooter)
+  - **Canal Cutter** (river run with fuel and bridges)
+  - **Skyline Overdrive** (into-the-screen jet combat)
+  - **Stratos Ward** (colour-weapon vertical shooter)
+  - **Hard Court Feud** (two-on-two brawl ball)
+  - **Knockout Circuit** (behind-the-boxer boxing)
+- ARCADE 3 reuses the ARCADE 2 engine, presentation layer, audio2d bank, input and
+  shell. The shell now accepts a per-hall configuration (`Arcade2.HALL`) and
+  per-cabinet mode lists, and hides the Mode menu for single-mode cabinets.
+  ARCADE 2 behaviour and all of its pins are unchanged.
+- `tests/arcade3.test.cjs` (43 tests) covers:
+  - for every cabinet: replay determinism, render purity, bounded pools and
+    terminal-state freeze
+  - control-only completion of all nine campaigns (29 stages), with nine new
+    campaign pins
+  - that a naive input pattern does not finish the campaigns (Hard Court Feud is
+    exempt)
+  - draw-call ceilings (full peak 764, lite peak 290)
+  - mechanics for every cabinet, including level-fairness checks
+- Review fixes (PR #11):
+  - **Stratos Ward:** an item dropped outside the playfield's reflect range
+    (above y 30 or within 10 px of a wall) could flip direction every tick and
+    never come within reach. Items now reflect only when moving out of range, so
+    they drift back in. This is an intentional rule change, so Stratos Ward's
+    campaign pin was re-recorded; the campaign still wins, in 13,545 ticks.
+  - **Knockout Circuit:** a third knockdown landed on the final clock tick now wins
+    the bout instead of going to a decision.
+  - **Skyline Overdrive:** lock-on now uses the drawn reticle exactly: a target
+    locks when its projected position is inside the box. The old world-space box
+    disagreed with the drawing at most depths.
+  - **Pixel Sleepwalker:** the extra-life reward was set at 100 crystals, but the
+    three nights hold only 18. It is now a life every 6 crystals.
+  - **Offline:** ARCADE 3 loads its shared ARCADE 2 scripts with a `?v=0.8.0`
+    release query, and the service worker precaches those exact URLs. A visitor
+    whose browser still runs the v0.7.0 worker therefore fetches current scripts,
+    instead of an old shell that would crash on the new cabinets.
+    `scripts/check.cjs` enforces the query and the precache entries.
+  - **Pixel Sleepwalker:** a sleepwalker already sinking in a pit could step
+    sideways back onto the bank. Ground landing now requires crossing the ground
+    from above, as `K.land` does. The campaign pin is unchanged.
+  - **Hard Court Feud:** a stunned ball carrier, human or AI, can no longer shoot
+    or pass until recovered. During the opening and post-basket pauses, the ball
+    is now in the inbounder's hands; it used to sit at the corner or at the rim.
+  - **Lattice Lancer:** rail spacing now uses the same depth factor as the vertical
+    projection, so the painted rails are straight and every drone, block and shot
+    sits exactly on its rail. Only cosmetic burst positions moved, which re-pins
+    the campaign.
+  - **Skyline Overdrive:** the jet was drawn 40 px below the point its collision
+    checks used. It now flies 40 units below its aim point, and everything uses
+    that one jet position: drawing, flak and airframe collisions, enemy aim,
+    missile launch and the cannon muzzle. Cannon rounds climb to cross the
+    reticle, so the reticle stays visible above the jet.
+  - **Stratos Ward:** an enemy killed by the last bomb pulse no longer moves, fires
+    or rams the ship in the same tick.
+  - **Overclock Commando / Tin Lantern:** four Commando ledges (67–103 px high)
+    and three Lantern ledges (71–81 px) were above the jump's 67 / 69 px rise.
+    They are now all reachable, and a test measures the real jump. Snipers,
+    chests and crows moved with their ledges.
+  - **Overclock Commando:** a runner that falls into a pit can no longer touch you
+    on that tick. The turret and gun firing warning was a glow, which the lite FX
+    tier does not draw; a muzzle flare now shows in both tiers.
+  Skyline, Sleepwalker, Feud, Lancer, Commando and Lantern campaign pins were re-recorded for these rule changes.
+  Every fix has a regression test.
+- Links to ARCADE 3 from the original hall and ARCADE 2. The service worker cache key
+  is now `v0.8.0-r2-arcade3`, and it precaches the 15 ARCADE 3 files and the six versioned shared scripts. The Pages
+  workflow publishes `arcade3/`.
+
 ## v0.7.0 — ARCADE 2 modes: Legacy, Extended and Remix
 
 - Every ARCADE 2 cabinet now has three rule sets, chosen from a **Mode** menu in the
