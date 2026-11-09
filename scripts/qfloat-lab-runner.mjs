@@ -143,7 +143,8 @@ async function start(srv){
   return 'http://127.0.0.1:'+srv.address().port+'/';
 }
 async function stop(srv){
-  if(srv.listening)await new Promise(done=>srv.close(done));
+  if(srv.listening)await new Promise((resolve,reject)=>
+    srv.close(error=>error?reject(error):resolve()));
 }
 async function witness(browser,base,name,out,pinned=null){
   const context=await browser.newContext({viewport:{width:1360,height:940},
@@ -281,6 +282,23 @@ async function witness(browser,base,name,out,pinned=null){
     error.checks=checks;error.browserErrors=errors;throw error;
   }finally{await context.close();}
 }
+// Cleanup is part of the verification result, not optional telemetry.
+// Return a failure exit code if any resource fails to close, even when all
+// preceding browser assertions passed.
+export async function closeResourcesAndFinalize(report,browser,srv){
+  if(!report||!Array.isArray(report.failures))
+    throw new TypeError('invalid browser evidence report');
+  if(browser){
+    try{await browser.close();}
+    catch(error){report.failures.push('browser close: '+error.message);}
+  }
+  if(srv){
+    try{await stop(srv);}
+    catch(error){report.failures.push('server close: '+error.message);}
+  }
+  if(report.failures.length>0)report.status='FAIL';
+  return report.status==='PASS'?0:1;
+}
 function seal(out,report){
   writeFileSync(join(out,'QFLOAT_RUNNER_REPORT.json'),JSON.stringify(report,null,2)+'\n',{flag:'wx',mode:0o600});
   const lines=['# QFLOAT-RUNNER-001 — headed Chromium on owner workstation','',
@@ -341,9 +359,8 @@ async function main(args=process.argv.slice(2)){
     console.error('QFLOAT browser witness FAILED:',error.stack);
     process.exitCode=1;
   }finally{
-    if(browser)await browser.close().catch(e=>report.failures.push('browser close: '+e.message));
-    if(srv)await stop(srv).catch(e=>report.failures.push('server close: '+e.message));
-    if(report.failures.length)report.status='FAIL';
+    const exitCode=await closeResourcesAndFinalize(report,browser,srv);
+    if(exitCode!==0)process.exitCode=1;
     report.finishedAt=new Date().toISOString();
     seal(baseEvidence,report);
     console.log(JSON.stringify({status:report.status,out:baseEvidence,
