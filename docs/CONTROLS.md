@@ -37,6 +37,15 @@ Pick up food for health, staffs for longer and stronger melee reach, and ember s
 
 In co-op, hold E or H beside a fallen partner to revive them. Stay together; both players use the same camera.
 
+**Fighter select.** You start as KAGE. After each district, choose a fighter for the next one (in co-op, each player picks separately). Your pick stays until you change it. Defeated bosses join the roster. Each fighter has different movement, health, blade, ranged attack and storm art (60 energy):
+
+| Fighter | Joins | Skills |
+| --- | --- | --- |
+| KAGE | From the start | Balanced. Throwing stars, sword cut and the **Tempest** storm. |
+| TSURU | From the start | Fastest, with a double jump. Throws twin stars on two lanes. **Gale Dash** cuts through a line of enemies. |
+| LANTERN WARDEN | After district 1 | Heavier and slower. Every star is an ember star. **Lantern Ring** burns everything close by and snuffs enemy stars. |
+| IRON JACKAL | After district 2 | Toughest and hardest-hitting, with the longest reach. A short shockwave replaces stars. **Iron Quake** stuns every enemy in view. |
+
 ## Kestrel Strike
 
 WASD or arrows fly the Kestrel anywhere in the playfield. Hold J or Z to fire; firepower rises from one to five streams as you catch P capsules, and the fifth level adds homing rockets. K or X drops a bomb: it clears every enemy bullet on screen (each worth 10 points), damages everything in view and grants a moment of safety. Bombs are finite; catch B capsules for more. Space or C loops the plane for 0.9 seconds of invulnerability, recharging in five seconds (3.5 on Relaxed).

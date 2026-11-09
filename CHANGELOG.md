@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.9.0 — Neon Ronin fighter select
+
+- After each district, Neon Ronin shows a fighter select. You start as KAGE. Defeated
+  bosses join your roster: the Lantern Warden after district 1 and the Iron Jackal
+  after district 2. In co-op each player picks separately, and a pick stays until
+  changed. All four fighters are original.
+  - **KAGE**: the original hero with the original numbers.
+  - **TSURU**: fastest, with a double jump and twin stars on two lanes; *Gale Dash*
+    cuts through a lane of enemies.
+  - **LANTERN WARDEN**: heavier, and every star is an ember star; *Lantern Ring*
+    burns everything nearby and snuffs enemy stars.
+  - **IRON JACKAL**: toughest and hardest-hitting, with the longest reach. A
+    shockwave replaces stars, and *Iron Quake* stuns every enemy in view.
+- A run that never picks a different fighter replays exactly as before. No
+  fighter state exists until the first pick, KAGE uses the original arithmetic,
+  and the Neon Ronin pins in `tests/parity.test.cjs` are unchanged.
+- `tests/ninja-roster.test.cjs` (18 tests) covers:
+  - the default run carrying no fighter state
+  - roster unlocks
+  - independent co-op picks, and rejection of locked or out-of-turn picks
+  - per-fighter speed, double jump, twin and ember stars, and the shockwave
+  - every storm art
+  - each fighter finishing all three districts at both difficulties, with
+    scripted real-damage input
+- Cache key `v0.9.0-r1-roster`.
+
 ## v0.8.0 — ARCADE 3: The Graveyard Shift
 
 - A third hall at `arcade3/` adds nine original cabinets. Each is built around the
