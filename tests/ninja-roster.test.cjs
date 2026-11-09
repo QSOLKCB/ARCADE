@@ -72,6 +72,19 @@ test('the Lantern Warden always throws ember stars; the Iron Jackal throws a sho
  assert.equal(j.bullets[0].damage,40);assert.ok(j.bullets[0].life<.5);
 });
 
+test('an ember pickup never weakens a fighter: the Jackal keeps its 40-damage shockwave (PR #12 review)',()=>{
+ const j=fighter('jackal'),p=j.players[0];p.power=20;p.cd=0;j.update(A.STEP,[input({fire:true})]);
+ assert.equal(j.bullets[0].damage,40);
+ const k=new A.Ninja({players:1});k.action('start');k.enemies=[];const kp=k.players[0];kp.power=20;kp.cd=0;k.update(A.STEP,[input({fire:true})]);
+ assert.equal(k.bullets[0].damage,34,'KAGE keeps the original ember damage');
+});
+
+test('Iron Quake reaches every enemy in the view, not just those near the Jackal (PR #12 review)',()=>{
+ const g=fighter('jackal'),p=g.players[0];g.cam=0;p.x=65;
+ g.enemies=[enemy(405,p.y),enemy(470,p.y+30),enemy(600,p.y)];g.update(A.STEP,[input({specialPressed:true})]);
+ assert.ok(g.enemies[0].hp<300&&g.enemies[1].hp<300,'on screen');assert.equal(g.enemies[2].hp,300,'off screen');
+});
+
 test('each storm art does what its fighter card says',()=>{
  // Gale Dash: moves along the lane and cuts every enemy it passes.
  let g=fighter('tsuru');let p=g.players[0];g.gates=[9999,9999,9999,9999];const x0=p.x;
@@ -84,7 +97,7 @@ test('each storm art does what its fighter card says',()=>{
  assert.ok(g.enemies[0].hp<300);assert.equal(g.enemies[1].hp,300);assert.equal(g.bullets.length,0);
  // Iron Quake: strikes and freezes every enemy in view.
  g=fighter('jackal');p=g.players[0];
- g.enemies=[enemy(p.x+200,p.y,300),enemy(p.x-150,p.y+30,300)];g.enemies[0].windup=.3;
+ g.enemies=[enemy(p.x+200,p.y,300),enemy(p.x+40,p.y+30,300)];g.enemies[0].windup=.3;
  g.update(A.STEP,[input({specialPressed:true})]);
  for(const e of g.enemies){assert.ok(e.hp<300);assert.ok(e.hurt>2);assert.equal(e.windup,0);}
  const before=g.enemies.map(e=>e.x);for(let i=0;i<60;i++)g.update(A.STEP,[input()]);

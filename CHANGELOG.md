@@ -16,7 +16,7 @@
 - A run that never picks a different fighter replays exactly as before. No
   fighter state exists until the first pick, KAGE uses the original arithmetic,
   and the Neon Ronin pins in `tests/parity.test.cjs` are unchanged.
-- `tests/ninja-roster.test.cjs` (16 tests) covers:
+- `tests/ninja-roster.test.cjs` (18 tests) covers:
   - the default run carrying no fighter state
   - roster unlocks
   - independent co-op picks, and rejection of locked or out-of-turn picks

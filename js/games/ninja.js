@@ -66,7 +66,7 @@
       this.effects.add('slash',p.x+p.face*13,p.y-p.z-16,p.staff>0?'#ffdb93':'#c8f2e8',p.staff>0?42:26,.18,p.face);
       if(targets.length){this.sound('slash');for(const e of targets)this.damage(e,p.staff>0?65:p.z>8?F.jumpCut:F.cut,p.face);this.sound('hit');}
       else{
-        const hot=p.power>0||!!F.ember,throwAt=y=>this.bullets.push({x:p.x+p.face*14,y,z:15,vx:p.face*(p.power>0?280:F.star),life:F.starLife,damage:p.power>0?34:F.starHit,enemy:false,power:hot});
+        const hot=p.power>0||!!F.ember,throwAt=y=>this.bullets.push({x:p.x+p.face*14,y,z:15,vx:p.face*(p.power>0?280:F.star),life:F.starLife,damage:p.power>0?Math.max(34,F.starHit):F.starHit,enemy:false,power:hot});
         if(F.twin){throwAt(A.clamp(p.y-9,178,246));throwAt(A.clamp(p.y+9,178,246));}else throwAt(p.y);
         this.sound('star');
       }
@@ -93,8 +93,8 @@
         for(const b of this.bullets)if(b.enemy&&Math.abs(b.x-p.x)<150)b.life=0;
         this.effects.add('blast',p.x,p.y-18,'#ffc482',150,.6);this.particles.burst(p.x,p.y-18,'#ffbc7a',80,200);
       }else{
-        // Iron Quake: everything in view is struck and frozen mid-move.
-        for(const e of this.enemies)if(e.hp>0&&Math.abs(e.x-p.x)<320){this.damage(e,60,p.face);e.windup=0;e.hurt=2.2;e.cd=Math.max(e.cd,2.6);}
+        // Iron Quake: everything in the 480 px view is struck and frozen mid-move.
+        for(const e of this.enemies)if(e.hp>0&&e.x>=this.cam-12&&e.x<=this.cam+492){this.damage(e,60,p.face);e.windup=0;e.hurt=2.2;e.cd=Math.max(e.cd,2.6);}
         this.shake=.45;this.effects.add('ring',p.x,p.y-4,'#c8b48e',260,.7);this.particles.burst(p.x,p.y,'#c8b48e',70,240);
       }
     }
