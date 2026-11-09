@@ -141,6 +141,26 @@ function policy(id){
    }
    a.x=Math.abs(tx-p.x)>14?sign(tx-p.x):0;a.y=Math.abs(ty-p.y)>12?sign(ty-p.y):0;
   }
+  if(id==='stratos'){
+   // Try nine moves, project every bullet and airframe forward on its current velocity,
+   // and keep the move with the most clearance; break ties by lining up under a target.
+   const p=g.p,x=px(p.x),y=px(p.y);a.a=true;
+   const bs=g.bullets.map(b=>[px(b.x),px(b.y),px(b.vx),px(b.vy),5.5]).filter(([bx,by])=>Math.abs(bx-x)<120&&Math.abs(by-y)<160);
+   for(const f of g.foes)if(f.kind==='heli'||f.kind==='jet'||f.kind==='carrier')bs.push([px(f.x),px(f.y),px(f.vx),px(f.vy),14]);
+   const tgt=g.foes.filter(f=>f.hp>0&&px(f.y)>-10&&px(f.y)<y-20).sort((u,v)=>(px(v.y)-px(u.y))-(Math.abs(px(u.x)-x)-Math.abs(px(v.x)-x))/3)[0];
+   const item=g.items.filter(it=>(it.kind!=='crystal'||p.level<4)&&px(it.y)>60).sort((u,v)=>Math.abs(px(u.x)-x)-Math.abs(px(v.x)-x))[0];
+   let best=null;
+   for(const mx of [-1,0,1])for(const my of [-1,0,1]){
+    let clear=99;
+    for(let k=1;k<=22;k++){const cx=Math.max(150,Math.min(490,x+mx*3*Math.min(k,12))),cy=Math.max(40,Math.min(340,y+my*3*Math.min(k,12)));
+     for(const [bx,by,vx,vy,r] of bs){const d=Math.max(Math.abs(bx+vx*k-cx),Math.abs(by+vy*k-cy))-r;if(d<clear)clear=d+k*0.15;}}
+    const nx=x+mx*12,ny=y+my*12,gx=item?px(item.x):tgt?px(tgt.x):320,gy=item?px(item.y):g.boss?250:285;
+    const score=Math.min(clear,14)*10-Math.abs(nx-gx)/4-Math.abs(ny-gy)/6;
+    if(!best||score>best[2])best=[mx,my,score,clear];
+   }
+   a.x=best[0];a.y=best[1];
+   if(best[3]<2&&p.bombs>0&&!g.bomb&&!g.inv)a.bPressed=true;
+  }
   return a;
  };
 }
