@@ -79,11 +79,14 @@
       if (input.cPressed && p.grounded) { p.vy = q(-15, 2); p.grounded = false; this.emit('jump'); }
       if (!input.c && p.vy < q(-2)) p.vy = q(-2); // releasing early cuts the jump short
       if (input.aPressed && p.storm && !p.cd && this.sparks.length < 3) { this.sparks.push({x: p.x, y: p.y - q(14), vx: q(p.face * 4), vy: 0, life: 150}); p.cd = 12; this.emit('shot'); }
+      const oldY = p.y;
       p.vy = Math.min(q(8), p.vy + q(3, 10)); p.y += p.vy; y = px(p.y); p.grounded = false;
       k = this.solidAt(x - W, y - H, x + W, y);
       if (k && p.vy > 0) { p.y = q(k.y); p.vy = 0; p.grounded = true; }
       else if (k && p.vy < 0) { p.y = q(k.y + T + H); p.vy = 0; this.bump(k); }
-      else if (p.y >= q(GROUND) && !K.overPit(p.x, this.pits)) { p.y = q(GROUND); p.vy = 0; p.grounded = true; }
+      // Land only when the feet cross the ground from above: a sleepwalker already sinking in a
+      // pit cannot step sideways back onto the bank.
+      else if (oldY <= q(GROUND) && p.y >= q(GROUND) && !K.overPit(p.x, this.pits)) { p.y = q(GROUND); p.vy = 0; p.grounded = true; }
       if (p.y > q(400)) { this.inv = 0; p.storm = false; this.hurtMe(); }
       if (this.status !== 'playing') return;
       for (const f of this.foes) {

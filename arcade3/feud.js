@@ -79,8 +79,9 @@
       for (const m of men) { if (m.stun) m.stun--; if (m.cd) m.cd--; if (m.shot) m.shot--; m.vz -= q(1, 2); m.z = Math.max(0, m.z + m.vz); if (!m.z) m.vz = 0; }
       // You.
       this.move(me, input.x, input.y, this.turboOn ? q(16, 5) : q(2));
-      if (ball.holder === 0) { if (input.aPressed) this.shoot(me); else if (input.bPressed) this.pass(me); }
-      else if (input.bPressed) { if (ball.holder === 1) this.pass(men[1]); else this.shove(me); }
+      // A stunned player cannot shoot, pass or call for the ball until they recover.
+      if (ball.holder === 0) { if (!me.stun) { if (input.aPressed) this.shoot(me); else if (input.bPressed) this.pass(me); } }
+      else if (input.bPressed) { if (ball.holder === 1) { if (!men[1].stun && !me.stun) this.pass(men[1]); } else this.shove(me); }
       // Your teammate and the rival crew.
       for (let k = 1; k < 4; k++) this.think(men[k], k);
       this.flyBall();
@@ -92,6 +93,7 @@
       const speed = m.team ? crew.speed : q(18, 10), [hx, hy] = HOOPS[m.team ? 0 : 1];
       const go = (x, y, s = speed) => { const dx = x - m.x, dy = y - m.y; this.move(m, Math.abs(dx) > q(3) ? Math.sign(dx) : 0, Math.abs(dy) > q(3) ? Math.sign(dy) : 0, s); };
       if (h === m) {
+        if (m.stun) return;
         const d = Math.abs(px(m.x) - hx) + Math.abs(px(m.y) - hy) * 2, guarded = this.men.some(o => o.team !== m.team && !o.stun && dist(o, m) < q(26));
         if (m.shot === 0 && (d < 70 || (d < 210 && this.random(guarded ? 80 : 30) === 0))) { m.shot = 60; this.shoot(m); return; }
         if (guarded && this.random(m.team ? 50 : 30) === 0 && !mate.stun) { this.pass(m); return; }

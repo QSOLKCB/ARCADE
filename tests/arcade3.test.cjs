@@ -52,7 +52,7 @@ const PINS={
  canal:'8c6e56e41f17cd10841b77d3b3d30546ab26c765dca88333ec2eaab7197b07cc',
  skyline:'bec8b7b310db2e59b54360428c1317ccb77cf5f81dc66d8d019bb7572297b7e2',
  stratos:'7f42a84418081db3a788f9bde643cb79af2f22cd0fc37e61a99bb36bfe801100',
- feud:'2e6df869d47d3a8ee5c129b517d7eea0b133ff6b0227102d03c4f96fd0b5c7a6',
+ feud:'a47d9a021be94beee285edf63ca90b4d6c970b81bfbef74c36bd28048f8ef51e',
  knockout:'1c1e859abc9111e63b7294ac98c02d7062708290780ca4df6f129231f6465b09',
 };
 function campaign(id,draw){
@@ -194,6 +194,22 @@ test('Pixel Sleepwalker: the extra-life crystal reward is reachable (PR #11 revi
  for(let i=0;i<6;i++)h.gainCrystal({x:100,y:200});
  assert.equal(h.lives,lives+1,'six crystals earn a life');
  assert.ok(blocks>=18,'enough crystal blocks for three extra lives: '+blocks);
+});
+
+test('Pixel Sleepwalker: a sleepwalker sinking in a pit cannot step back onto the bank (PR #11 review)',()=>{
+ const g=make('sleepwalker');g.foes=[];g.inv=999;const [l,r]=g.pits[0];
+ Object.assign(g.p,{x:q(r-6),y:q(330),vy:q(1),grounded:false});const lives=g.lives;
+ run(g,1,{x:1,c:true});assert.ok(g.p.y>q(303),'still falling, not snapped to y 303');
+ run(g,40,{x:1,c:true});assert.equal(g.lives,lives-1,'the fall costs a life');
+});
+
+test('Hard Court Feud: a stunned ball carrier cannot shoot or pass until recovered (PR #11 review)',()=>{
+ const g=make('feud');g.pause=0;g.ball.holder=0;g.men[0].stun=30;
+ run(g,1,{aPressed:true});assert.equal(g.ball.holder,0,'no shot while stunned');assert.equal(g.ball.flight,null);
+ run(g,1,{bPressed:true});assert.equal(g.ball.holder,0,'no pass while stunned');
+ const h=make('feud');h.pause=0;h.ball.holder=2;h.men[2].stun=30;h.men[2].shot=0;Object.assign(h.men[2],{x:q(90),y:q(276)});
+ for(const m of h.men)if(m!==h.men[2])m.x=q(560);
+ run(h,5);assert.equal(h.ball.holder,2,'a stunned rival keeps the ball without shooting');
 });
 
 test('Stratos Ward: crystals level the weapon, ward bombs clear the sky',()=>{

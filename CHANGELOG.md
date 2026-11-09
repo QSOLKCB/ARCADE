@@ -18,7 +18,7 @@
   shell. The shell now accepts a per-hall configuration (`Arcade2.HALL`) and
   per-cabinet mode lists, and hides the Mode menu for single-mode cabinets.
   ARCADE 2 behaviour and all of its pins are unchanged.
-- `tests/arcade3.test.cjs` (34 tests) covers:
+- `tests/arcade3.test.cjs` (36 tests) covers:
   - for every cabinet: replay determinism, render purity, bounded pools and
     terminal-state freeze
   - control-only completion of all nine campaigns (29 stages), with nine new
@@ -45,7 +45,12 @@
     whose browser still runs the v0.7.0 worker therefore fetches current scripts,
     instead of an old shell that would crash on the new cabinets.
     `scripts/check.cjs` enforces the query and the precache entries.
-  Skyline and Sleepwalker campaign pins were re-recorded for these rule changes.
+  - **Pixel Sleepwalker:** a sleepwalker already sinking in a pit could step
+    sideways back onto the bank. Ground landing now requires crossing the ground
+    from above, as `K.land` does. The campaign pin is unchanged.
+  - **Hard Court Feud:** a stunned ball carrier, human or AI, can no longer shoot
+    or pass until recovered.
+  Skyline, Sleepwalker and Feud campaign pins were re-recorded for these rule changes.
   Every fix has a regression test.
 - Links to ARCADE 3 from the original hall and ARCADE 2. The service worker cache key
   is now `v0.8.0-r1-arcade3`, and it precaches the 15 ARCADE 3 files and the six versioned shared scripts. The Pages
