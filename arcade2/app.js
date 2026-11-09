@@ -4,13 +4,18 @@
   const $=id=>document.getElementById(id),canvas=$('screen'),ctx=canvas.getContext('2d');
   if(!ctx){$('hall').hidden=true;$('playroom').hidden=false;$('game-title').textContent='Canvas 2D is unavailable in this browser.';return;}
   ctx.imageSmoothingEnabled=false;
-  const read=(key,fallback)=>{try{const value=localStorage.getItem('qsol-arcade2:'+key);return value===null?fallback:JSON.parse(value);}catch(_){return fallback;}};
-  const write=(key,value)=>{try{localStorage.setItem('qsol-arcade2:'+key,JSON.stringify(value));}catch(_){}};
+  // Hall configuration. ARCADE 3 reuses this shell by defining Arcade2.HALL before
+  // app.js loads; every default below is ARCADE 2's own value.
+  const H=Object.assign({prefix:'qsol-arcade2:',name:'ARCADE 2',title:'ARCADE 2 — The Second Shift',featured:'kombat',
+    winTitles:{kombat:'DEPLOYALITY!'},previewTicks:{kombat:150},previewRunners:['shadow','cache','iron'],
+    categories:{sport:['soccer','hoops'],action:['shadow','cache','iron','kombat']},otherCategory:'shooter'},A.HALL||{});
+  const read=(key,fallback)=>{try{const value=localStorage.getItem(H.prefix+key);return value===null?fallback:JSON.parse(value);}catch(_){return fallback;}};
+  const write=(key,value)=>{try{localStorage.setItem(H.prefix+key,JSON.stringify(value));}catch(_){}};
   // Best scores per rule set. Legacy keeps the v0.6.0 key so existing scores carry over.
   const MODE_LABEL={extended:'Extended',remix:'Remix',legacy:'Legacy'};
   const bestKey=(id,mode)=>mode==='legacy'?'best:'+id:'best:'+id+':'+mode;
   const best=(id,mode=currentMode)=>{const n=read(bestKey(id,mode),0);return Number.isSafeInteger(n)&&n>=0&&n<1000000000?n:0;};
-  const modeFor=id=>{const m=read('mode:'+id,'extended');return A.MODES.includes(m)?m:'extended';};
+  const modeFor=id=>{const m=read('mode:'+id,'extended'),meta=A.registry.find(x=>x.id===id);return meta&&meta.modes.includes(m)?m:meta?meta.modes[0]:'extended';};
   let currentMode='extended';
   let sound=read('sound',false)===true,audio=null,voices=[],buffers=new Map(),mode='hall',game=null,selected=null,last=null,lastMessage='';
   const G=A.Gfx;let fxChoice=read('fx','high')==='lite'?'lite':'high',fxAuto=false;G.setQuality(fxChoice);
@@ -76,22 +81,23 @@
       o.textContent=m==='remix'?'Remix: '+meta.remix.name:m==='legacy'?'Legacy (v0.6)':'Extended';return o;}));
   }
   function modeCopy(meta,mode){
+    if(meta.modes.length<2)return '';
     return mode==='remix'?'REMIX — '+meta.remix.name.toUpperCase()+': '+meta.remix.summary:
       mode==='legacy'?'LEGACY — the original v0.6 rules, unchanged.':'EXTENDED — longer stages and matches, new enemies and boss patterns.';
   }
   function launch(meta,ready=false,mode=modeFor(meta.id)){
-    currentMode=A.MODES.includes(mode)?mode:'extended';write('mode:'+meta.id,currentMode);
+    currentMode=meta.modes.includes(mode)?mode:meta.modes[0];write('mode:'+meta.id,currentMode);
     selected=meta;game=meta.create(currentMode);clock.reset();invalidate();$('hall').hidden=true;$('playroom').hidden=false;
-    modeOptions(meta);$('mode').value=currentMode;
-    $('game-title').textContent=meta.title;$('game-genre').textContent='CABINET '+meta.number+' / '+meta.genre+' / '+MODE_LABEL[currentMode].toUpperCase();
+    modeOptions(meta);$('mode').value=currentMode;$('mode').closest('label').hidden=meta.modes.length<2;
+    $('game-title').textContent=meta.title;$('game-genre').textContent='CABINET '+meta.number+' / '+meta.genre+(meta.modes.length>1?' / '+MODE_LABEL[currentMode].toUpperCase():'');
     $('control-guide').replaceChildren(...meta.controls.map(label=>{const el=document.createElement('span');el.textContent=label;return el;}));
     $('best').textContent='BEST '+String(best(meta.id)).padStart(6,'0');canvas.dataset.aim=String(meta.id==='breach');
-    document.title=meta.title+' — ARCADE 2';try{history.replaceState(null,'','#'+meta.id+':'+currentMode);}catch(_){}
+    document.title=meta.title+' — '+H.name;try{history.replaceState(null,'','#'+meta.id+':'+currentMode);}catch(_){}
     setMode(ready?'paused':'playing');unlockAudio();paint();window.scrollTo({top:0,behavior:'instant'});
     if(ready)showOverlay('FREE PLAY','READY PLAYER ONE',meta.description+' '+modeCopy(meta,currentMode),'Start game');else canvas.focus({preventScroll:true});
   }
   function hall(){
-    const returnId=selected?.id;setMode('hall');game=null;$('hall').hidden=false;$('playroom').hidden=true;document.title='ARCADE 2 — The Second Shift';
+    const returnId=selected?.id;setMode('hall');game=null;$('hall').hidden=false;$('playroom').hidden=true;document.title=H.title;
     try{history.replaceState(null,'','#cabinets');}catch(_){}
     const button=document.querySelector('[data-play="'+returnId+'"]');if(button)button.focus();
   }
@@ -100,7 +106,7 @@
     if(game.status==='stageclear')showOverlay('CABINET '+selected.number,'STAGE CLEAR','Score '+game.score.toLocaleString()+' · the next stage is waiting.','Next stage');
     else{
       const previous=best(selected.id);if(game.score>previous)write(bestKey(selected.id,currentMode),game.score);
-      const won=game.status==='won',title=won?(selected.id==='kombat'?'DEPLOYALITY!':'YOU CLEARED IT.'):'ANOTHER CREDIT?';
+      const won=game.status==='won',title=won?(H.winTitles[selected.id]||'YOU CLEARED IT.'):'ANOTHER CREDIT?';
       showOverlay(won?'MISSION COMPLETE':'RUN ENDED',title,'Score '+game.score.toLocaleString()+(game.score>previous?' · new local best.':' · free play, always.'),'Play again');
       $('best').textContent='BEST '+String(best(selected.id)).padStart(6,'0');sfx(won?'win':'lose');
     }
@@ -122,17 +128,17 @@
   document.addEventListener('visibilitychange',()=>{if(document.hidden){if(mode==='playing')pause();else input.clear();}});
   const previews=[];
   function preview(meta,target){
-    const g=meta.create();for(let i=0;i<(meta.id==='kombat'?150:100);i++){const a=A.empty();if(['shadow','cache','iron'].includes(meta.id)){a.x=1;a.a=true;}g.tick(a);}
+    const g=meta.create();for(let i=0;i<(H.previewTicks[meta.id]||100);i++){const a=A.empty();if(H.previewRunners.includes(meta.id)){a.x=1;a.a=true;}g.tick(a);}
     const context=target.getContext('2d');if(context){context.imageSmoothingEnabled=false;g.draw(context);previews.push([g,context]);}
   }
   function redrawPreviews(){for(const [g,context] of previews){context.setTransform(1,0,0,1,0,0);context.globalAlpha=1;context.globalCompositeOperation='source-over';g.draw(context);}}
   for(const meta of A.registry.sort((a,b)=>Number(a.number)-Number(b.number))){
     const article=document.createElement('article');article.className='card';article.style.setProperty('--accent',meta.color);
-    article.dataset.category=['soccer','hoops'].includes(meta.id)?'sport':['shadow','cache','iron','kombat'].includes(meta.id)?'action':'shooter';
+    article.dataset.category=Object.keys(H.categories).find(k=>H.categories[k].includes(meta.id))||H.otherCategory;
     const top=document.createElement('div');top.className='card-top';const genre=document.createElement('span'),number=document.createElement('span');genre.textContent=meta.genre;number.textContent='NO. '+meta.number;top.append(genre,number);
     const art=document.createElement('div');art.className='card-preview';const screen=document.createElement('canvas');screen.width=640;screen.height=360;screen.setAttribute('aria-label',meta.title+' gameplay preview');screen.setAttribute('role','img');art.append(screen);
     const copy=document.createElement('div');copy.className='card-copy';const title=document.createElement('h3');title.textContent=meta.title;
-    const modes=document.createElement('p');modes.className='card-modes';modes.textContent='Remix: '+meta.remix.name+' — '+meta.remix.summary;
+    const modes=document.createElement('p');modes.className='card-modes';modes.textContent=meta.remix?'Remix: '+meta.remix.name+' — '+meta.remix.summary:meta.inspiredBy?'Inspired by the mechanics of '+meta.inspiredBy+'.':'';
     const subtitle=document.createElement('p');subtitle.className='card-subtitle';subtitle.textContent=meta.subtitle;
     const description=document.createElement('p');description.className='card-description';description.textContent=meta.description;
     const foot=document.createElement('div');foot.className='card-footer';const tag=document.createElement('span');tag.textContent='1 PLAYER / FREE PLAY';
@@ -144,7 +150,7 @@
     for(const other of document.querySelectorAll('[data-filter]'))other.setAttribute('aria-pressed',String(other===button));
     for(const card of document.querySelectorAll('.card'))card.hidden=filter!=='all'&&card.dataset.category!==filter;
   });
-  const featured=A.registry.find(m=>m.id==='kombat');preview(featured,$('feature-art'));$('featured-play').addEventListener('click',()=>launch(featured));
+  const featured=A.registry.find(m=>m.id===H.featured)||A.registry[0];preview(featured,$('feature-art'));$('featured-play').addEventListener('click',()=>launch(featured));
   function padMenus(){
     const edges=input.pollMenu();if(edges.includes('pause')){if(mode==='playing')pause();else if(mode==='paused')resume();return;}
     if(mode==='playing')return;
@@ -171,7 +177,7 @@
     requestAnimationFrame(frame);
   }
   const [hashId,hashMode]=location.hash.slice(1).split(':'),requested=A.registry.find(m=>m.id===hashId);
-  if(requested)launch(requested,true,A.MODES.includes(hashMode)?hashMode:modeFor(requested.id));
+  if(requested)launch(requested,true,requested.modes.includes(hashMode)?hashMode:modeFor(requested.id));
   requestAnimationFrame(frame);
   if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){
     navigator.serviceWorker.register('../sw.js').then(reg=>{
