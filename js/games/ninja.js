@@ -55,7 +55,7 @@
     }
     addEnemy(x,y,kind){const hp=kind==='brute'?110:60;this.enemies.push({x,y,hp,maxHP:hp,kind,cd:.8+this.rand(),windup:0,face:-1,walk:0,attack:0,hurt:0});}
     damage(e,amount,face){
-      if(e.hp<=0)return;e.hp-=amount;e.hurt=.12;e.x=A.clamp(e.x+face*5,20,1980);this.particles.burst(e.x,e.y-15,'#f5cc94',7,60);this.sound('hit');
+      if(e.hp<=0)return;e.hp-=amount;e.hurt=Math.max(e.hurt,.12);e.x=A.clamp(e.x+face*5,20,1980);this.particles.burst(e.x,e.y-15,'#f5cc94',7,60);this.sound('hit');
       if(e.hp<=0){this.defeated.push({...e,hp:1,life:.45});this.effects.add('ring',e.x,e.y-15,'#f8d4af',24,.3);this.combo++;this.comboTime=3;this.score+=(e.kind==='boss'?3000:150)*Math.min(5,1+Math.floor(this.combo/4));for(const p of this.players)p.energy=Math.min(100,p.energy+5);if(this.rand()<.2)this.pickups.push({x:e.x,y:e.y,kind:'health',taken:false});}
     }
     attack(p){

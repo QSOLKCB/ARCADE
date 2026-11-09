@@ -89,6 +89,11 @@ test('each storm art does what its fighter card says',()=>{
  for(const e of g.enemies){assert.ok(e.hp<300);assert.ok(e.hurt>2);assert.equal(e.windup,0);}
  const before=g.enemies.map(e=>e.x);for(let i=0;i<60;i++)g.update(A.STEP,[input()]);
  assert.deepEqual(g.enemies.map(e=>e.x),before,'frozen enemies do not advance');
+ // Later hits keep the freeze (PR #12 review): ordinary hit feedback never shortens a longer stun.
+ const q=fighter('jackal'),qp=q.players[0];q.enemies=[enemy(qp.x+30,qp.y,999)];
+ q.update(A.STEP,[input({specialPressed:true})]);const stun=q.enemies[0].hurt;
+ for(let i=0;i<20;i++){qp.cd=0;q.update(A.STEP,[input({fire:true})]);}
+ assert.ok(q.enemies[0].hp<999-60,'follow-up hits landed');assert.ok(q.enemies[0].hurt>stun-21*A.STEP-1e-9,'stun not cut short');
  assert.equal(g.players[0].energy<100,true);
 });
 
