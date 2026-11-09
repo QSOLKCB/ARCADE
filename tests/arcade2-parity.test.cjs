@@ -25,7 +25,7 @@ const PINS={
  ember:'95b740f9739f3b0b2ed13e73b02945585d46b457707f36a4a11121f4674131a9',
 };
 function session(id,draw){
- const g=A.registry.find(m=>m.id===id).create(),hash=crypto.createHash('sha256');
+ const g=A.registry.find(m=>m.id===id).create('legacy'),hash=crypto.createHash('sha256');
  const ctx=draw?recordingContext():null;
  for(let i=0;i<5400;i++){
   const input={...A.empty(),x:i%300<170?1:i%300<240?0:-1,y:i%220<60?-1:i%220<120?0:1,
@@ -54,8 +54,8 @@ const CAMPAIGN={
 };
 // The state-aware playthrough policy completes every campaign, so these pins
 // cover all stages, bosses and stage-clear transitions.
-function campaign(id,draw){
- const g=A.registry.find(m=>m.id===id).create(),control=policy(id),hash=crypto.createHash('sha256');
+function campaign(id,draw,mode='legacy'){
+ const g=A.registry.find(m=>m.id===id).create(mode),control=policy(id),hash=crypto.createHash('sha256');
  const ctx=draw?recordingContext():null;
  for(let t=0;t<15000&&g.status!=='won'&&g.status!=='lost';t++){
   if(g.status==='stageclear'){hash.update(JSON.stringify(g));g.next();continue;}
@@ -81,5 +81,42 @@ for(const id of Object.keys(PINS)){
   if(process.env.ARCADE2_PRINT_PINS)console.log(id,plain);
   assert.equal(plain,PINS[id],'simulation state hash');
   assert.equal(session(id,true),plain,'drawing between ticks never changes simulation state');
+ });
+}
+
+// v0.7.0 rule sets. These pins were recorded when Extended and Remix were introduced;
+// the Legacy pins above are the v0.6.0 values and did not change.
+const MODE_PINS={
+ extended:{
+  shadow:'d9203e11c58d18bdf869576bf5db8bfce704fdc83a6836ff2238178e46d43829',
+  soccer:'19c89f4992de48b4d8853df413f5f7f3a1dc7599c94e2e6bc66ad8158ea408d6',
+  hoops:'10437fb2103f06ed930c49dd683ad442ab1d3c433ae5cd93be707ca09990b7bb',
+  kombat:'de3730253229d1ac43480807c290354e86e68e8ff83809d070dc63574e55657c',
+  cache:'6f8c768435410ad952033849b0a941294f44ed47da2968aee4a02948084bd2df',
+  breach:'9d1b31c5c458cff21ad441d77fa67df487d70c9575c61dd5061216d887692947',
+  invaders:'21e1233163b859b3851715eb4de8b7d54d65e678be26e99e6df1c418a60a8b53',
+  iron:'c46615defaf2ce41e4386d250880a5798e1aa4c3386ef114973b778609bdd4aa',
+  vector:'cbf9c0e2f46ae29fab8105245bf4ce4249c8103eaa48c2cd581a82730a2f78bc',
+  ember:'99885aa33d47d8a684d5126844ad51a509881dac614b39014680ded99283f0a5',
+ },
+ remix:{
+  shadow:'d0d72f69e512b7023c71fca15860f0981d6f950ebfc41c5cde395b254de379bf',
+  soccer:'c151085da7faf0c834508c1a2d9467481603c3cf3f751d63ab101ea5dc2361c5',
+  hoops:'9035813d2caa2a2accd83481619d3e8c0aa776eb6b0695c19a200401eb699106',
+  kombat:'7c4cb70e8232d6aa8b9e3217e042586d43fce41e3a9ab1ab26cc1d0df5c06ac4',
+  cache:'17d9da87f79eee1f25cd8d79778db099917598c57169a397dba441c789aa36d6',
+  breach:'7572dbdc10065fc175776d5f7fe11abe8b4685cb47a64f5422d9ea7a402d29fb',
+  invaders:'ffa188f140a868dc82aa0110870482f0c10b4567e76942b17f9e30ed01317c30',
+  iron:'4b27e9e37b432f0203b9fed4319ae3d29388056a83285c22eb56281e905029f0',
+  vector:'91642a032a85c23375a99779ddedf48522099b5a0908f4b67ff58fa6b11d88cd',
+  ember:'c1cbdab3e79244db87d4b05e2e6e4e02600ab762a6595622d0571e5deec8ff9e',
+ },
+};
+for(const mode of Object.keys(MODE_PINS))for(const id of Object.keys(CAMPAIGN)){
+ test(id+' '+mode+' campaign state matches its pin, with and without rendering',()=>{
+  const plain=campaign(id,false,mode);
+  if(process.env.ARCADE2_PRINT_PINS)console.log('mode',mode,id,plain);
+  assert.equal(plain,MODE_PINS[mode][id],'campaign state hash');
+  assert.equal(campaign(id,true,mode),plain,'drawing between ticks never changes simulation state');
  });
 }

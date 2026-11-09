@@ -1,5 +1,37 @@
 # Changelog
 
+## v0.7.0 — ARCADE 2 modes: Legacy, Extended and Remix
+
+- Every ARCADE 2 cabinet now has three rule sets, chosen from a **Mode** menu in the
+  playroom and remembered per cabinet. Best scores are kept per mode; Legacy keeps
+  the v0.6.0 key, so existing scores carry over. Deep links accept `#id:mode`.
+- **Legacy** is v0.6.0 exactly: its 20 simulation pins in
+  `tests/arcade2-parity.test.cjs` are unchanged. New rules add no state fields to
+  Legacy games and draw no extra randomness.
+- **Extended** (the new default) makes play roughly 40–50% longer: platform levels
+  3,300 px instead of 2,200 with a second segment, rushers and twin-shot gunners;
+  shooter waves of 2,700 ticks with tanks and weavers; bosses that fly a (2,3)
+  trefoil-knot path and gain a second phase; a fifth invader orbit with saucer
+  salvage; a fourth Kombat incident (Memory Leak) and a 75-second clock; 120-second
+  matches to 6 goals / 25 points; larger Breach waves with medkits.
+- **Remix** adds one twist per cabinet: Ricochet Blade, Shadow Step, Spread Shot,
+  Golden Boot, Downtown, Hotfix, Overwatch, Piercer, Overcharge and Focus
+  (bullet time). Each twist has a mechanics test.
+- New pins cover complete Extended and Remix campaigns (20 hashes). The playthrough
+  policies complete all 30 cabinet/mode campaigns using controls alone.
+- Integer trigonometry ported from QSOLKCB/GALAXY's CORDIC (`A.sinCosQ30`, checked
+  against GALAXY's reference vectors) drives a 1,024-step Q16.16 table and the
+  trefoil paths, after QSOLKCB/GLUBALL's (2,3) knot. Ember Wing's Focus adapts the
+  VANILLAJS time-domains contract in integers.
+- Art: attack poses for every figure, pit hazard signs, searchlights, a turning
+  spiral galaxy behind the shooters, enemy variants, a cracked phase-two boss, Memory
+  Leak's drips, a Focus tint and meter, piercing-shot trails and an on-canvas stage
+  banner. City layers widen for Extended levels. A 2:3 "boss" cue joins the audio2d
+  bank; the nine earlier effects keep their PCM pin.
+- Draw-call budgets now cover every mode (full peak 873, lite 297; lite limit raised
+  from 300 to 350). The RTX harness adds a Remix paint pass. Cache key
+  `v0.7.0-r1-arcade2`.
+
 ## v0.6.0 — ARCADE 2 graphics pass (VANILLAJS + OPT)
 
 - Redraw all ten ARCADE 2 cabinets: three-layer parallax cities with neon signs,

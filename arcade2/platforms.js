@@ -8,8 +8,11 @@
     iron: {title: 'IRON COMET', color: '#ffc06a', attack: 'gun', speed: q(14, 5), boss: 'AUDIT TANK'},
   };
   A.Platform = class extends A.Game {
-    constructor(id) { super(id, {shadow: 1701, cache: 2903, iron: 4109}[id]); this.spec = SPECS[id]; this.setup(); }
+    constructor(id, mode = 'legacy') { super(id, {shadow: 1701, cache: 2903, iron: 4109}[id], mode); this.spec = SPECS[id]; this.setup(); }
+    // Level length in pixels: 2200 reproduces v0.6.0 exactly; Extended adds a second segment.
+    get len() { return this.rules.extended ? 3300 : 2200; }
     setup() {
+      const ext = this.rules.extended, remix = this.rules.remix, L = this.len;
       this.p = {x: q(70), y: q(303), vx: 0, vy: 0, face: 1, grounded: true, jumps: 0, cd: 0, special: 0, swing: 0};
       this.camera = 0; this.shots = []; this.grenades = []; this.bombs = 3; this.rescued = 0; this.bossDead = false;
       this.inv = 90; this.stageTicks = 0;
@@ -17,12 +20,28 @@
       this.ledges = [[270, 250, 120], [450, 209, 100], [820, 247, 150], [1050, 211, 140], [1320, 252, 100], [1660, 241, 110]];
       this.hostages = this.id === 'cache' ? [{x: q(330), y: q(250), saved: false}, {x: q(1140), y: q(211), saved: false}, {x: q(1720), y: q(241), saved: false}] : [];
       this.crates = [{x: q(980), y: q(303), taken: false}, {x: q(1790), y: q(303), taken: false}];
+      if (ext) {
+        this.pits.push(...(this.id === 'cache' ? [[2290, 2356], [2880, 2945]] : [[2330, 2405], [2890, 2970]]));
+        this.ledges.push([2180, 240, 120], [2470, 212, 110], [2650, 250, 130], [3020, 236, 120]);
+        this.crates.push({x: q(2720), y: q(303), taken: false});
+        if (this.hostages.length) this.hostages[2] = {x: q(2560), y: q(303), saved: false};
+      }
       this.enemies = [380, 560, 880, 1160, 1330, 1630, 1830].map((x, i) => ({
         x: q(x), y: q(i === 3 ? 211 : 303), home: q(x), hp: 28 + this.stage * 5,
         maxHP: 28 + this.stage * 5, cd: 45 + i * 17, flash: 0, boss: false, index: i,
       }));
-      this.enemies.push({x: q(2050), y: q(303), home: q(2050), hp: 130 + this.stage * 35,
-        maxHP: 130 + this.stage * 35, cd: 75, flash: 0, boss: true, index: 9});
+      if (ext) {
+        // Second segment: rushers close distance fast, gunners fire a twin volley.
+        [[2120, 303, 'rusher'], [2440, 303, 'gunner'], [2520, 212, 'grunt'], [2640, 303, 'rusher'], [2790, 303, 'gunner'], [3060, 303, 'grunt']]
+          .forEach(([x, y, kind], i) => {
+            const hp = (kind === 'rusher' ? 20 : 28) + this.stage * 5;
+            this.enemies.push({x: q(x), y: q(y), home: q(x), hp, maxHP: hp, cd: 50 + i * 13, flash: 0, boss: false, index: 10 + i, kind});
+          });
+      }
+      if (remix && this.id === 'iron') for (const e of this.enemies) { e.hp = e.maxHP = Math.round(e.hp * 1.4); }
+      const bossHP = 130 + this.stage * 35;
+      this.enemies.push({x: q(L - 150), y: q(303), home: q(L - 150), hp: bossHP,
+        maxHP: bossHP, cd: 75, flash: 0, boss: true, index: 9});
       this.announce(['ROOFTOPS // NIGHT SHIFT', 'FOUNDRY // NO OVERTIME', 'CORE // LAST EXIT'][this.stage], 150);
     }
     fire(owner, x, y, vx, vy, damage, type = 'bolt') {
@@ -50,23 +69,27 @@
           for (const e of this.enemies) if (e.hp > 0 && Math.abs(e.y - p.y) < q(45) && (e.x - p.x) * p.face > q(-12) && (e.x - p.x) * p.face < q(e.boss ? 88 : 64)) this.damage(e, 22);
         } else {
           const up = this.id === 'iron' && input.y < 0;
-          this.fire('player', p.x + q(p.face * 15), p.y - q(crouch ? 11 : 22), up ? 0 : q(p.face * 9), up ? q(-9) : 0, this.id === 'iron' ? 12 : 22, this.spec.attack);
+          const sx = p.x + q(p.face * 15), sy = p.y - q(crouch ? 11 : 22), vx = up ? 0 : q(p.face * 9), vy = up ? q(-9) : 0;
+          this.fire('player', sx, sy, vx, vy, this.id === 'iron' ? 12 : 22, this.spec.attack);
+          // Remix (Iron Comet): a three-way spread against tougher troops.
+          if (this.rules.remix && this.id === 'iron') for (const k of [-1, 1]) this.fire('player', sx, sy, up ? q(k * 2) : vx, up ? vy : q(k * 2), 9, 'gun');
         }
       }
       if (input.bPressed && !p.special) {
         if (this.id === 'shadow') {
           this.fire('player', p.x + q(p.face * 14), p.y - q(20), q(p.face * 8), 0, 32, 'star'); p.special = 40; this.emit('shot');
         } else if (this.id === 'cache') {
-          p.special = 360; this.inv = Math.max(this.inv, 90); this.burst(p.x, p.y - q(20), '#e8b0fc', 28); this.announce('SMOKE // 1.5 SEC OF COVER', 75); this.emit('dash');
+          p.special = this.rules.remix ? 180 : 360; this.inv = Math.max(this.inv, 90); this.burst(p.x, p.y - q(20), '#e8b0fc', 28); this.announce('SMOKE // 1.5 SEC OF COVER', 75); this.emit('dash');
         } else if (this.bombs > 0 && this.grenades.length < 4) {
           this.bombs--; p.special = 30; this.grenades.push({x: p.x, y: p.y - q(20), vx: q(p.face * 4), vy: q(-5), life: 46}); this.emit('shot');
         }
       }
       const oldY = p.y;
-      p.x = clamp(E.add(p.x, p.vx), q(18), q(2160));
+      const L = this.len;
+      p.x = clamp(E.add(p.x, p.vx), q(18), q(L - 40));
       p.vy = Math.min(q(9), E.add(p.vy, q(3, 10))); p.y = E.add(p.y, p.vy); p.grounded = false;
       if (p.vy >= 0) {
-        const landings = [...this.ledges, [0, 303, 2200]];
+        const landings = [...this.ledges, [0, 303, L]];
         for (const [x, y, w] of landings) {
           if (y === 303 && this.pits.some(([left, right]) => p.x > q(left + 5) && p.x < q(right - 5))) continue;
           if (p.x >= q(x - 7) && p.x <= q(x + w + 7) && oldY <= q(y) && p.y >= q(y)) {
@@ -80,22 +103,28 @@
         p.x = q(gap ? gap[0] - 30 : 70); p.y = q(290); p.vy = 0;
       }
       if (this.status !== 'playing') return;
-      for (const h of this.hostages) if (!h.saved && A.near(p, h, 28)) { h.saved = true; this.rescued++; this.score += 500; this.announce('WITNESS FREED // ' + this.rescued + '/3'); this.emit('pickup'); }
+      for (const h of this.hostages) if (!h.saved && A.near(p, h, 28)) {
+        h.saved = true; this.rescued++; this.score += 500; this.announce('WITNESS FREED // ' + this.rescued + '/3'); this.emit('pickup');
+        if (this.rules.remix) this.hp = Math.min(this.maxHP, this.hp + 15); // Remix (Cache Ninja): witnesses patch you up.
+      }
       for (const c of this.crates) if (!c.taken && A.near(p, c, 24)) { c.taken = true; this.hp = Math.min(this.maxHP, this.hp + 20); this.bombs = Math.min(5, this.bombs + 2); this.emit('pickup'); }
       for (const e of this.enemies) {
         if (e.hp <= 0) continue;
         if (e.flash) e.flash--;
         if (Math.abs(e.x - p.x) > q(570)) continue;
         e.cd--;
-        if (!e.boss && e.y === q(303) && Math.abs(e.x - p.x) < q(240)) {
-          const target = clamp(p.x, e.home - q(50), e.home + q(50)); e.x = A.approach(e.x, target, q(7, 10));
+        const rusher = e.kind === 'rusher';
+        if (!e.boss && e.y === q(303) && Math.abs(e.x - p.x) < q(rusher ? 300 : 240)) {
+          const target = clamp(p.x, e.home - q(rusher ? 120 : 50), e.home + q(rusher ? 120 : 50)); e.x = A.approach(e.x, target, rusher ? q(14, 10) : q(7, 10));
         }
         if (e.cd <= 0) {
           e.cd = (e.boss ? 63 : 115) - this.stage * 8;
+          if (this.rules.remix && this.id === 'shadow') e.cd = Math.floor(e.cd * 4 / 5);
           const dx = p.x - e.x, dy = p.y - q(18) - (e.y - q(e.boss ? 35 : 23));
           const distance = Math.max(q(1), Math.abs(dx) + Math.abs(dy));
           this.fire('enemy', e.x, e.y - q(e.boss ? 35 : 23), E.mulDiv(dx, q(3), distance), E.mulDiv(dy, q(3), distance), e.boss ? 18 : 12);
           if (e.boss) this.fire('enemy', e.x, e.y - q(12), q(-4), 0, 15);
+          if (e.kind === 'gunner') this.fire('enemy', e.x, e.y - q(23), E.mulDiv(dx, q(3), distance), E.mulDiv(dy, q(3), distance) - q(1), 10);
         }
         if (A.near(p, e, e.boss ? 32 : 23)) this.hurt(12);
       }
@@ -108,16 +137,24 @@
         }
       }
       this.grenades = this.grenades.filter(g => g.life > 0);
+      // Remix (Shadow Circuit): the blade turns incoming fire around.
+      if (this.rules.remix && this.id === 'shadow' && p.swing) for (const b of this.shots) {
+        if (b.owner !== 'enemy') continue;
+        const dx = (b.x - p.x) * p.face;
+        if (dx > q(-10) && dx < q(64) && Math.abs(b.y - (p.y - q(20))) < q(40)) {
+          b.owner = 'player'; b.vx = q(p.face * 8); b.vy = 0; b.damage = 20; b.type = 'star'; b.life = 120; this.score += 25;
+        }
+      }
       for (const b of this.shots) {
         b.x += b.vx; b.y += b.vy; b.life--;
         if (b.owner === 'player') {
           for (const e of this.enemies) if (e.hp > 0 && Math.abs(b.x - e.x) < q(e.boss ? 40 : 18) && b.y > e.y - q(e.boss ? 65 : 34) && b.y < e.y + q(3)) { this.damage(e, b.damage); b.life = 0; break; }
         } else if (Math.abs(b.x - p.x) < q(12) && b.y > p.y - q(crouch ? 17 : 30) && b.y < p.y) { this.hurt(b.damage); b.life = 0; }
       }
-      this.shots = this.shots.filter(b => b.life > 0 && b.x > 0 && b.x < q(2220) && b.y > q(-30) && b.y < q(360));
-      this.camera = clamp(p.x - q(230), 0, q(1560));
-      if (p.x > q(2130) && this.bossDead && this.rescued === this.hostages.length) this.clearStage();
-      else if (p.x > q(2110) && this.hostages.some(h => !h.saved)) this.announce('EXIT LOCKED // FREE ALL THREE WITNESSES', 90);
+      this.shots = this.shots.filter(b => b.life > 0 && b.x > 0 && b.x < q(L + 20) && b.y > q(-30) && b.y < q(360));
+      this.camera = clamp(p.x - q(230), 0, q(L - 640));
+      if (p.x > q(L - 70) && this.bossDead && this.rescued === this.hostages.length) this.clearStage();
+      else if (p.x > q(L - 90) && this.hostages.some(h => !h.saved)) this.announce('EXIT LOCKED // FREE ALL THREE WITNESSES', 90);
     }
     hud() {
       return {left: 'HEALTH ' + this.hp + (this.id === 'iron' ? '   GRENADES ' + this.bombs : ''),
@@ -125,7 +162,7 @@
     }
     // Presentation only: reads state, never writes it (see tests/arcade2-parity.test.cjs).
     draw(c) {
-      const G = A.Gfx, camera = px(this.camera), p = this.p, color = this.spec.color, tick = this.tickCount;
+      const G = A.Gfx, camera = px(this.camera), p = this.p, color = this.spec.color, tick = this.tickCount, L = this.len;
       const theme = G.cityTheme(this.stage + (this.id === 'iron' ? 1 : 0));
       D.city(c, camera, this.stage + (this.id === 'iron' ? 1 : 0), tick);
       for (const [left, right] of this.pits) {
@@ -141,6 +178,13 @@
           D.rect(c, x + i + 1, 357 - flame, 9, flame, '#ff6b49'); D.rect(c, x + i + 3, 358 - flame / 2, 5, flame / 2, '#ffd27a');
         }
         G.glow(c, x + w / 2, 350, w * 0.55, '#ff5a2a', 0.55);
+        // Hazard sign before every pit (the most common way runs lose health).
+        G.sprite(c, 'pit-sign', 18, 26, ctx => {
+          ctx.fillStyle = '#3a4048'; ctx.fillRect(8, 12, 2, 14);
+          ctx.fillStyle = '#0a0f17'; ctx.beginPath(); ctx.moveTo(9, 0); ctx.lineTo(18, 14); ctx.lineTo(0, 14); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = '#f5c242'; ctx.beginPath(); ctx.moveTo(9, 2); ctx.lineTo(16, 13); ctx.lineTo(2, 13); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = '#0a0f17'; ctx.fillRect(8, 5, 2, 5); ctx.fillRect(8, 11, 2, 1);
+        }, x - 22, 277);
       }
       for (const [x, y, w] of this.ledges) {
         const lx = x - camera; if (lx > 660 || lx + w < -20) continue;
@@ -173,7 +217,7 @@
           ctx.fillStyle = '#7fd85a'; ctx.fillRect(5, 9, 12, 4); ctx.fillRect(9, 5, 4, 12);
         }, x - 11, 281);
       }
-      const ex = 2135 - camera, open = this.bossDead && this.rescued === this.hostages.length, door = open ? '#bdf56b' : '#fa7f80';
+      const ex = L - 65 - camera, open = this.bossDead && this.rescued === this.hostages.length, door = open ? '#bdf56b' : '#fa7f80';
       if (ex < 700) {
         G.glow(c, ex + 17, 262, 46, door, open ? 0.55 : 0.3);
         D.rect(c, ex - 4, 228, 43, 75, '#0b1018'); D.rect(c, ex, 233, 35, 70, open ? '#163a2a' : '#3a2230');
@@ -187,7 +231,9 @@
         if (e.boss && this.id === 'iron') this.drawTank(c, x, y, e, tick);
         else {
           if (e.boss) G.glow(c, x, y - 30, 60, '#ed6786', 0.35);
-          D.person(c, x, y, e.flash ? '#ffffff' : e.boss ? '#ed6786' : '#c88b74', -1, tick, this.id === 'iron' ? 'trooper' : 'ninja', e.boss ? 3.8 : 2);
+          const tone = e.flash ? '#ffffff' : e.boss ? '#ed6786' : e.kind === 'rusher' ? '#e8a35a' : e.kind === 'gunner' ? '#9fb3dc' : '#c88b74';
+          if (e.kind === 'rusher' && Math.abs(px(e.x - e.home)) > 4) for (let k = 1; k <= 3; k++) D.rect(c, x + k * 7, y - 22 + k * 4, 8, 2, G.rgba('#e8a35a', 0.5 - k * 0.12));
+          D.person(c, x, y, tone, -1, tick, this.id === 'iron' || e.kind === 'gunner' ? 'trooper' : 'ninja', e.boss ? 3.8 : 2, e.cd < 18);
         }
         D.bar(c, x - (e.boss ? 45 : 16), y - (e.boss ? 73 : 42), e.boss ? 90 : 32, e.hp, e.maxHP, '#ff7e81');
         if (e.boss) D.text(c, this.spec.boss, x, y - 82, '#ffb4c5', 10, 'center');
@@ -196,7 +242,8 @@
       if (this.inv % 8 < 5) {
         const x = px(p.x) - camera, y = px(p.y), smoke = this.id === 'cache' && p.special > 270;
         if (smoke) for (let i = 0; i < 6; i++) G.glow(c, x + Math.sin(tick * 0.2 + i) * 14, y - 12 - i * 5, 18, '#c8a8e8', 0.35);
-        D.person(c, x, y, color, p.face, p.vx ? tick : 0, this.id === 'iron' ? 'trooper' : 'ninja', 2);
+        const striking = this.id === 'shadow' ? p.swing > 0 : p.cd >= (this.id === 'iron' ? 5 : 14);
+        D.person(c, x, y, color, p.face, p.vx ? tick : 0, this.id === 'iron' ? 'trooper' : 'ninja', 2, striking);
         if (this.id === 'iron') {
           const gx = x + (p.face > 0 ? 4 : -24), gy = y - 23;
           D.rect(c, gx, gy, 20, 5, '#d8cfb6'); D.rect(c, gx, gy + 3, 20, 2, '#7d7461'); D.rect(c, gx + (p.face > 0 ? 3 : 9), gy + 5, 6, 4, '#4e4a40');
@@ -204,7 +251,8 @@
         }
         if (p.swing) {
           const t = 1 - p.swing / 11, bx = x + p.face * 10, by = y - 25;
-          c.save(); c.strokeStyle = G.rgba('#e7fff0', 0.35 + 0.5 * (1 - t)); c.lineWidth = 8; c.lineCap = 'round';
+          const arc = this.rules.remix ? '#ffd27a' : '#e7fff0';
+          c.save(); c.strokeStyle = G.rgba(arc, 0.35 + 0.5 * (1 - t)); c.lineWidth = 8; c.lineCap = 'round';
           c.beginPath(); c.arc(bx, by + 6, 44, p.face > 0 ? -1.2 + t * 0.9 : Math.PI + 1.2 - t * 0.9, p.face > 0 ? 0.35 + t * 0.4 : Math.PI - 0.35 - t * 0.4, p.face < 0); c.stroke();
           c.strokeStyle = '#ffffff'; c.lineWidth = 2; c.stroke(); c.restore();
           G.glow(c, bx + p.face * 40, by + 4, 26, color, 0.5);
@@ -227,9 +275,10 @@
         D.ellipse(c, x, y, 5, 5, '#5c7a3a'); D.ellipse(c, x - 1, y - 1, 2, 2, '#bafc75'); D.rect(c, x - 1, y - 8, 2, 3, '#fff1b3');
       }
       this.drawEffects(c, camera);
-      D.bar(c, 20, 340, 600, px(p.x), 2160, color);
-      for (const h of this.hostages) D.rect(c, 20 + px(h.x) / 2160 * 600 - 1, 337, 3, 11, h.saved ? '#5a6f5a' : '#f2e08c');
-      D.rect(c, 20 + 2050 / 2160 * 600 - 2, 336, 4, 13, this.bossDead ? '#5a6f5a' : '#ff7e81');
+      D.bar(c, 20, 340, 600, px(p.x), L - 40, color);
+      for (const h of this.hostages) D.rect(c, 20 + px(h.x) / (L - 40) * 600 - 1, 337, 3, 11, h.saved ? '#5a6f5a' : '#f2e08c');
+      for (const box of this.crates) if (!box.taken) D.rect(c, 20 + px(box.x) / (L - 40) * 600 - 1, 339, 3, 7, '#b6f78a');
+      D.rect(c, 20 + (L - 150) / (L - 40) * 600 - 2, 336, 4, 13, this.bossDead ? '#5a6f5a' : '#ff7e81');
     }
     drawTank(c, x, y, e, tick) {
       const G = A.Gfx;
@@ -254,7 +303,7 @@
       for (let i = 0; i < 12; i++) D.rect(c, x - 46 + ((i * 8 - tick) % 96 + 96) % 96, y - 2, 4, 2, '#3c4651');
     }
   };
-  A.register({id:'shadow', title:'Shadow Circuit', subtitle:'A blade against the machine.', genre:'NINJA ACTION', color:'#8ceee1', number:'01', controls:['Move / crouch','Z · blade','X · shuriken','Space · double jump'], description:'Three neon districts. Chain aerial jumps, cut through sentries and defeat the shogun process.'}, () => new A.Platform('shadow'));
-  A.register({id:'cache', title:'Cache Ninja', subtitle:'Leave no witness behind.', genre:'RESCUE PLATFORMER', color:'#e8b0fc', number:'05', controls:['Move / crouch','Z · shuriken','X · smoke','Space · jump'], description:'Free three witnesses per district. Use smoke to cross firing lines, then take down the watchdog.'}, () => new A.Platform('cache'));
-  A.register({id:'iron', title:'Iron Comet', subtitle:'Heavy metal. Light paperwork.', genre:'RUN & GUN', color:'#ffc06a', number:'08', controls:['Move / crouch / aim up','Z · fire','X · grenade','Space · jump'], description:'Storm three industrial districts. Grab med crates, lob grenades and bring down the audit tanks.'}, () => new A.Platform('iron'));
+  A.register({id:'shadow', remix:{name:'Ricochet Blade',summary:'Your blade turns enemy fire around, but sentries shoot more often.'}, title:'Shadow Circuit', subtitle:'A blade against the machine.', genre:'NINJA ACTION', color:'#8ceee1', number:'01', controls:['Move / crouch','Z · blade','X · shuriken','Space · double jump'], description:'Three neon districts. Chain aerial jumps, cut through sentries and defeat the shogun process.'}, mode => new A.Platform('shadow', mode));
+  A.register({id:'cache', remix:{name:'Shadow Step',summary:'Smoke recharges twice as fast and every freed witness patches you up.'}, title:'Cache Ninja', subtitle:'Leave no witness behind.', genre:'RESCUE PLATFORMER', color:'#e8b0fc', number:'05', controls:['Move / crouch','Z · shuriken','X · smoke','Space · jump'], description:'Free three witnesses per district. Use smoke to cross firing lines, then take down the watchdog.'}, mode => new A.Platform('cache', mode));
+  A.register({id:'iron', remix:{name:'Spread Shot',summary:'A three-way spread against troops with 40% more armour.'}, title:'Iron Comet', subtitle:'Heavy metal. Light paperwork.', genre:'RUN & GUN', color:'#ffc06a', number:'08', controls:['Move / crouch / aim up','Z · fire','X · grenade','Space · jump'], description:'Storm three industrial districts. Grab med crates, lob grenades and bring down the audit tanks.'}, mode => new A.Platform('iron', mode));
 })(globalThis.Arcade2);

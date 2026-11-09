@@ -9,8 +9,8 @@ const {policy}=require('./arcade2-policy.cjs');
 const ids=A.registry.map(m=>m.id);
 const sha=text=>crypto.createHash('sha256').update(text).digest('hex');
 // Visit frames of a full, policy-driven campaign (all stages and bosses).
-function campaign(id,every,visit){
- const g=A.registry.find(m=>m.id===id).create(),control=policy(id);
+function campaign(id,every,visit,mode='extended'){
+ const g=A.registry.find(m=>m.id===id).create(mode),control=policy(id);
  for(let t=0;t<15000&&g.status!=='won'&&g.status!=='lost';t++){
   if(g.status==='stageclear'){g.next();continue;}
   g.tick(control(g,t));g.events.length=0;
@@ -42,7 +42,7 @@ test('every cached layer is keyed by all of its paint inputs (OPT-INC-001)',()=>
   else seen.set(id,digest);
  };
  for(const quality of ['high','lite']){G.setQuality(quality);
-  for(const id of ids)campaign(id,173,g=>{G.reset();frame(ctx,g);});
+  for(const mode of ['extended','remix','legacy'])for(const id of ids)campaign(id,173,g=>{G.reset();frame(ctx,g);},mode);
  }
  assert.ok(seen.size>150,'many distinct layers were checked: '+seen.size);
  assert.ok(compared>seen.size,'keys were repainted and compared: '+compared);
@@ -78,15 +78,16 @@ test('a full eviction cycle stays bounded and keeps drawing correctly',()=>withL
 // Measured under this harness (policy campaigns, every 5th tick): the v0.5.0
 // renderer averaged 200-815 calls per frame and peaked at 1,402 (Spaced
 // Invaders), because every sprite pixel, window and spectator was a fillRect.
-// v0.6.0 averages 98-338 (full) with peaks of 866 full / 231 lite.
-const BUDGET={high:1000,lite:300};
+// v0.6.0 averaged 98-338 (full) with peaks of 866 full / 231 lite. v0.7.0 checks every
+// rule set (more enemies in Extended): peaks 873 full / 297 lite.
+const BUDGET={high:1000,lite:350};
 test('per-frame draw calls stay within the budget in both FX tiers (OPT-BUDGET-001)',()=>withLayers(()=>{
  const ctx=recordingContext(),report={};
  for(const id of ids){
   const peaks={};
   for(const quality of ['high','lite']){
    G.setQuality(quality);let peak=0;
-   campaign(id,5,g=>{peak=Math.max(peak,frame(ctx,g));});
+   for(const mode of ['extended','remix','legacy'])campaign(id,5,g=>{peak=Math.max(peak,frame(ctx,g));},mode);
    peaks[quality]=peak;
    assert.ok(peak<=BUDGET[quality],id+' '+quality+' peak '+peak+' > '+BUDGET[quality]);
   }
@@ -127,7 +128,7 @@ test('FrameGate key draws exactly once per simulation step and on shell invalida
 
 test('audio2d effects bank is valid, bounded, unclipped and deterministic',()=>{
  const S=A.Sound,parts=[];
- assert.deepEqual(S.names.sort(),['blast','block','dash','hurt','jump','lose','pickup','shot','win']);
+ assert.deepEqual(S.names.sort(),['blast','block','boss','dash','hurt','jump','lose','pickup','shot','win']);
  for(const name of S.names){
   const pcm=S.pcm(name),again=A.Engine.createSound2D(S.BANK[name]).renderAll();
   assert.ok(pcm instanceof Int16Array);assert.ok(pcm.length>0&&pcm.length<=S.RATE,name+' at most one second');
@@ -138,7 +139,11 @@ test('audio2d effects bank is valid, bounded, unclipped and deterministic',()=>{
   parts.push(name+':'+Buffer.from(pcm.buffer).toString('base64'));
  }
  assert.equal(S.pcm('unknown'),S.pcm('shot'));
- assert.equal(sha(parts.join('|')),'c2edae152c357357ed844b053d437cd234d359584d97b627b307dfb0fe8714c8','bank PCM pin');
+ // v0.7.0 added the 'boss' cue: the nine v0.6.0 effects keep their original pin, and the
+ // full bank has a new one.
+ const original=parts.filter(p=>!p.startsWith('boss:'));
+ assert.equal(sha(original.join('|')),'c2edae152c357357ed844b053d437cd234d359584d97b627b307dfb0fe8714c8','v0.6.0 effects unchanged');
+ assert.equal(sha(parts.join('|')),'72c18970aa9d868433a1b0b115cbd7411fdffac3f7a55363ddeefc89456dde76','bank PCM pin');
 });
 
 test('Breach cover art shows rubble only at zero health, and full health is undamaged',()=>withLayers(()=>{

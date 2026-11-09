@@ -5,7 +5,9 @@ const A=globalThis.Arcade2,px=A.px,q=A.q;
 // They establish finite completion in the simulation, not human/device usability.
 function policy(id){
  let phase=0,charge=0,stage=-1;
- const waypoints=[[330,250],[900,247],[960,247],[1140,211],[1720,241],[1970,303],[2140,303]];
+ const legacyPoints=[[330,250],[900,247],[960,247],[1140,211],[1720,241],[1970,303],[2140,303]];
+ // Extended/Remix Cache Ninja: the third witness waits at ground level in the new segment.
+ const extendedPoints=[[330,250],[900,247],[960,247],[1140,211],[2560,303],[3070,303],[3240,303]];
  return(g,t)=>{
   if(stage!==g.stage){stage=g.stage;phase=0;charge=0;}
   const a=A.empty();
@@ -15,6 +17,7 @@ function policy(id){
    a.x=target?0:1;a.a=true;a.bPressed=t%(id==='shadow'?40:70)===0;
    a.cPressed=p.grounded&&((gap&&x<gap[0])||(id==='shadow'&&target&&t%90===0));
   }else if(id==='cache'){
+   const waypoints=g.rules&&g.rules.extended?extendedPoints:legacyPoints;
    const p=g.p,x=px(p.x),y=px(p.y),[tx,ty]=waypoints[phase];
    a.a=true;a.bPressed=t%65===0;a.x=Math.abs(tx-x)>2?A.sign(tx-x):0;
    const gap=g.pits.find(([l,r])=>x>=l-35&&x<r);
@@ -41,6 +44,8 @@ function policy(id){
    const w=g.walls.find(w=>g.vertical?px(w.pos)>px(g.p.y)-180&&px(w.pos)<px(g.p.y)+25:px(w.pos)<px(g.p.x)+180&&px(w.pos)>px(g.p.x)-25);
    if(w){if(g.vertical)a.x=A.sign(w.gap-g.p.x);else a.y=A.sign(w.gap-g.p.y);}
    a.cPressed=id==='ember'&&g.inv===0&&t%200===0;
+   // Remix Ember Wing: hold Space for Focus while enemy fire is close and the meter allows.
+   if(g.focusRemix)a.c=g.focus>30&&g.shots.some(b=>b.enemy&&Math.abs(b.x-g.p.x)<q(140)&&Math.abs(b.y-g.p.y)<q(140));
   }else if(!g.serve){
    const p=g.players[g.controlled],b=g.ball;
    if(b.owner===g.controlled){

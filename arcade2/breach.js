@@ -3,12 +3,12 @@
   'use strict';
   const {q,px,clamp,Draw:D}=A;
   A.Breach=class extends A.Game {
-    constructor(){super('breach',6503);this.setup();}
+    constructor(mode='legacy'){super('breach',6503,mode);this.setup();}
     setup(){
       this.p={x:q(320),y:q(324),roll:0,rollCD:0,face:1};
       this.aim={x:q(320),y:q(170)};this.cd=0;this.bombs=3;this.stageTicks=0;this.spawned=0;this.kills=0;
       this.enemies=[];this.tracers=[];this.cover=[{x:155,hp:100},{x:320,hp:100},{x:485,hp:100}];
-      this.quota=12+this.stage*4;this.bossSpawned=false;
+      this.quota=this.rules.extended?16+this.stage*5:12+this.stage*4;this.bossSpawned=false;
       this.announce('BREACH '+(this.stage+1)+' // KEEP YOUR HEAD DOWN',120);
     }
     spawn(boss=false){
@@ -20,7 +20,10 @@
     }
     damage(e,amount){
       if(e.hp<=0)return;e.hp=Math.max(0,e.hp-amount);e.flash=7;
-      if(!e.hp){this.kills++;this.score+=e.boss?2000:200;this.burst(e.x,e.y,'#f8bf77',20);this.emit('blast');}
+      if(!e.hp){this.kills++;this.score+=e.boss?2000:200;this.burst(e.x,e.y,'#f8bf77',20);this.emit('blast');
+        // Extended: a medkit every eighth kill. Remix "Overwatch": a grenade every fifth.
+        if(this.rules.extended&&this.kills%8===0&&this.hp<this.maxHP){this.hp=Math.min(this.maxHP,this.hp+15);this.announce('MEDKIT // +15 ARMOUR',60);this.emit('pickup');}
+        if(this.rules.remix&&this.kills%5===0&&this.bombs<5){this.bombs++;this.announce('OVERWATCH // +1 GRENADE',60);}}
     }
     tick(input){
       if(!this.begin())return;this.stageTicks++;
@@ -43,7 +46,7 @@
       this.enemies=this.enemies.filter(e=>e.hp>0);
       if(this.stageTicks%100===1&&this.spawned<this.quota&&this.spawn())this.spawned++;
       if(this.spawned===this.quota&&!this.enemies.length&&!this.bossSpawned&&this.spawn(true)){
-        this.bossSpawned=true;this.announce('HEAVY RESPONSE // AIM FOR THE CORE',110);
+        this.bossSpawned=true;this.announce('HEAVY RESPONSE // AIM FOR THE CORE',110);if(this.rules.extended)this.emit('boss');
       }
       for(const e of this.enemies){
         if(e.hp<=0)continue;if(e.flash)e.flash--;
@@ -58,12 +61,13 @@
             }
             e.cd=e.boss?60:110-this.stage*15;
           }
-        }else if(--e.cd<=0){e.wind=e.boss?50:42;e.target=p.x;}
+        }else if(--e.cd<=0){e.wind=e.boss?50:42;if(this.rules.remix)e.wind=Math.floor(e.wind*3/4);e.target=p.x;}
       }
       this.tracers=this.tracers.filter(t=>--t.life>0).slice(-32);
       if(this.bossSpawned&&!this.enemies.length)this.clearStage();
     }
-    hud(){return{left:'ARMOUR '+this.hp+'   GRENADES '+this.bombs,right:'BREACH '+(this.stage+1)+'/3',objective:'Aim with arrows or mouse · Z fires · down takes cover · X rolls · Space grenades'};}
+    hud(){return{left:'ARMOUR '+this.hp+'   GRENADES '+this.bombs,right:'BREACH '+(this.stage+1)+'/3 · '+Math.min(this.kills,this.quota)+'/'+this.quota,
+      objective:(this.rules.remix?'Overwatch: faster enemy windups, a grenade every fifth kill · ':'')+'Aim with arrows or mouse · Z fires · down takes cover · X rolls · Space grenades'};}
     // Presentation only: reads state, never writes it (see tests/arcade2-parity.test.cjs).
     draw(c){
       const G=A.Gfx,tick=this.tickCount,stage=this.stage,tint=['#e7b57b','#9fd0ff','#ff8a6a'][stage];
@@ -106,7 +110,7 @@
           D.drone(c,x,y,'#e8a066',true,tick);
         }else{
           G.shadow(c,x,y+16,10,3,0.35);
-          D.person(c,x,y+15,e.flash?'#ffffff':'#ba9b7b',1,tick,'trooper',2);
+          D.person(c,x,y+15,e.flash?'#ffffff':'#ba9b7b',1,tick,'trooper',2,e.wind>0);
         }
         D.bar(c,x-(e.boss?58:18),y-(e.boss?36:29),e.boss?116:36,e.hp,e.maxHP,'#ffb278');
         if(e.wind){G.glow(c,x,y-48,16,'#ff4d4d',0.8);D.text(c,'!',x,y-43,'#ff756e',23,'center');}
@@ -131,7 +135,7 @@
       if(this.inv%8<5){
         G.shadow(c,x,px(p.y)+2,14,4,0.45);
         if(p.roll)for(let k=1;k<=3;k++){c.save();c.globalAlpha=0.25/k;D.person(c,x-p.face*k*8,y,'#fff6cd',1,tick*2,'trooper',2.4);c.restore();}
-        D.person(c,x,y,p.roll?'#fff6cd':'#8ce0d8',1,p.roll?tick*2:0,'trooper',this.duck?1.7:2.4);
+        D.person(c,x,y,p.roll?'#fff6cd':'#8ce0d8',1,p.roll?tick*2:0,'trooper',this.duck?1.7:2.4,this.cd>=4&&!this.duck&&!p.roll);
         if(this.cd>=5&&!this.duck&&!p.roll){G.glow(c,x+4,y-40,16,'#ffe08a',0.9);D.rect(c,x+1,y-43,6,6,'#fff3c4');}
       }
       for(const t of this.tracers){
@@ -150,5 +154,5 @@
       for(let i=0;i<this.bombs;i++){D.ellipse(c,612-i*14,343,5,5,'#5c7a3a');D.rect(c,611-i*14,336,2,3,'#d8cfb6');}
     }
   };
-  A.register({id:'breach',title:'Breach Protocol',subtitle:'Cover is a finite resource.',genre:'GALLERY SHOOTER',color:'#e3bc8d',number:'06',controls:['Aim · arrows / mouse','Z · fire · down · cover','X · dodge roll','Space · grenade'],description:'Three fortified compounds. Shoot marked targets, duck behind destructible cover and roll clear of incoming fire.'},()=>new A.Breach());
+  A.register({id:'breach', remix:{name:'Overwatch',summary:'Enemies wind up faster; every fifth kill refunds a grenade.'},title:'Breach Protocol',subtitle:'Cover is a finite resource.',genre:'GALLERY SHOOTER',color:'#e3bc8d',number:'06',controls:['Aim · arrows / mouse','Z · fire · down · cover','X · dodge roll','Space · grenade'],description:'Three fortified compounds. Shoot marked targets, duck behind destructible cover and roll clear of incoming fire.'},mode=>new A.Breach(mode));
 })(globalThis.Arcade2);

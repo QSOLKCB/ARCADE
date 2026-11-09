@@ -2,12 +2,14 @@
 (function (A) {
   'use strict';
   const {q, px, clamp, Draw:D} = A;
-  const RIVALS = ['CRON REAPER', 'MERGE CONFLICT', 'ROOT CAUSE'];
+  const RIVALS = ['CRON REAPER', 'MERGE CONFLICT', 'ROOT CAUSE', 'MEMORY LEAK'];
   A.Kombat = class extends A.Game {
-    constructor() { super('kombat', 9001); this.meter = 40; this.setup(); }
+    constructor(mode = 'legacy') { super('kombat', 9001, mode); this.meter = 40; this.setup(); }
+    // Extended adds a fourth incident, Memory Leak, and a 75-second clock.
+    get lastIncident() { return this.rules.extended ? 3 : 2; }
     setup() {
       this.hp = this.maxHP = 100; this.enemyHP = 100 + this.stage * 15;
-      this.enemyMax = this.enemyHP; this.roundTime = 60 * 60;
+      this.enemyMax = this.enemyHP; this.roundTime = (this.rules.extended ? 75 : 60) * 60;
       this.p = {x:q(190),y:q(292),vy:0,face:1,attack:null,stun:0,cd:0,guard:false};
       this.enemy = {x:q(450),y:q(292),vy:0,face:-1,attack:null,stun:0,cd:60,guard:false,poise:0};
       this.bolts = []; this.inv = 0; this.announce('INCIDENT ' + (this.stage + 1) + ' // ' + RIVALS[this.stage], 130);
@@ -26,7 +28,7 @@
       const guarded = defender.guard && (attacker.x - defender.x) * defender.face >= 0;
       const base = attack.kind === 'kick' ? 16 : 10, damage = guarded ? 2 : base;
       if (enemyAttack) { this.hp = Math.max(0, this.hp-damage); }
-      else { this.enemyHP = Math.max(0,this.enemyHP-damage); this.meter = Math.min(100,this.meter+(guarded?5:14)); this.score += damage*10; }
+      else { this.enemyHP = Math.max(0,this.enemyHP-damage); this.meter = Math.min(100,this.meter+(guarded?5:14)*(this.rules.remix?2:1)); this.score += damage*10; }
       defender.x = clamp(defender.x + q(attacker.face*(guarded?5:15)),q(45),q(595));
       if (!guarded && (!defender.poise || enemyAttack)) {
         defender.stun = 12; defender.attack = null; if (!enemyAttack) defender.poise = 50;
@@ -73,23 +75,24 @@
       for (const b of this.bolts) {
         b.x+=b.vx; b.life--;
         if (Math.abs(b.x-e.x)<q(28) && Math.abs(b.y-(e.y-q(37)))<q(45)) {
-          b.life=0; this.enemyHP=Math.max(0,this.enemyHP-28); e.stun=22; e.attack=null;
+          b.life=0; this.enemyHP=Math.max(0,this.enemyHP-(this.rules.remix?40:28)); e.stun=22; e.attack=null;
           this.burst(e.x,e.y-q(35),'#bcfa6c',25); this.score+=280;
         }
       }
       this.bolts=this.bolts.filter(b=>b.life>0 && b.x>0 && b.x<q(640));
       // A simultaneous KO is a defeat; a timeout cannot overwrite fatal damage.
       if (this.hp<=0) this.finish(false);
-      else if (this.enemyHP<=0) { this.score+=1500; this.clearStage(); }
+      else if (this.enemyHP<=0) { this.score+=1500; this.clearStage(this.lastIncident); }
       else if (!this.roundTime && this.hp!==this.enemyHP) {
-        if (this.hp>this.enemyHP) { this.score+=800; this.clearStage(); } else this.finish(false);
+        if (this.hp>this.enemyHP) { this.score+=800; this.clearStage(this.lastIncident); } else this.finish(false);
       }
     }
-    hud() { return {left:'SRE ' + this.hp + '   ROLLBACK ' + this.meter + '%',right:'INCIDENT ' + (this.stage+1) + '/3 · ' + Math.ceil(this.roundTime/60),objective:'Defeat three production incidents · down guards · C unleashes rollback at 100%'}; }
+    hud() { return {left:'SRE ' + this.hp + '   ROLLBACK ' + this.meter + '%',right:'INCIDENT ' + (this.stage+1) + '/' + (this.lastIncident+1) + ' · ' + Math.ceil(this.roundTime/60),
+      objective:(this.rules.remix ? 'Hotfix: the meter fills twice as fast and rollback hits harder · ' : '') + 'Defeat ' + (this.rules.extended ? 'four' : 'three') + ' production incidents · down guards · C unleashes rollback at 100%'}; }
     // Presentation only: reads state, never writes it (see tests/arcade2-parity.test.cjs).
     draw(c) {
       const G = A.Gfx, tick = this.tickCount, stage = this.stage;
-      const tint = ['#3aa8ff', '#b46cff', '#ff5a5a'][stage], rivalColor = ['#d77c98', '#b98cff', '#ff7a5c'][stage];
+      const tint = ['#3aa8ff', '#b46cff', '#ff5a5a', '#3affc8'][stage], rivalColor = ['#d77c98', '#b98cff', '#ff7a5c', '#7fd8ff'][stage];
       G.layer(c, 'kombat-room:' + stage, 640, 360, ctx => {
         ctx.fillStyle = G.linear(ctx, 0, 0, 0, 285, [[0, '#070910'], [1, G.mix('#10131e', tint, 0.12)]]); ctx.fillRect(0, 0, 640, 285);
         ctx.fillStyle = '#0b0e16'; for (let x = 0; x < 640; x += 32) ctx.fillRect(x, 0, 2, 50);
@@ -125,16 +128,21 @@
       D.text(c, Math.ceil(this.roundTime / 60), 320, 44, this.roundTime < 600 ? '#ff9a7a' : '#fff1d3', 24, 'center');
       // Cron Reaper and Root Cause wear hoods; Merge Conflict shares the SRE's helmet.
       const rivalKind = stage === 1 ? 'trooper' : 'ninja';
+      // Memory Leak drips: presentation only, from the frame tick.
+      if (stage === 3) for (let i = 0; i < 6; i++) {
+        const ex = px(this.enemy.x) + ((i * 37) % 50) - 25, drop = (tick * 2 + i * 23) % 70;
+        D.rect(c, ex, px(this.enemy.y) - 70 + drop, 2, 5, G.rgba('#7fd8ff', 1 - drop / 70));
+      }
       const fighters = [[this.p, '#b9ee76', 'trooper'], [this.enemy, rivalColor, rivalKind]];
       if (G.high()) for (const [f, color, kind] of fighters) {
         c.save(); c.globalAlpha = 0.16; c.translate(0, 2 * 292 + 2); c.scale(1, -1);
-        D.person(c, px(f.x), px(f.y), f.stun ? '#ffdda0' : color, f.face, tick, kind, 4.2); c.restore();
+        D.person(c, px(f.x), px(f.y), f.stun ? '#ffdda0' : color, f.face, tick, kind, 4.2, !!(f.attack && f.attack.age >= f.attack.wind)); c.restore();
       }
       for (const [f, color, kind] of fighters) {
         const x = px(f.x), y = px(f.y), air = (292 - y) / 60;
         G.shadow(c, x, 294, 26 - air * 8, 5 - air, 0.5 - air * 0.2);
         if (f.stun) G.glow(c, x, y - 40, 40, '#ffdda0', 0.4);
-        D.person(c, x, y, f.stun ? '#ffdda0' : color, f.face, tick, kind, 4.2);
+        D.person(c, x, y, f.stun ? '#ffdda0' : color, f.face, tick, kind, 4.2, !!(f.attack && f.attack.age >= f.attack.wind));
         if (f.guard) {
           G.glow(c, x + f.face * 26, y - 40, 30, '#9fe8ff', 0.5);
           c.save(); c.strokeStyle = G.rgba('#b7e6ec', 0.9); c.lineWidth = 3; c.beginPath();
@@ -168,5 +176,5 @@
       D.text(c, full ? 'C  //  ROLLBACK READY' : 'ROLLBACK BUFFER', 320, 350, full ? '#eaffc4' : '#d2e4c9', 10, 'center');
     }
   };
-  A.register({id:'kombat',title:'DevOps Kombat',subtitle:'Finish the incident.',genre:'1-ON-1 FIGHTER',color:'#fe829b',number:'04',controls:['Move · down guards','Z · punch','X · kick','Space · jump · C · rollback'],description:'SRE versus Cron Reaper, Merge Conflict and Root Cause. Block the windup. Build your meter. Finish the incident.'},()=>new A.Kombat());
+  A.register({id:'kombat', remix:{name:'Hotfix',summary:'The rollback meter fills twice as fast and the rollback hits harder.'},title:'DevOps Kombat',subtitle:'Finish the incident.',genre:'1-ON-1 FIGHTER',color:'#fe829b',number:'04',controls:['Move · down guards','Z · punch','X · kick','Space · jump · C · rollback'],description:'SRE versus Cron Reaper, Merge Conflict and Root Cause. Block the windup. Build your meter. Finish the incident.'},mode=>new A.Kombat(mode));
 })(globalThis.Arcade2);

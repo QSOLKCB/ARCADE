@@ -26,6 +26,33 @@ rosters or full feature sets. Historical titles identify inspiration, not
 endorsement. Artwork is drawn locally with Canvas; effects are synthesized with
 Web Audio. No downloaded art or audio is used.
 
+## Modes (v0.7.0)
+
+Pick a mode from the **Mode** menu in the playroom. Each cabinet remembers its last
+choice, and each mode keeps its own best score.
+
+- **Extended** (default): roughly 40–50% longer play, new enemy types, trefoil-knot
+  bosses with a second phase, and one more stage in Kombat and Spaced Invaders.
+- **Remix**: Extended plus one twist per cabinet.
+- **Legacy**: the original v0.6 rules, unchanged and pinned by tests.
+
+| Cabinet | Extended | Remix |
+| --- | --- | --- |
+| Shadow Circuit | 3,300 px districts, rushers and gunners | **Ricochet Blade**: the blade turns enemy fire around; sentries shoot more often |
+| Cache Ninja | Third witness in the new segment | **Shadow Step**: smoke recharges twice as fast; freed witnesses heal 15 |
+| Iron Comet | Longer districts, extra crate | **Spread Shot**: three-way fire against 40% tougher troops |
+| Floodlight FC | 120 s, first to 6 | **Golden Boot**: long-range goals count double; first to 7 |
+| Full Court.exe | 120 s, first to 25 | **Downtown**: threes are worth 4; first to 30 |
+| DevOps Kombat | Fourth incident, Memory Leak; 75 s clock | **Hotfix**: double meter gain, rollback hits for 40 |
+| Breach Protocol | Bigger waves, medkit every 8 kills | **Overwatch**: faster windups, a grenade every 5th kill |
+| Spaced Invaders | Fifth, armoured orbit; saucers refund a pulse | **Piercer**: shots pass through their first kill; faster formation |
+| Null Vector | Longer sectors, tanks and weavers, trefoil boss | **Overcharge**: beams charge in 15 ticks and pierce, halving per hit |
+| Ember Wing | Longer sectors, tanks and weavers, trefoil boss | **Focus**: hold Space for bullet time while the meter lasts |
+
+Extended bosses fly a (2,3) torus-knot path computed with integer trigonometry
+ported from QSOLKCB/GALAXY, after QSOLKCB/GLUBALL's knot laboratory. Focus adapts the
+VANILLAJS time-domains contract in integers. See `../NOTICE`.
+
 ## Controls
 
 The cabinet always shows its own four control labels and objective.
@@ -64,7 +91,7 @@ explicit. Inputs and unfinished shot charges are cancelled on transitions. A
 controller must return to neutral before it can control a new screen. D-pad/stick
 navigate the cabinet list and overlays; A selects, B returns from an overlay.
 
-Each cabinet has a fresh-restart button and a finite win/loss path. Stage-clear
+Each cabinet has a fresh-restart button and a finite win/loss path in every mode. Stage-clear
 screens require an explicit **Next stage** action. Best scores use the separate
 `qsol-arcade2:` storage prefix; blocked or malformed storage never prevents play.
 No run state is saved. The original hall's score cartridge remains its own system.

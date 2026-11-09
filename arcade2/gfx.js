@@ -157,12 +157,18 @@
     ['..kdpkkphk..', '.kdpk..kphk.', '.kbbk...kbbk'],
     ['...kdpphk...', '...kdpphk...', '...kbbbbk...'],
   ];
+  // Attack pose (v0.7.0): the leading arm extends forward with the hand at the edge.
+  const ATTACK = {
+    ninja: ['.kdpdpphhhhk', '.kpkdpphkssk', '.kskaaaak...'],
+    trooper: ['.kdpdpphhhhk', '.kpkdpmhkssk', '.kskbbbbk...'],
+  };
   // Ninja headband tails flutter on a separate phase from the stride.
   const TAILS = [['.aakaaaaak..', 'a.kdwkkwhk..'], ['aaakaaaaak..', '..kdwkkwhk..']];
-  G.personArt = (kind, frame, flutter) => {
-    const upper = UPPER[kind === 'ninja' ? 'ninja' : 'trooper'].slice();
+  G.personArt = (kind, frame, flutter, attack = false) => {
+    const k = kind === 'ninja' ? 'ninja' : 'trooper', upper = UPPER[k].slice();
     if (kind === 'ninja') [upper[2], upper[3]] = TAILS[flutter % 2];
-    return upper.concat(LEGS[frame % 3]);
+    if (attack) [upper[7], upper[8], upper[9]] = ATTACK[k];
+    return upper.concat(LEGS[attack ? 0 : frame % 3]);
   };
   const palette = (kind, color) => memo('p' + kind + color, () => ({
     k: '#0a0f17', p: color, d: G.shade(color, -0.42), h: G.shade(color, 0.38),
@@ -179,11 +185,11 @@
       }
     }
   };
-  D.person = (c, x, y, color = '#7fe3e0', face = 1, tick = 0, kind = 'ninja', scale = 2) => {
+  D.person = (c, x, y, color = '#7fe3e0', face = 1, tick = 0, kind = 'ninja', scale = 2, attack = false) => {
     const frame = tick ? 1 + Math.floor(tick / 8) % 2 : 0, flutter = Math.floor(tick / 6) % 2;
-    const art = G.personArt(kind, frame, flutter), w = 12 * scale + 2, h = 14 * scale + 2;
+    const art = G.personArt(kind, frame, flutter, attack), w = 12 * scale + 2, h = 14 * scale + 2;
     G.shadow(c, x, y + 1, scale * 6, 3);
-    G.sprite(c, 'person:' + kind + color + scale + ':' + frame + flutter, w, h, paintArt(art, palette(kind, color), scale),
+    G.sprite(c, 'person:' + kind + color + scale + ':' + (attack ? 'a' : frame) + flutter, w, h, paintArt(art, palette(kind, color), scale),
       x - 6 * scale - 1, y - 14 * scale - 1, face < 0);
   };
 
@@ -300,11 +306,19 @@
   D.city = (c, camera, theme = 0, tick = 0) => {
     const t = G.cityTheme(theme), id = (theme % CITY.length + CITY.length) % CITY.length;
     G.layer(c, 'city-sky:' + id, 640, 360, sky(t));
-    G.layer(c, 'city-far:' + id, 960, 300, skyline(t, 960, 11 + id, 262, [70, 90], t.far, false), -Math.round(camera * 0.2), 0);
-    const mid = skyline(t, 1560, 503 + id, 285, [55, 120], t.mid, true), lights = signLayer(t, 1560, 77 + id);
-    G.layer(c, 'city-mid:' + id, 1360, 300, ctx => { mid(ctx); lights(ctx); }, -Math.round(camera * 0.45), 0);
+    G.layer(c, 'city-far:' + id, 1200, 300, skyline(t, 1200, 11 + id, 262, [70, 90], t.far, false), -Math.round(camera * 0.2), 0);
+    const mid = skyline(t, 1900, 503 + id, 285, [55, 120], t.mid, true), lights = signLayer(t, 1900, 77 + id);
+    G.layer(c, 'city-mid:' + id, 1900, 300, ctx => { mid(ctx); lights(ctx); }, -Math.round(camera * 0.45), 0);
     G.layer(c, 'city-haze:' + id, 640, 300, haze(t));
-    if (G.high()) for (const s of signs(t, 1560, 77 + id)) {
+    // Two searchlights sweep the sky (presentation only, from the frame tick).
+    if (G.high()) for (let i = 0; i < 2; i++) {
+      const base = 140 + i * 360 - (camera * 0.3) % 720, a = -Math.PI / 2 + Math.sin(tick * 0.008 + i * 2.1) * 0.55;
+      if (base < -200 || base > 840) continue;
+      c.save(); c.globalCompositeOperation = 'lighter'; c.translate(base, 300); c.rotate(a);
+      c.fillStyle = G.linear(c, 0, 0, 320, 0, [[0, G.rgba(t.light, 0.16)], [1, G.rgba(t.light, 0)]]);
+      c.beginPath(); c.moveTo(0, -4); c.lineTo(320, -40); c.lineTo(320, 40); c.lineTo(0, 4); c.closePath(); c.fill(); c.restore();
+    }
+    if (G.high()) for (const s of signs(t, 1900, 77 + id)) {
       const sx = s.x - camera * 0.45, on = G.hash(s.x + Math.floor(tick / 5)) % 23 !== 0;
       if (sx > -80 && sx < 700 && on) G.glow(c, sx + s.text.length * 4.5 + 5, s.y + 8, 30, s.color, 0.32);
     }
@@ -346,9 +360,30 @@
     ctx.restore();
     ctx.strokeStyle = G.rgba(rim, 0.55); ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(110, 116, 104, 18, -0.25, 0.1, Math.PI - 0.1); ctx.stroke();
   };
+  // A two-armed logarithmic-spiral galaxy of luminous points, after the look of
+  // QSOLKCB/GALAXY's N-body renderer (Apache-2.0). Painted once, then turned slowly.
+  const galaxy = hot => ctx => {
+    const core = hot ? '#ffd9a8' : '#cfe8ff', arm = hot ? ['#ff9b6a', '#ffcf8a', '#ff6f8f'] : ['#8fc8ff', '#c9b6ff', '#9ff3e6'];
+    ctx.fillStyle = G.radial(ctx, 140, 140, 0, 140, [[0, G.rgba(core, 0.35)], [0.3, G.rgba(arm[0], 0.1)], [1, G.rgba(arm[0], 0)]]);
+    ctx.fillRect(0, 0, 280, 280);
+    for (let i = 0; i < 520; i++) {
+      const h = G.hash(i * 7 + (hot ? 3 : 1)), armIx = i % 2, t = (i >> 1) / 260 * 4.2;
+      const r = 8 * Math.exp(0.62 * t) + ((h & 15) - 7.5) * 0.9, theta = t + armIx * Math.PI + (((h >>> 4) & 31) - 15.5) * 0.012;
+      const x = 140 + Math.cos(theta) * r, y = 140 + Math.sin(theta) * r * 0.62;
+      if (r > 135) continue;
+      const b = 1 - r / 150, size = (h >>> 9) % 7 === 0 ? 2 : 1;
+      ctx.fillStyle = G.rgba(arm[(h >>> 12) % 3], Math.max(0.15, b));
+      ctx.fillRect(Math.round(x), Math.round(y), size, size);
+    }
+    ctx.fillStyle = G.radial(ctx, 140, 140, 0, 22, [[0, '#ffffff'], [0.3, G.rgba(core, 0.8)], [1, G.rgba(core, 0)]]);
+    ctx.fillRect(110, 110, 60, 60);
+  };
   D.space = (c, tick, vertical = false, hot = false) => {
     const k = (hot ? 'h' : 'c') + (vertical ? 'v' : 'x');
     G.tile(c, 'space-nebula:' + k, 640, 360, nebula(hot, vertical), Math.floor(tick / 6), vertical);
+    const gx = vertical ? 150 : 170, gy = vertical ? 230 : 250, layer = scenery.get('space-galaxy:' + hot, 280, 280, galaxy(hot));
+    if (layer) { c.save(); c.globalAlpha = 0.85; c.translate(gx, gy); c.rotate(G.high() ? -tick * 0.0006 : 0); c.drawImage(layer, -140, -140); c.restore(); }
+    else G.layer(c, 'space-galaxy:' + hot, 280, 280, galaxy(hot), gx - 140, gy - 140);
     G.layer(c, 'space-planet:' + hot, 220, 220, planet(hot), 396 - (vertical ? 0 : G.drift(tick, 7200, 60)), 10 + (vertical ? G.drift(tick, 7200, 40) : 0));
     for (let layer = 0; layer < 3; layer++) {
       const offset = Math.floor(tick * (layer + 1) / 3);
@@ -380,7 +415,16 @@
     ctx.fillStyle = G.radial(ctx, 320, 180, 170, 400, [[0, 'rgba(255,40,60,0)'], [1, 'rgba(255,40,60,0.55)']]);
     ctx.fillRect(0, 0, 640, 360);
   };
+  // Stage banner: the current announcement, eased in and out from messageTicks.
+  G.banner = (c, game) => {
+    if (!game || !game.messageTicks || !game.message || game.status !== 'playing') return;
+    const a = Math.min(1, game.messageTicks / 20), w = Math.min(600, game.message.length * 8 + 40);
+    c.save(); c.globalAlpha = a * 0.9;
+    D.rect(c, 320 - w / 2, 62, w, 22, '#05080dcc'); D.rect(c, 320 - w / 2, 62, w, 2, '#c2f874'); D.rect(c, 320 - w / 2, 82, w, 1, '#c2f87466');
+    D.text(c, game.message, 320, 77, '#f1f6ee', 11, 'center'); c.restore();
+  };
   G.post = (c, game) => {
+    G.banner(c, game);
     const danger = game && game.status === 'playing' && (game.id === 'invaders' ? game.lives === 1 : game.hp > 0 && game.hp <= 30);
     if (danger) {
       c.save(); c.globalAlpha = 0.35 + 0.35 * Math.abs(Math.sin(game.tickCount * 0.09));

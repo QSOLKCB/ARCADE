@@ -25,3 +25,14 @@ by Trent Slade. The historical titles are listed in arcade2/README.md solely to
 identify those inspirations. No commercial game assets or source are included.
 Selected QSOLKCB/VANILLAJS v1.2.0 modules are preserved under
 arcade2/vendor/vanillajs with their full LICENSE, NOTICE and pinned provenance.
+
+ARCADE 2 v0.7.0:
+- The integer CORDIC/BAM sine and cosine in arcade2/core.js (A.sinCosQ30) is a
+  JavaScript port of sin_cos_q30 from QSOLKCB/GALAXY retro/src/lib.rs (Apache-2.0),
+  checked against GALAXY's own reference vectors. The shooters' spiral-galaxy
+  backdrop follows the look of GALAXY's renderer; no GALAXY rendering code is copied.
+- The (2,3) torus-knot boss paths and the 2:3 "boss" sound cue are independent
+  implementations of public mathematics, inspired by QSOLKCB/GLUBALL (MPL-2.0).
+  No GLUBALL source is included.
+- Ember Wing's Remix "Focus" is an integer adaptation of the QSOLKCB/VANILLAJS
+  time-domains contract (Apache-2.0); no module code is copied.
