@@ -2,7 +2,8 @@
 'use strict';
 // ARCADE3-FUZZ-001 — deterministic, valid-control crash discovery.
 // No external packages, network calls, world mutation, or modified campaign pins.
-const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),
+  {execFileSync}=require('node:child_process');
 for(const file of ['engine','core','gfx','sound'])
   require('../arcade2/'+file+'.js');
 const IDS=Object.freeze([
@@ -19,6 +20,21 @@ const POOLS=Object.freeze([
 const REPORT_KIND='qsol.arcade3.fuzz.001.v1';
 const SHA=value=>crypto.createHash('sha256').update(value).digest('hex');
 const MAX_SEEDS=256,MAX_TICKS=40000;
+function sourceIdentity(){
+  let head=null;
+  try{head=execFileSync('git',['rev-parse','HEAD'],
+    {cwd:path.resolve(__dirname,'..'),encoding:'utf8'}).trim();}
+  catch{head=null;}
+  if(process.env.GITHUB_SHA&&head!==process.env.GITHUB_SHA)
+    throw new Error('GitHub checkout SHA mismatch in fuzz evidence');
+  const paths=['scripts/arcade3-fuzz.cjs','tests/arcade2-mock-canvas.cjs',
+    ...['engine','core','gfx','sound'].map(x=>'arcade2/'+x+'.js'),
+    ...['kit','hall',...IDS].map(x=>'arcade3/'+x+'.js')];
+  return {gitHead:head,platform:process.platform,architecture:process.arch,
+    nodeVersion:process.version,
+    sourceFiles:paths.map(p=>({path:p,sha256:SHA(fs.readFileSync(
+      path.resolve(__dirname,'..',p)))}))};
+}
 function seedWord(cabinet,seed){
   if(!IDS.includes(cabinet)||!Number.isSafeInteger(seed)||seed<0||seed>0xffffffff)
     throw new RangeError('invalid cabinet or seed');
@@ -257,7 +273,8 @@ function fuzz({seeds=32,ticks=2000,cabinets=IDS}={}){
       // First preserve the original replay verbatim; optional shortening
       // can never erase a source failure when the minimizer is imperfect.
       const minimized=shrink(cabinet,n,prefix,result.failure,{run:result.run});
-      return {kind:REPORT_KIND,status:'FAIL',plannedCases:cabinets.length*seeds,
+      return {kind:REPORT_KIND,status:'FAIL',source:sourceIdentity(),
+        plannedCases:cabinets.length*seeds,
         cases:results, failure:result.failure,
         failingRun:result.run,
         originalTape:prefix, originalTapeSha256:SHA(JSON.stringify(prefix)),
@@ -265,7 +282,8 @@ function fuzz({seeds=32,ticks=2000,cabinets=IDS}={}){
     }
     results.push(result);
   }
-  return {kind:REPORT_KIND,status:'PASS',plannedCases:cabinets.length*seeds,
+  return {kind:REPORT_KIND,status:'PASS',source:sourceIdentity(),
+    plannedCases:cabinets.length*seeds,
     seeds,ticks,plannedTicks:cabinets.length*seeds*ticks,
     executedTicks:results.reduce((s,x)=>s+x.ticks,0),
     cases:results};
