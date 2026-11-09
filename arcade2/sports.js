@@ -141,6 +141,8 @@
           }
         }
       }
+      // Golden Boot: a ball someone holds is no longer a long-range strike in flight.
+      if (this.rules.remix && b.owner >= 0 && b.long) b.long = false;
       if (this.ball.lock > 0) this.ball.lock--;
       if (this.timeLeft === 0 && !this.ball.flight && this.goals[0] !== this.goals[1]) this.finish(this.goals[0] > this.goals[1]);
     }

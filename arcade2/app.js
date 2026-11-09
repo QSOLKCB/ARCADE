@@ -86,7 +86,7 @@
     $('game-title').textContent=meta.title;$('game-genre').textContent='CABINET '+meta.number+' / '+meta.genre+' / '+MODE_LABEL[currentMode].toUpperCase();
     $('control-guide').replaceChildren(...meta.controls.map(label=>{const el=document.createElement('span');el.textContent=label;return el;}));
     $('best').textContent='BEST '+String(best(meta.id)).padStart(6,'0');canvas.dataset.aim=String(meta.id==='breach');
-    document.title=meta.title+' — ARCADE 2';try{history.replaceState(null,'','#'+meta.id+(currentMode==='extended'?'':':'+currentMode));}catch(_){}
+    document.title=meta.title+' — ARCADE 2';try{history.replaceState(null,'','#'+meta.id+':'+currentMode);}catch(_){}
     setMode(ready?'paused':'playing');unlockAudio();paint();window.scrollTo({top:0,behavior:'instant'});
     if(ready)showOverlay('FREE PLAY','READY PLAYER ONE',meta.description+' '+modeCopy(meta,currentMode),'Start game');else canvas.focus({preventScroll:true});
   }

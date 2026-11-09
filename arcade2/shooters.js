@@ -7,6 +7,8 @@
     // Wave length before the core appears: 1800 ticks reproduces v0.6.0; Extended runs 2700.
     get waveEnd(){return this.rules.extended?2700:1800;}
     get focusRemix(){return this.rules.remix&&this.id==='ember';}
+    // One threshold for firing and for the HUD: 15 ticks in Remix (Overcharge), else 25.
+    get beamReady(){return this.charge>=(this.rules.remix?15:25);}
     setup(){
       this.vertical=this.id==='ember'&&this.stage===1;this.p={x:q(this.vertical?320:84),y:q(this.vertical?290:180)};
       this.shots=[];this.enemies=[];this.items=[];this.walls=[];this.stageTicks=0;this.charge=0;this.cd=0;this.dodgeCD=0;
@@ -67,7 +69,7 @@
       if(this.id==='vector'){
         if(input.aPressed&&!this.cd){this.fire();this.cd=10;}
         if(input.a)this.charge=Math.min(90,this.charge+1);
-        if(input.aReleased){if(this.charge>=(this.rules.remix?15:25))this.fire(true);this.charge=0;}
+        if(input.aReleased){if(this.beamReady)this.fire(true);this.charge=0;}
         if(input.bPressed)this.podFront=!this.podFront;
         if(input.cPressed)this.bomb();
       }else{
@@ -243,7 +245,7 @@
       }
       this.drawEffects(c);D.bar(c,20,347,600,Math.min(this.stageTicks,this.waveEnd),this.waveEnd,color);
       D.rect(c,619,343,2,13,this.bossSpawned?'#ffa18b':'#5a6f7a');
-      if(this.charge){const ready=this.charge>=25,x=px(this.p.x),y=px(this.p.y);
+      if(this.charge){const ready=this.beamReady,x=px(this.p.x),y=px(this.p.y);
         G.glow(c,x+22,y,6+this.charge/5,'#d8ff9a',ready?0.9:0.5);
         D.bar(c,x-25,y+24,50,this.charge,90,'#d8ff9a');D.text(c,ready?'BEAM READY':'CHARGING',x,y+40,'#dbffc3',9,'center');}
     }

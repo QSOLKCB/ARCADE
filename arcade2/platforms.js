@@ -11,6 +11,8 @@
     constructor(id, mode = 'legacy') { super(id, {shadow: 1701, cache: 2903, iron: 4109}[id], mode); this.spec = SPECS[id]; this.setup(); }
     // Level length in pixels: 2200 reproduces v0.6.0 exactly; Extended adds a second segment.
     get len() { return this.rules.extended ? 3300 : 2200; }
+    // Cache Ninja's smoke shows for the first 90 ticks of its cooldown in every mode.
+    get smoking() { return this.id === 'cache' && this.p.special > (this.rules.remix ? 90 : 270); }
     setup() {
       const ext = this.rules.extended, remix = this.rules.remix, L = this.len;
       this.p = {x: q(70), y: q(303), vx: 0, vy: 0, face: 1, grounded: true, jumps: 0, cd: 0, special: 0, swing: 0};
@@ -240,7 +242,7 @@
         if (e.cd < 18) { G.glow(c, x, y - 52, 14, '#ff4d4d', 0.8); D.text(c, '!', x, y - 46, '#ffffff', 17, 'center'); }
       }
       if (this.inv % 8 < 5) {
-        const x = px(p.x) - camera, y = px(p.y), smoke = this.id === 'cache' && p.special > 270;
+        const x = px(p.x) - camera, y = px(p.y), smoke = this.smoking;
         if (smoke) for (let i = 0; i < 6; i++) G.glow(c, x + Math.sin(tick * 0.2 + i) * 14, y - 12 - i * 5, 18, '#c8a8e8', 0.35);
         const striking = this.id === 'shadow' ? p.swing > 0 : p.cd >= (this.id === 'iron' ? 5 : 14);
         D.person(c, x, y, color, p.face, p.vx ? tick : 0, this.id === 'iron' ? 'trooper' : 'ninja', 2, striking);

@@ -139,3 +139,17 @@ test('Remix Null Vector: a piercing beam hits each enemy once and reaches the on
  assert.equal(999-front.hp,65,'the front drone takes one full-power hit, not four');
  assert.equal(999-back.hp,32,'the halved beam reaches the drone behind');
 });
+test('Golden Boot eligibility ends once anyone takes possession',()=>{
+ const g=make('soccer','remix');g.serve=0;
+ // A long strike is intercepted: the defender's later play must not inherit the double.
+ g.ball={x:q(613),y:q(185),vx:q(5),vy:0,owner:2,lock:5,flight:null,long:true,shotAt:g.tickCount};
+ tick(g);assert.equal(g.ball.long,false,'possession clears the long-strike flag');
+ g.ball={x:q(613),y:q(185),vx:q(5),vy:0,owner:-1,lock:5,flight:null,long:false,shotAt:g.tickCount};tick(g);assert.equal(g.goals[0],1,'a non-long goal counts once');
+});
+test('Remix thresholds are shared by the rules and the drawing',()=>{
+ const c=make('cache','remix');tick(c,1,{bPressed:true});assert.equal(c.smoking,true,'smoke shows right after Shadow Step');
+ tick(c,89);assert.equal(c.smoking,true);tick(c,1);assert.equal(c.smoking,false,'for the 90 ticks of cover');
+ const e=make('cache','extended');tick(e,1,{bPressed:true});assert.equal(e.smoking,true);tick(e,90);assert.equal(e.smoking,false);
+ const v=make('vector','remix');tick(v,15,{a:true});assert.equal(v.beamReady,true,'Overcharge is ready at 15 ticks');
+ const x=make('vector','extended');tick(x,15,{a:true});assert.equal(x.beamReady,false);tick(x,10,{a:true});assert.equal(x.beamReady,true);
+});
