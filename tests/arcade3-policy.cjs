@@ -179,6 +179,18 @@ function policy(id){
    else if(b.flight&&b.flight.kind!=='pass'){const f=b.flight;go(px(f.to[0])+(px(f.to[0])>320?-36:36),px(f.to[1]));}
    else go(px(b.x),px(b.y));
   }
+  if(id==='knockout'){
+   // Read the tell and slip, duck or guard just before it lands; counter into an opening;
+   // otherwise jab around the guard only while the rival is still resting.
+   const p=g.p,r=g.r;
+   if(p.state==='idle'||p.state==='guard'){
+    if(r.state==='tell'){
+     if(r.attack==='jab')a.y=-1;
+     else if(r.t<=10){const m=r.attack;if(m==='hookL')a.x=1;else if(m==='hookR')a.x=-1;else a.x=t%2?1:-1;}
+    }else if(r.state==='open'){if(p.meter>=100)a.cPressed=true;else if(r.t>=7){if(t%2)a.aPressed=true;else a.bPressed=true;}}
+    else if((r.state==='idle'||r.state==='recover')&&r.t>14&&r.state==='idle'){if(r.guard==='high')a.aPressed=true;else if(r.guard==='low')a.bPressed=true;}
+   }
+  }
   return a;
  };
 }
