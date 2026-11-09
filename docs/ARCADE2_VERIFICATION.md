@@ -1,5 +1,45 @@
 # ARCADE 2 verification record
 
+## v0.6.0 graphics pass — 8 November 2026
+
+Base: QSOLKCB/ARCADE `2a7d112` (main, after PR #7). Sources read: QSOLKCB/VANILLAJS
+`main` `9e643c7` (no module changes since the v1.2.0 pin `c8d6e99`) and QSOLKCB/OPT
+`main` `7556dd3` (catalogue v1.4.0). Environment: Node v22.23.4; the session's
+preinstalled Playwright Chromium, headless, software rasterisation.
+
+### Simulation unchanged
+
+Before any presentation change, `tests/arcade2-parity.test.cjs` recorded SHA-256
+hashes of the complete game state for all ten cabinets: one 5,400-tick scripted
+session each, and one complete policy-driven campaign each (all stages, bosses and
+transitions). After the work all 20 hashes still match. Each is also replayed with
+`draw()` and the post pass running between ticks, with identical results.
+
+### Executed
+
+| Check | Observed result |
+| --- | --- |
+| `npm test` | **237 passed, 0 failed**: 20 new parity pins, 9 graphics/sound checks, one new offline deep-link check; the previous 207 unchanged. |
+| `npm run check`, `node scripts/arcade2-engine.cjs --check` | Passed; the adapter matches four pinned modules (`integer-math`, `time`, `frame-gate`, `audio2d`). |
+| Cache-key completeness (OPT-INC-001) | Caches cleared before sampled frames of every campaign in both tiers; every re-painted key produced an identical draw log. |
+| Draw-call budget (OPT-BUDGET-001) | Peak calls/frame across campaigns: full 107–866, lite 63–231 (limits 1,000 / 300). Means fell from 200–815 (v0.5.0) to 98–338 (full). |
+| Chromium paint time per frame, draw + post + 1-px readback | v0.5.0 median 0.2–0.4 ms, p99 0.4–1.0 ms. v0.6.0 full: median 0.3–0.8 ms, p99 0.8–1.8 ms. Lite: median 0.2–0.6 ms, p99 0.3–1.3 ms. Isolated maxima of 4–10 ms occur when a stage's layers are first built. |
+| Real tick rate in the running app | Counted `tick()` calls over 5 s of wall time: Shadow Circuit, DevOps Kombat, Breach Protocol, Spaced Invaders and Ember Wing 60.00/s; Floodlight FC 60.19/s (window boundary). rAF interval while playing: median 16.70 ms, max 16.80 ms. |
+| Hall and all ten cabinets over HTTP | Ten previews rendered; each cabinet launched from its Play button, ran 2.5 s with held keys, paused and resumed with P, and returned to the hall. Sound on, FX toggled full → lite → full. No page or console errors. |
+| `file://` | Hall and Spaced Invaders played through the UI from the checkout; no errors. |
+| Offline | The worker installed `v0.6.0-r1-arcade2` with `gfx.js` and `sound.js`. With the local server shut down, reloading `arcade2/index.html#ember` loaded from cache and the cabinet ran. This **failed before the fix** (`ERR_CONNECTION_REFUSED`) because Chromium includes the `#fragment` in navigation request URLs. |
+| Phone layout (Playwright iPhone 13 profile) | Hall and playroom have no horizontal overflow at 390 px; the FX button fits the masthead. |
+
+### Not established
+
+Real GPUs and displays, Firefox and Safari, physical touch and controllers, and
+audible output. Headless Chromium created and played the audio2d buffers without
+errors, but nobody listened. Paint times are from one software-rendered
+environment, not device benchmarks. The automatic lite fallback was triggered by
+artificially adding 9 ms to Null Vector's full-tier draw in the page (label became
+*FX lite (auto)*, nothing was saved, the button restored full), not by a slow device.
+
+
 Implementation base: QSOLKCB/ARCADE
 `2296034a04c5417c4a8f6057c2dd73b06adccb8e` (main).
 Engine source: QSOLKCB/VANILLAJS v1.2.0
@@ -33,6 +73,59 @@ Longer completion probes exposed a soccer boundary that bounced shots before the
 goal line and an overly wide high-platform gap. Both were fixed and now have
 specific regression checks. The checked arithmetic also caught a fractional
 half-width passed as an integer; it now uses `fromRatio(numerator, 2)`.
+
+## Owner RTX 5060 Ti hardware check
+
+`.github/workflows/rtx5060ti-arcade2.yml` adapts the VANILLAJS owner-hardware pattern.
+It runs only when `EmergentMonk` dispatches it on `main` and ticks
+*acknowledge_local_execution*, on a self-hosted runner labelled
+`[self-hosted, linux, x64, qsol-rtx5060ti]` with a visible desktop. It never installs
+anything. Playwright 1.64.0 must already exist outside the checkout (the same
+tooling the VANILLAJS workflows use), with system Chrome.
+
+`scripts/rtx5060ti-arcade2.mjs` then:
+
+1. requires `nvidia-smi` and the browser's WebGL renderer to name the RTX 5060 Ti,
+   and refuses SwiftShader, llvmpipe and lavapipe;
+2. presents 360 frames per cabinet, sampled across a complete campaign, one per
+   `requestAnimationFrame` on a visible canvas. It does this for the pre-graphics
+   baseline `2a7d112` and for v0.6.0 full and lite, recording submission time and
+   presented-frame intervals;
+3. plays each cabinet from its Play button for 5 s and counts real `tick()` calls
+   against the display's frame pacing;
+4. stops the local server and reloads a `#ember` deep link through the service worker.
+
+### Runner setup
+
+ARCADE asks for `[self-hosted, linux, x64, qsol-rtx5060ti]`, the same labels as all
+ten VANILLAJS self-hosted workflows, and uses the same `actions/checkout` (v4,
+`11d5960a`) and `actions/upload-artifact` (v4, `ea165f8d`) commits as the six
+VANILLAJS RTX workflows whose sealed evidence came from this runner. VANILLAJS evidence (runs 42203888152 to
+42364527661) shows that runner using Playwright 1.64.0, Google Chrome 156, Node
+v22.18.0 and the renderer `ANGLE (NVIDIA Corporation, NVIDIA GeForce RTX 5060
+Ti/PCIe/SSE2, OpenGL ES 3.2)`. ARCADE's harness accepts all of these. The evidence
+does not record the runner's registration scope. GitHub assigns a job only to a
+runner registered to that repository, or to an organisation runner whose group
+grants access to it:
+
+- **Organisation runner:** add ARCADE to the runner group's repository access.
+- **Repository runner (VANILLAJS only):** register a second runner for ARCADE with the
+  label `qsol-rtx5060ti`, and avoid dispatching both repositories' GPU workflows at
+  once, because they share one GPU.
+
+The runner must run inside the logged-in desktop session (`./run.sh` in a terminal).
+A service started without a display fails the desktop check. Each report records the
+runner's name.
+
+Gates: in-app tick rate within 59.5–60.5 per second, full-tier paint p99 at most 8 ms,
+no more than 5% long presented frames, no automatic lite fallback, no page errors and
+no external requests. Evidence (JSON report, `SUMMARY.md`, screenshots and
+`SHA256SUMS`) stays under `~/.local/state/qsol/arcade/rtx5060ti/`. It is uploaded only
+with *publish_evidence*. *play_sound* makes the effects audible on the desktop.
+
+A `--dry-run` of the harness in this session's container passed all gates using
+headless Chromium on SwiftShader. Its report is marked `dryRun:true` and is **not**
+hardware evidence. No result from the RTX 5060 Ti is recorded yet.
 
 ## PR #7 review corrections
 

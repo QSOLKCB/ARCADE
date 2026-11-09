@@ -7,15 +7,34 @@
   const read=(key,fallback)=>{try{const value=localStorage.getItem('qsol-arcade2:'+key);return value===null?fallback:JSON.parse(value);}catch(_){return fallback;}};
   const write=(key,value)=>{try{localStorage.setItem('qsol-arcade2:'+key,JSON.stringify(value));}catch(_){}};
   const best=id=>{const n=read('best:'+id,0);return Number.isSafeInteger(n)&&n>=0&&n<1000000000?n:0;};
-  let sound=read('sound',false)===true,audio=null,voices=[],mode='hall',game=null,selected=null,last=null,lastMessage='';
+  let sound=read('sound',false)===true,audio=null,voices=[],buffers=new Map(),mode='hall',game=null,selected=null,last=null,lastMessage='';
+  const G=A.Gfx;let fxChoice=read('fx','high')==='lite'?'lite':'high',fxAuto=false;G.setQuality(fxChoice);
+  // VANILLAJS FrameGate: redraw only when the complete frame key changes. The key
+  // names every input to drawing: the shell generation (bumped on any shell change),
+  // the cabinet, the simulation tick, stage, status and the FX tier.
+  const gate=new A.Engine.FrameGate();let generation=0;
+  // OPT-APPROX-001 guard: if full effects cost too much paint time on this device,
+  // fall back to the lite tier (cosmetic only) for the rest of the session.
+  const PAINT_BUDGET_MS=7,PAINT_WINDOW=120;let paintSamples=0,paintTotal=0,paintWarmup=0;
   const clock=new A.Engine.FixedClock({step:1/60,maxFrame:.1,maxSteps:6,snapTolerance:.0005});clock.setPaused(true);
   function unlockAudio(){
     if(!sound)return;
     try{if(!audio){const Type=window.AudioContext||window.webkitAudioContext;if(!Type)return;audio=new Type();}const p=audio.resume();if(p?.catch)p.catch(()=>{});}catch(_){}
   }
   function quiet(){for(const voice of voices){try{voice.osc.stop();}catch(_){}}voices=[];}
+  // Effects come from the audio2d PCM bank (arcade2/sound.js); the oscillator
+  // recipes below remain as a fallback if buffers cannot be created.
+  function sample(name){
+    try{
+      if(!buffers.has(name)){const pcm=A.Sound.pcm(name),buffer=audio.createBuffer(1,pcm.length,A.Sound.RATE),out=buffer.getChannelData(0);for(let i=0;i<pcm.length;i++)out[i]=pcm[i]/32768;buffers.set(name,buffer);}
+      const src=audio.createBufferSource(),gain=audio.createGain(),voice={osc:src};src.buffer=buffers.get(name);gain.gain.value=.55;
+      src.connect(gain);gain.connect(audio.destination);voices.push(voice);
+      src.onended=()=>{src.disconnect();gain.disconnect();voices=voices.filter(v=>v!==voice);};src.start();return true;
+    }catch(_){return false;}
+  }
   function sfx(name){
     if(!sound||!audio||audio.state!=='running'||voices.length>=8)return;
+    if(A.Sound&&sample(name))return;
     const notes={shot:[410,170,.06],hurt:[135,50,.13],blast:[95,24,.22],jump:[230,650,.09],pickup:[530,1050,.12],win:[440,880,.25],lose:[190,40,.4],dash:[900,120,.12],block:[240,190,.06]};
     const [from,to,length]=notes[name]||notes.shot;
     try{const osc=audio.createOscillator(),gain=audio.createGain(),now=audio.currentTime,voice={osc};
@@ -25,18 +44,30 @@
     }catch(_){}
   }
   const input=new A.Input(canvas,()=>mode==='playing',()=>{if(mode==='playing'){pause();return true;}if(mode==='paused'){resume();return true;}return false;});
-  function setMode(value){mode=value;clock.setPaused(value!=='playing');last=null;input.clear();if(game)game.cancelInput();quiet();$('overlay').hidden=value==='playing'||value==='hall';$('pause').textContent=value==='paused'?'Resume':'Pause';}
+  function invalidate(){generation++;gate.invalidate();paintWarmup=20;}
+  function setMode(value){mode=value;invalidate();clock.setPaused(value!=='playing');last=null;input.clear();if(game)game.cancelInput();quiet();$('overlay').hidden=value==='playing'||value==='hall';$('pause').textContent=value==='paused'?'Resume':'Pause';}
   function showOverlay(kicker,title,copy,button){$('overlay-kicker').textContent=kicker;$('overlay-title').textContent=title;$('overlay-copy').textContent=copy;$('continue').textContent=button;$('continue').focus({preventScroll:true});}
   function pause(){if(mode!=='playing')return;setMode('paused');showOverlay('TAKE A BREATHER','PAUSED','Your run is waiting right here.','Resume game');}
   function resume(){if(mode!=='paused')return;unlockAudio();setMode('playing');canvas.focus({preventScroll:true});}
-  function paint(){
-    if(!game)return;
-    ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;game.draw(ctx);
+  function frameKey(){return generation+'|'+selected.id+'|'+game.tickCount+'|'+game.stage+'|'+game.status+'|'+G.quality();}
+  function paint(){if(game)gate.present({key:frameKey(),width:canvas.width,height:canvas.height},draw);}
+  function draw(){
+    const started=performance.now();
+    ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';game.draw(ctx);G.post(ctx,game);
+    budget(performance.now()-started);
     const hud=game.hud();$('hud-left').textContent=hud.left;$('hud-right').textContent=hud.right;$('hud-score').textContent=String(game.score).padStart(6,'0');$('objective').textContent=hud.objective;
     const message=game.messageTicks?game.message:'';if(message!==lastMessage){lastMessage=message;$('announcement').textContent=message;}
   }
+  function budget(ms){
+    if(mode!=='playing'||G.quality()!=='high')return;
+    if(paintWarmup>0){paintWarmup--;return;} // First frames after a change build cached layers.
+    paintTotal+=ms;if(++paintSamples<PAINT_WINDOW)return;
+    const average=paintTotal/paintSamples;paintSamples=paintTotal=0;
+    if(average>PAINT_BUDGET_MS){fxAuto=true;G.setQuality('lite');fxLabel();invalidate();redrawPreviews();}
+  }
+  function fxLabel(){const lite=G.quality()==='lite';$('fx').textContent=lite?(fxAuto?'FX lite (auto)':'FX lite'):'FX full';$('fx').setAttribute('aria-pressed',String(!lite));}
   function launch(meta,ready=false){
-    selected=meta;game=meta.create();clock.reset();$('hall').hidden=true;$('playroom').hidden=false;
+    selected=meta;game=meta.create();clock.reset();invalidate();$('hall').hidden=true;$('playroom').hidden=false;
     $('game-title').textContent=meta.title;$('game-genre').textContent='CABINET '+meta.number+' / '+meta.genre;
     $('control-guide').replaceChildren(...meta.controls.map(label=>{const el=document.createElement('span');el.textContent=label;return el;}));
     $('best').textContent='BEST '+String(best(meta.id)).padStart(6,'0');canvas.dataset.aim=String(meta.id==='breach');
@@ -67,14 +98,17 @@
   $('pause').addEventListener('click',()=>mode==='paused'?resume():pause());
   $('restart').addEventListener('click',()=>{if(selected)launch(selected);});
   $('leave').addEventListener('click',hall);$('overlay-leave').addEventListener('click',hall);
+  $('fx').addEventListener('click',()=>{fxAuto=false;fxChoice=G.quality()==='high'?'lite':'high';G.setQuality(fxChoice);write('fx',fxChoice);paintSamples=paintTotal=0;fxLabel();invalidate();redrawPreviews();if(game)paint();});fxLabel();
   $('audio').addEventListener('click',()=>{sound=!sound;write('sound',sound);audioLabel();if(sound){unlockAudio();sfx('pickup');}else quiet();});
   function audioLabel(){$('audio').textContent=sound?'Sound on':'Sound off';$('audio').setAttribute('aria-pressed',String(sound));}audioLabel();
   window.addEventListener('blur',()=>{if(mode==='playing')pause();else input.clear();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){if(mode==='playing')pause();else input.clear();}});
+  const previews=[];
   function preview(meta,target){
     const g=meta.create();for(let i=0;i<(meta.id==='kombat'?150:100);i++){const a=A.empty();if(['shadow','cache','iron'].includes(meta.id)){a.x=1;a.a=true;}g.tick(a);}
-    const context=target.getContext('2d');if(context){context.imageSmoothingEnabled=false;g.draw(context);}
+    const context=target.getContext('2d');if(context){context.imageSmoothingEnabled=false;g.draw(context);previews.push([g,context]);}
   }
+  function redrawPreviews(){for(const [g,context] of previews){context.setTransform(1,0,0,1,0,0);context.globalAlpha=1;context.globalCompositeOperation='source-over';g.draw(context);}}
   for(const meta of A.registry.sort((a,b)=>Number(a.number)-Number(b.number))){
     const article=document.createElement('article');article.className='card';article.style.setProperty('--accent',meta.color);
     article.dataset.category=['soccer','hoops'].includes(meta.id)?'sport':['shadow','cache','iron','kombat'].includes(meta.id)?'action':'shooter';
@@ -113,7 +147,7 @@
           game.tick(input.sample());for(const event of game.events)sfx(event);game.events.length=0;
           if(game.status!=='playing')end();
         });
-        if(result.steps)paint();
+        paint();
       }catch(error){console.error(error);setMode('error');showOverlay('CABINET STOPPED','LET’S RESTART.','This run encountered an error. A fresh credit is ready.','Restart cabinet');}
     }else last=null;
     requestAnimationFrame(frame);

@@ -1,6 +1,6 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
-for(const file of ['engine','core','platforms','sports','kombat','breach','shooters'])require('../arcade2/'+file+'.js');
+for(const file of ['engine','core','gfx','platforms','sports','kombat','breach','shooters'])require('../arcade2/'+file+'.js');
 const A=globalThis.Arcade2,q=A.q,tick=(g,n=1,input={})=>{for(let i=0;i<n;i++)g.tick({...A.empty(),...input});};
 const make=id=>A.registry.find(m=>m.id===id).create();
 const ctx=new Proxy({globalAlpha:1},{get:(o,k)=>k in o?o[k]:(...args)=>{for(const a of args)if(typeof a==='number')assert.ok(Number.isFinite(a),'finite draw '+String(k));},set:(o,k,v)=>{o[k]=v;return true;}});

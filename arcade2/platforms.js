@@ -123,54 +123,135 @@
       return {left: 'HEALTH ' + this.hp + (this.id === 'iron' ? '   GRENADES ' + this.bombs : ''),
         right: 'STAGE ' + (this.stage + 1) + '/3', objective: this.id === 'cache' ? 'Free witnesses ' + this.rescued + '/3 · defeat the watchdog · reach EXIT' : 'Cross the district · defeat the boss · reach EXIT'};
     }
+    // Presentation only: reads state, never writes it (see tests/arcade2-parity.test.cjs).
     draw(c) {
-      const camera = px(this.camera), p = this.p, color = this.spec.color;
-      D.city(c, camera, this.stage + (this.id === 'iron' ? 1 : 0), this.tickCount);
+      const G = A.Gfx, camera = px(this.camera), p = this.p, color = this.spec.color, tick = this.tickCount;
+      const theme = G.cityTheme(this.stage + (this.id === 'iron' ? 1 : 0));
+      D.city(c, camera, this.stage + (this.id === 'iron' ? 1 : 0), tick);
       for (const [left, right] of this.pits) {
-        D.rect(c, left - camera, 303, right - left, 57, '#030710');
-        for (let x = left; x < right; x += 12) { D.rect(c, x - camera, 352, 7, 5, '#ff6b49'); D.rect(c, x - camera + 2, 348, 3, 4, '#ffb157'); }
+        const x = left - camera, w = right - left;
+        if (x > 660 || x + w < -20) continue;
+        G.layer(c, 'pit:' + w, w, 57, ctx => {
+          ctx.fillStyle = G.linear(ctx, 0, 0, 0, 57, [[0, '#010307'], [0.55, '#14060a'], [1, '#5a160c']]); ctx.fillRect(0, 0, w, 57);
+          for (let i = 0; i < w; i += 6) { ctx.fillStyle = (i / 6) % 2 ? '#e8b23c' : '#1a1d22'; ctx.fillRect(i, 0, 6, 3); }
+          ctx.fillStyle = '#0a0d12'; ctx.fillRect(0, 0, 3, 57); ctx.fillRect(w - 3, 0, 3, 57);
+        }, x, 303);
+        for (let i = 0; i < w; i += 12) {
+          const flame = 4 + G.hash(i + Math.floor(tick / 4) * 31 + left) % 7;
+          D.rect(c, x + i + 1, 357 - flame, 9, flame, '#ff6b49'); D.rect(c, x + i + 3, 358 - flame / 2, 5, flame / 2, '#ffd27a');
+        }
+        G.glow(c, x + w / 2, 350, w * 0.55, '#ff5a2a', 0.55);
       }
       for (const [x, y, w] of this.ledges) {
-        D.rect(c, x - camera, y, w, 10, '#324653'); D.rect(c, x - camera, y, w, 3, color);
-        for (let xx = x; xx < x + w; xx += 22) D.rect(c, xx - camera + 5, y + 5, 10, 2, '#66717b');
-        D.line(c, x - camera + 8, y + 10, x - camera + 8, 302, '#263440', 4);
+        const lx = x - camera; if (lx > 660 || lx + w < -20) continue;
+        D.rect(c, lx + 7, y + 10, 3, 302 - y - 10, '#1b2733'); D.rect(c, lx + 8, y + 10, 1, 302 - y - 10, '#33465a');
+        D.rect(c, lx + w - 10, y + 10, 3, 302 - y - 10, '#1b2733');
+        G.sprite(c, 'ledge:' + w + color, w, 16, ctx => {
+          ctx.fillStyle = G.linear(ctx, 0, 0, 0, 12, [[0, '#4f6577'], [1, '#1d2935']]); ctx.fillRect(0, 0, w, 12);
+          ctx.fillStyle = color; ctx.fillRect(0, 0, w, 3); ctx.fillStyle = G.shade(color, 0.5); ctx.fillRect(0, 0, w, 1);
+          ctx.fillStyle = '#0b1018'; ctx.fillRect(0, 12, w, 2);
+          for (let i = 6; i < w - 4; i += 18) { ctx.fillStyle = '#8395a3'; ctx.fillRect(i, 6, 2, 2); ctx.fillStyle = '#26323e'; ctx.fillRect(i + 5, 5, 8, 4); }
+          ctx.fillStyle = G.rgba('#000000', 0.35); ctx.fillRect(0, 14, w, 2);
+        }, lx, y);
+        G.glow(c, lx + w / 2, y + 1, Math.min(60, w / 2), color, 0.18);
       }
       for (const h of this.hostages) if (!h.saved) {
-        D.person(c, px(h.x) - camera, px(h.y), '#f2e08c', 1, 0, 'trooper', 1.6);
-        D.text(c, 'FREE ME', px(h.x) - camera, px(h.y) - 36, '#f2e08c', 10, 'center');
+        const x = px(h.x) - camera, y = px(h.y), pulse = 0.5 + 0.5 * Math.sin(tick * 0.12);
+        G.glow(c, x, y - 14, 26, '#f2e08c', 0.25 + pulse * 0.2);
+        D.person(c, x, y, '#f2e08c', 1, 0, 'trooper', 1.6);
+        for (let i = -2; i <= 2; i++) D.rect(c, x + i * 6 - 1, y - 30, 2, 30, '#8a97a3');
+        D.rect(c, x - 14, y - 32, 28, 3, '#5d6b77'); D.rect(c, x - 14, y - 2, 28, 2, '#5d6b77');
+        D.text(c, 'FREE ME', x, y - 38 - Math.round(pulse * 2), '#f2e08c', 10, 'center');
       }
       for (const box of this.crates) if (!box.taken) {
         const x = px(box.x) - camera;
-        D.rect(c, x - 10, 282, 20, 20, '#435e51'); D.rect(c, x - 6, 289, 12, 5, '#b6f78a'); D.rect(c, x - 2, 285, 4, 13, '#b6f78a');
+        G.glow(c, x, 292, 22, '#b6f78a', 0.25 + 0.15 * Math.sin(tick * 0.1));
+        G.sprite(c, 'crate', 22, 22, ctx => {
+          ctx.fillStyle = G.linear(ctx, 0, 0, 0, 22, [[0, '#5d7f6c'], [1, '#2d4337']]); ctx.fillRect(0, 0, 22, 22);
+          ctx.strokeStyle = '#0b1018'; ctx.lineWidth = 2; ctx.strokeRect(1, 1, 20, 20);
+          ctx.fillStyle = '#e9fbe0'; ctx.fillRect(4, 8, 14, 6); ctx.fillRect(8, 4, 6, 14);
+          ctx.fillStyle = '#7fd85a'; ctx.fillRect(5, 9, 12, 4); ctx.fillRect(9, 5, 4, 12);
+        }, x - 11, 281);
       }
-      D.rect(c, 2135 - camera, 233, 35, 70, this.bossDead ? '#234a39' : '#482e38');
-      D.text(c, 'EXIT', 2152 - camera, 225, this.bossDead ? '#bdf56b' : '#fa7f80', 12, 'center');
+      const ex = 2135 - camera, open = this.bossDead && this.rescued === this.hostages.length, door = open ? '#bdf56b' : '#fa7f80';
+      if (ex < 700) {
+        G.glow(c, ex + 17, 262, 46, door, open ? 0.55 : 0.3);
+        D.rect(c, ex - 4, 228, 43, 75, '#0b1018'); D.rect(c, ex, 233, 35, 70, open ? '#163a2a' : '#3a2230');
+        D.rect(c, ex + 3, 236, 29, 64, G.rgba(door, open ? 0.35 : 0.12));
+        if (open) for (let i = 0; i < 4; i++) D.rect(c, ex + 6, 296 - ((tick * 2 + i * 16) % 60), 23, 2, G.rgba('#e9ffd0', 0.6));
+        else for (let i = 0; i < 5; i++) D.rect(c, ex + 2, 244 + i * 12, 31, 3, '#7a3446');
+        D.rect(c, ex + 5, 212, 25, 13, '#0b1018'); D.text(c, 'EXIT', ex + 17, 223, door, 11, 'center');
+      }
       for (const e of this.enemies) if (e.hp > 0 && Math.abs(px(e.x) - camera - 320) < 380) {
         const x = px(e.x) - camera, y = px(e.y);
-        if (e.boss && this.id === 'iron') {
-          D.rect(c, x - 47, y - 22, 94, 22, '#383e43'); D.rect(c, x - 39, y - 48, 80, 28, e.flash ? '#fff' : '#847967');
-          D.rect(c, x - 18, y - 64, 42, 20, '#5c6b65'); D.rect(c, x - 69, y - 46, 55, 7, '#b8c2b2');
-          for (let i = 0; i < 6; i++) D.ellipse(c, x - 36 + i * 14, y - 9, 7, 7, '#1b2430');
-        } else D.person(c, x, y, e.flash ? '#fff' : e.boss ? '#ed6786' : '#c88b74', -1, this.tickCount, this.id === 'iron' ? 'trooper' : 'ninja', e.boss ? 3.8 : 2);
+        if (e.boss && this.id === 'iron') this.drawTank(c, x, y, e, tick);
+        else {
+          if (e.boss) G.glow(c, x, y - 30, 60, '#ed6786', 0.35);
+          D.person(c, x, y, e.flash ? '#ffffff' : e.boss ? '#ed6786' : '#c88b74', -1, tick, this.id === 'iron' ? 'trooper' : 'ninja', e.boss ? 3.8 : 2);
+        }
         D.bar(c, x - (e.boss ? 45 : 16), y - (e.boss ? 73 : 42), e.boss ? 90 : 32, e.hp, e.maxHP, '#ff7e81');
         if (e.boss) D.text(c, this.spec.boss, x, y - 82, '#ffb4c5', 10, 'center');
-        if (e.cd < 18) D.text(c, '!', x, y - 46, '#fff', 17, 'center');
+        if (e.cd < 18) { G.glow(c, x, y - 52, 14, '#ff4d4d', 0.8); D.text(c, '!', x, y - 46, '#ffffff', 17, 'center'); }
       }
       if (this.inv % 8 < 5) {
-        c.save(); if (p.grounded && p.vx === 0 && p.y === q(303)) c.translate(0, 0);
-        D.person(c, px(p.x) - camera, px(p.y), color, p.face, p.vx ? this.tickCount : 0, this.id === 'iron' ? 'trooper' : 'ninja', 2);
-        if (this.id === 'iron') D.rect(c, px(p.x) - camera + (p.face > 0 ? 4 : -24), px(p.y) - 23, 20, 5, '#e6dbc2');
-        if (p.swing) { D.line(c, px(p.x) - camera + p.face * 10, px(p.y) - 25, px(p.x) - camera + p.face * 58, px(p.y) - 15, '#e7fff0', 5); }
-        c.restore();
+        const x = px(p.x) - camera, y = px(p.y), smoke = this.id === 'cache' && p.special > 270;
+        if (smoke) for (let i = 0; i < 6; i++) G.glow(c, x + Math.sin(tick * 0.2 + i) * 14, y - 12 - i * 5, 18, '#c8a8e8', 0.35);
+        D.person(c, x, y, color, p.face, p.vx ? tick : 0, this.id === 'iron' ? 'trooper' : 'ninja', 2);
+        if (this.id === 'iron') {
+          const gx = x + (p.face > 0 ? 4 : -24), gy = y - 23;
+          D.rect(c, gx, gy, 20, 5, '#d8cfb6'); D.rect(c, gx, gy + 3, 20, 2, '#7d7461'); D.rect(c, gx + (p.face > 0 ? 3 : 9), gy + 5, 6, 4, '#4e4a40');
+          if (p.cd >= 6) { const mx = x + p.face * 28; G.glow(c, mx, gy + 2, 14, '#ffd27a', 0.9); D.rect(c, mx - 3, gy - 1, 6, 6, '#fff3c4'); }
+        }
+        if (p.swing) {
+          const t = 1 - p.swing / 11, bx = x + p.face * 10, by = y - 25;
+          c.save(); c.strokeStyle = G.rgba('#e7fff0', 0.35 + 0.5 * (1 - t)); c.lineWidth = 8; c.lineCap = 'round';
+          c.beginPath(); c.arc(bx, by + 6, 44, p.face > 0 ? -1.2 + t * 0.9 : Math.PI + 1.2 - t * 0.9, p.face > 0 ? 0.35 + t * 0.4 : Math.PI - 0.35 - t * 0.4, p.face < 0); c.stroke();
+          c.strokeStyle = '#ffffff'; c.lineWidth = 2; c.stroke(); c.restore();
+          G.glow(c, bx + p.face * 40, by + 4, 26, color, 0.5);
+        }
       }
       for (const b of this.shots) {
-        const x = px(b.x) - camera, y = px(b.y);
-        D.rect(c, x - 4, y - 2, b.owner === 'player' ? 10 : 6, 4, b.owner === 'player' ? color : '#ff6f75');
-        if (b.type === 'star') { D.rect(c, x - 1, y - 5, 3, 10, '#efffd9'); }
+        const x = px(b.x) - camera, y = px(b.y), mine = b.owner === 'player';
+        G.glow(c, x, y, mine ? 12 : 10, mine ? color : '#ff4d5a', 0.7);
+        if (b.type === 'star') {
+          c.save(); c.translate(Math.round(x), Math.round(y)); c.rotate(tick * 0.5);
+          D.rect(c, -6, -1.5, 12, 3, '#efffd9'); D.rect(c, -1.5, -6, 3, 12, '#efffd9'); D.rect(c, -2, -2, 4, 4, '#3a4a55'); c.restore();
+        } else if (mine) {
+          D.rect(c, x - 9 * Math.sign(px(b.vx) || 1), y - 1, 9 * Math.sign(px(b.vx) || 1), 2, G.rgba(color, 0.5));
+          D.rect(c, x - 4, y - 2, 9, 4, color); D.rect(c, x - 2, y - 1, 5, 2, '#ffffff');
+        } else { D.ellipse(c, x, y, 4, 4, '#ff6f75'); D.ellipse(c, x, y, 2, 2, '#ffe2e2'); }
       }
-      for (const g of this.grenades) D.ellipse(c, px(g.x) - camera, px(g.y), 5, 5, '#bafc75');
+      for (const g of this.grenades) {
+        const x = px(g.x) - camera, y = px(g.y);
+        G.glow(c, x, y - 4, 8, '#ffcf6a', 0.6 + 0.4 * (g.life % 6 < 3));
+        D.ellipse(c, x, y, 5, 5, '#5c7a3a'); D.ellipse(c, x - 1, y - 1, 2, 2, '#bafc75'); D.rect(c, x - 1, y - 8, 2, 3, '#fff1b3');
+      }
       this.drawEffects(c, camera);
       D.bar(c, 20, 340, 600, px(p.x), 2160, color);
+      for (const h of this.hostages) D.rect(c, 20 + px(h.x) / 2160 * 600 - 1, 337, 3, 11, h.saved ? '#5a6f5a' : '#f2e08c');
+      D.rect(c, 20 + 2050 / 2160 * 600 - 2, 336, 4, 13, this.bossDead ? '#5a6f5a' : '#ff7e81');
+    }
+    drawTank(c, x, y, e, tick) {
+      const G = A.Gfx;
+      G.glow(c, x, y - 30, 70, '#ffb35c', 0.18);
+      G.sprite(c, 'tank:' + (e.flash ? 'f' : 'n'), 150, 70, ctx => {
+        const body = e.flash ? '#ffffff' : '#847967';
+        ctx.translate(75, 66);
+        ctx.fillStyle = '#20262c'; ctx.fillRect(-49, -24, 98, 24);
+        ctx.fillStyle = G.linear(ctx, 0, -50, 0, -20, [[0, G.shade(body, 0.3)], [1, G.shade(body, -0.35)]]); ctx.fillRect(-41, -50, 82, 30);
+        ctx.strokeStyle = '#0a0f17'; ctx.lineWidth = 2; ctx.strokeRect(-41, -50, 82, 30);
+        ctx.fillStyle = '#5c6b65'; ctx.fillRect(-20, -66, 44, 18); ctx.strokeRect(-20, -66, 44, 18);
+        ctx.fillStyle = G.linear(ctx, 0, -48, 0, -40, [[0, '#d6ded0'], [1, '#7c8579']]); ctx.fillRect(-72, -48, 56, 8);
+        ctx.fillStyle = '#ffb35c'; ctx.fillRect(-2, -61, 14, 4);
+        ctx.fillStyle = '#e5c84a'; for (let i = -36; i < 36; i += 12) ctx.fillRect(i, -26, 6, 3);
+        ctx.fillStyle = '#a7302c'; ctx.font = 'bold 8px monospace'; ctx.fillText('AUDIT', -16, -31);
+      }, x - 75, y - 66);
+      for (let i = 0; i < 6; i++) {
+        const wx = x - 36 + i * 14, wy = y - 9, a = -tick * 0.15 + i;
+        D.ellipse(c, wx, wy, 7, 7, '#1b2430'); D.ellipse(c, wx, wy, 4, 4, '#4b5866');
+        D.line(c, wx - Math.cos(a) * 4, wy - Math.sin(a) * 4, wx + Math.cos(a) * 4, wy + Math.sin(a) * 4, '#8a98a6', 1.5);
+      }
+      for (let i = 0; i < 12; i++) D.rect(c, x - 46 + ((i * 8 - tick) % 96 + 96) % 96, y - 2, 4, 2, '#3c4651');
     }
   };
   A.register({id:'shadow', title:'Shadow Circuit', subtitle:'A blade against the machine.', genre:'NINJA ACTION', color:'#8ceee1', number:'01', controls:['Move / crouch','Z · blade','X · shuriken','Space · double jump'], description:'Three neon districts. Chain aerial jumps, cut through sentries and defeat the shogun process.'}, () => new A.Platform('shadow'));

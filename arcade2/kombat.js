@@ -86,32 +86,86 @@
       }
     }
     hud() { return {left:'SRE ' + this.hp + '   ROLLBACK ' + this.meter + '%',right:'INCIDENT ' + (this.stage+1) + '/3 · ' + Math.ceil(this.roundTime/60),objective:'Defeat three production incidents · down guards · C unleashes rollback at 100%'}; }
+    // Presentation only: reads state, never writes it (see tests/arcade2-parity.test.cjs).
     draw(c) {
-      D.rect(c,0,0,640,360,'#10131e');
-      for (let x=25;x<640;x+=102) {
-        D.rect(c,x,58,76,223,'#1e2935'); D.rect(c,x+5,63,66,210,'#0a111c');
-        for (let r=0;r<9;r++) { D.rect(c,x+10,71+r*22,56,15,'#263342'); D.rect(c,x+16,76+r*22,23,3,'#557582'); D.rect(c,x+54,76+r*22,4,4,(r+this.stage)%4?'#87dca8':'#f47686'); }
+      const G = A.Gfx, tick = this.tickCount, stage = this.stage;
+      const tint = ['#3aa8ff', '#b46cff', '#ff5a5a'][stage], rivalColor = ['#d77c98', '#b98cff', '#ff7a5c'][stage];
+      G.layer(c, 'kombat-room:' + stage, 640, 360, ctx => {
+        ctx.fillStyle = G.linear(ctx, 0, 0, 0, 285, [[0, '#070910'], [1, G.mix('#10131e', tint, 0.12)]]); ctx.fillRect(0, 0, 640, 285);
+        ctx.fillStyle = '#0b0e16'; for (let x = 0; x < 640; x += 32) ctx.fillRect(x, 0, 2, 50);
+        ctx.fillStyle = G.rgba(tint, 0.35); ctx.fillRect(0, 50, 640, 2);
+        for (let x = 25; x < 640; x += 102) {
+          ctx.fillStyle = G.linear(ctx, x, 0, x + 76, 0, [[0, '#26313e'], [0.5, '#1e2935'], [1, '#141b25']]); ctx.fillRect(x, 58, 76, 223);
+          ctx.fillStyle = '#0a111c'; ctx.fillRect(x + 5, 63, 66, 210);
+          for (let r = 0; r < 9; r++) {
+            ctx.fillStyle = G.linear(ctx, 0, 71 + r * 22, 0, 86 + r * 22, [[0, '#2f3d4e'], [1, '#1f2a36']]); ctx.fillRect(x + 10, 71 + r * 22, 56, 15);
+            ctx.fillStyle = '#557582'; ctx.fillRect(x + 16, 76 + r * 22, 23, 3);
+            ctx.fillStyle = '#121a24'; for (let v = 0; v < 4; v++) ctx.fillRect(x + 42 + v * 2, 74 + r * 22, 1, 9);
+          }
+          ctx.fillStyle = G.rgba(tint, 0.18); ctx.fillRect(x + 5, 63, 1, 210);
+        }
+        ctx.fillStyle = G.linear(ctx, 0, 285, 0, 360, [[0, G.mix('#202c3a', tint, 0.1)], [1, '#0a0f17']]); ctx.fillRect(0, 285, 640, 75);
+        ctx.strokeStyle = '#3a4e59'; ctx.lineWidth = 1;
+        for (let x = -200; x < 900; x += 70) { ctx.beginPath(); ctx.moveTo(320 + (x - 320) * 0.5, 285); ctx.lineTo(x, 360); ctx.stroke(); }
+        for (const y of [292, 310, 335]) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(640, y); ctx.stroke(); }
+        ctx.fillStyle = G.rgba(tint, 0.5); ctx.fillRect(0, 285, 640, 2);
+        ctx.fillStyle = '#77919e'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center'; ctx.fillText('PRODUCTION IS THE ARENA', 320, 250); ctx.textAlign = 'left';
+      });
+      // Rack LEDs blink from the frame tick (presentation only).
+      for (let x = 25, k = 0; x < 640; x += 102, k++) for (let r = 0; r < 9; r++) {
+        const h = G.hash(k * 97 + r * 13 + Math.floor(tick / (12 + (k + r) % 5)));
+        const alert = (r + stage) % 4 === 0, on = h % 3 !== 0;
+        D.rect(c, x + 54, 76 + r * 22, 4, 4, alert ? (on ? '#f47686' : '#4a1f2a') : on ? '#87dca8' : '#1f3a2c');
+        D.rect(c, x + 60, 76 + r * 22, 2, 4, (h >>> 4) % 2 ? '#7ff3ff' : '#163038');
       }
-      D.rect(c,0,285,640,75,'#202c3a');
-      for (let x=-200;x<900;x+=70) D.line(c,320+(x-320)*.5,285,x,360,'#3a4e59');
-      for (const y of [292,310,335]) D.line(c,0,y,640,y,'#3a4e59');
-      D.text(c,'PRODUCTION IS THE ARENA',320,250,'#77919e',11,'center');
-      D.text(c,'S R E',28,33,'#bff676',16); D.text(c,RIVALS[this.stage],612,33,'#ff879e',16,'right');
-      D.bar(c,28,43,240,this.hp,100,'#bff676'); D.bar(c,372,43,240,this.enemyHP,this.enemyMax,'#ff879e');
-      D.text(c,Math.ceil(this.roundTime/60),320,44,'#fff1d3',24,'center');
-      for (const [f,color] of [[this.p,'#b9ee76'],[this.enemy,'#d77c98']]) {
-        const x=px(f.x),y=px(f.y);
-        D.person(c,x,y,f.stun?'#ffdda0':color,f.face,this.tickCount,'trooper',4.2);
-        if (f.guard) { D.line(c,x+f.face*25,y-60,x+f.face*25,y-20,'#b7e6ec',5); D.text(c,'GUARD',x,y-74,'#b7e6ec',9,'center'); }
+      G.glow(c, 320, 230, 260, tint, 0.12);
+      D.text(c, 'S R E', 28, 33, '#bff676', 16); D.text(c, RIVALS[stage], 612, 33, rivalColor, 16, 'right');
+      D.rect(c, 290, 22, 60, 30, '#05080d'); D.rect(c, 292, 24, 56, 26, '#141b26');
+      D.bar(c, 28, 43, 240, this.hp, 100, '#bff676'); D.bar(c, 372, 43, 240, this.enemyHP, this.enemyMax, '#ff879e');
+      D.text(c, Math.ceil(this.roundTime / 60), 320, 44, this.roundTime < 600 ? '#ff9a7a' : '#fff1d3', 24, 'center');
+      // Cron Reaper and Root Cause wear hoods; Merge Conflict shares the SRE's helmet.
+      const rivalKind = stage === 1 ? 'trooper' : 'ninja';
+      const fighters = [[this.p, '#b9ee76', 'trooper'], [this.enemy, rivalColor, rivalKind]];
+      if (G.high()) for (const [f, color, kind] of fighters) {
+        c.save(); c.globalAlpha = 0.16; c.translate(0, 2 * 292 + 2); c.scale(1, -1);
+        D.person(c, px(f.x), px(f.y), f.stun ? '#ffdda0' : color, f.face, tick, kind, 4.2); c.restore();
+      }
+      for (const [f, color, kind] of fighters) {
+        const x = px(f.x), y = px(f.y), air = (292 - y) / 60;
+        G.shadow(c, x, 294, 26 - air * 8, 5 - air, 0.5 - air * 0.2);
+        if (f.stun) G.glow(c, x, y - 40, 40, '#ffdda0', 0.4);
+        D.person(c, x, y, f.stun ? '#ffdda0' : color, f.face, tick, kind, 4.2);
+        if (f.guard) {
+          G.glow(c, x + f.face * 26, y - 40, 30, '#9fe8ff', 0.5);
+          c.save(); c.strokeStyle = G.rgba('#b7e6ec', 0.9); c.lineWidth = 3; c.beginPath();
+          c.arc(x, y - 40, 30, f.face > 0 ? -0.9 : Math.PI - 0.9, f.face > 0 ? 0.9 : Math.PI + 0.9); c.stroke(); c.restore();
+          D.text(c, 'GUARD', x, y - 74, '#b7e6ec', 9, 'center');
+        }
         if (f.attack) {
-          const active=f.attack.age>=f.attack.wind, reach=f.attack.kind==='kick'?75:55;
-          if (active) { D.rect(c,x+(f.face>0?15:-reach),y-(f.attack.kind==='kick'?27:48),reach-15,9,color); D.ellipse(c,x+f.face*reach,y-(f.attack.kind==='kick'?23:44),7,6,'#fff3d2'); }
-          else if (f===this.enemy) D.text(c,f.attack.kind==='kick'?'KICK!':'STRIKE!',x,y-83,'#ffbd6a',12,'center');
+          const active = f.attack.age >= f.attack.wind, kick = f.attack.kind === 'kick', reach = kick ? 75 : 55, hy = y - (kick ? 27 : 48);
+          if (active) {
+            c.save(); c.globalAlpha = 0.45; D.rect(c, x + (f.face > 0 ? 15 : -reach), hy - 2, reach - 15, 13, G.shade(color, 0.4)); c.restore();
+            D.rect(c, x + (f.face > 0 ? 15 : -reach), hy, reach - 15, 9, color);
+            G.glow(c, x + f.face * reach, hy + 4, 22, '#fff3d2', 0.8);
+            D.ellipse(c, x + f.face * reach, hy + 4, 7, 6, '#fff3d2');
+          } else if (f === this.enemy) {
+            G.glow(c, x, y - 88, 24, '#ffbd6a', 0.5 + 0.4 * (tick % 6 < 3));
+            D.text(c, kick ? 'KICK!' : 'STRIKE!', x, y - 83, '#ffbd6a', 12, 'center');
+          }
         }
       }
-      for (const b of this.bolts) { D.ellipse(c,px(b.x),px(b.y),17,12,'#bafa67'); D.rect(c,px(b.x)-9,px(b.y)-3,18,6,'#fff7d5'); }
-      this.drawEffects(c); D.bar(c,180,331,280,this.meter,100,'#c5fc73');
-      D.text(c,this.meter===100?'C  //  ROLLBACK READY':'ROLLBACK BUFFER',320,350,'#d2e4c9',10,'center');
+      for (const b of this.bolts) {
+        const x = px(b.x), y = px(b.y), dir = Math.sign(px(b.vx)) || 1;
+        G.glow(c, x, y, 40, '#bafa67', 0.8);
+        for (let k = 1; k <= 4; k++) D.ellipse(c, x - dir * k * 9, y + Math.sin(tick * 0.6 + k) * 3, 10 - k * 2, 7 - k, G.rgba('#bafa67', 0.5 - k * 0.1));
+        D.ellipse(c, x, y, 17, 12, '#bafa67'); D.ellipse(c, x, y, 11, 7, '#eaffc4'); D.rect(c, x - 9, y - 3, 18, 6, '#fff7d5');
+        D.text(c, '<<', x - dir * 2, y + 4, '#2a4a10', 9, 'center');
+      }
+      this.drawEffects(c);
+      const full = this.meter === 100;
+      if (full) G.glow(c, 320, 334, 90, '#c5fc73', 0.25 + 0.2 * Math.sin(tick * 0.2));
+      D.bar(c, 180, 331, 280, this.meter, 100, '#c5fc73');
+      D.text(c, full ? 'C  //  ROLLBACK READY' : 'ROLLBACK BUFFER', 320, 350, full ? '#eaffc4' : '#d2e4c9', 10, 'center');
     }
   };
   A.register({id:'kombat',title:'DevOps Kombat',subtitle:'Finish the incident.',genre:'1-ON-1 FIGHTER',color:'#fe829b',number:'04',controls:['Move · down guards','Z · punch','X · kick','Space · jump · C · rollback'],description:'SRE versus Cron Reaper, Merge Conflict and Root Cause. Block the windup. Build your meter. Finish the incident.'},()=>new A.Kombat());

@@ -68,3 +68,37 @@ pinned source hashes before removing export keywords and wrapping the modules.
 The browser ships no module loader, third-party runtime or package manager.
 Root Pages packaging and the root worker include both halls. See
 `arcade2/README.md` for the module contract and coordinate convention.
+
+## ARCADE 2 presentation layer (v0.6.0)
+
+`arcade2/gfx.js` owns all sprites, scenery, lighting and post effects on `Arcade2.Gfx`
+and the shared `Arcade2.Draw` primitives. Each cabinet's `draw()` reads state only;
+`tests/arcade2-parity.test.cjs` pins the state hashes recorded before this layer
+existed, with and without drawing between ticks.
+
+- **Layers (OPT-FAN-001, OPT-INC-001).** Static or slowly varying images — city
+  skylines, nebulae, star fields, planets, arenas, server rooms, compounds, figures
+  per (kind, colour, scale, frame), hulls, bosses and glow kernels — are painted
+  once into an offscreen canvas under a key that names every input, then drawn with
+  one `drawImage`. Dynamic elements (projectiles, LEDs, rain, flames, bars) are drawn
+  live. Cosmetic variation comes from an integer hash of indices and the frame tick,
+  never from a game's RNG. A paint that throws is never published.
+- **Caches (OPT-CACHE-001).** Three LRU caches — scenery, sprites and glow kernels —
+  are budgeted in pixels (about 30 MB in total) and report hits, misses and evictions.
+  Without a canvas factory (Node, or a browser without offscreen canvases) layers
+  paint directly into the target with the same result.
+- **FX tiers (OPT-APPROX-001).** *Full* adds additive glow, trails, extra rain, neon
+  flicker, floor reflections and a CRT scanline/vignette pass. *Lite* removes only
+  those. The choice is saved locally; if the full tier's average paint time over 120
+  frames exceeds 7 ms, the shell switches to lite for the session and labels it.
+- **Redraws.** The shell presents through VANILLAJS `FrameGate` with the key
+  `generation|cabinet|tick|stage|status|tier`. Any shell change (launch, mode, stage,
+  tier) bumps the generation, so a frame is redrawn exactly when something drawn
+  changed, and idle frames are skipped.
+- **Sound.** `arcade2/sound.js` defines nine original effects as audio2d scores
+  (four non-overlapping lanes, 48 kHz PCM16). Each renders once on first use and plays
+  through the bounded voice pool after the player's first interaction.
+- **Budgets (OPT-BUDGET-001).** `tests/arcade2-gfx.test.cjs` caps canvas calls per
+  frame at 1,000 (full) and 300 (lite) across complete campaigns, checks key
+  completeness by forcing repaints from later states and comparing draw logs, and
+  checks reuse ratio, pixel budgets and eviction.

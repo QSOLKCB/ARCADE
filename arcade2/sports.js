@@ -140,53 +140,119 @@
       if (this.timeLeft === 0 && !this.ball.flight && this.goals[0] !== this.goals[1]) this.finish(this.goals[0] > this.goals[1]);
     }
     hud() { return {left:'YOU ' + this.goals[0] + ' : ' + this.goals[1] + ' CPU', right:this.timeLeft ? Math.ceil(this.timeLeft/60) + ' SEC' : 'SUDDEN DEATH', objective:this.hoops ? 'First to 21 · hold Z into the green, release to shoot · turbo near hoop to dunk' : 'First to 5 · shoot into the right goal · X passes or switches teammate'}; }
+    // Presentation only: reads state, never writes it (see tests/arcade2-parity.test.cjs).
     draw(c) {
-      D.rect(c, 0, 0, 640, 360, this.hoops ? '#1d1529' : '#0b201f');
-      // Grandstand lights and spectators are deterministic scenery.
-      for (let i = 0; i < 80; i++) D.rect(c, i*9%640, 14+(i%3)*9, 4, 4, ['#788080','#c58d70','#5c8798'][i%3]);
-      if (this.hoops) {
-        D.rect(c, 35, 60, 570, 255, '#b47646');
-        for (let i = 0; i < 20; i++) D.rect(c, 36+i*29, 61, 1, 253, '#d99b5a');
-        for (let i = 0; i < 4; i++) D.line(c, 36, 100+i*55, 604, 100+i*55, '#9d6237');
-        D.rect(c, 36, 120, 98, 130, '#393a5f'); D.rect(c, 506, 120, 98, 130, '#393a5f');
-      } else {
-        D.rect(c, 35, 60, 570, 255, '#285f4c');
-        for (let i = 0; i < 8; i++) if (i%2===0) D.rect(c, 36+i*71, 61, 71, 253, '#306c53');
+      const G = A.Gfx, hoops = this.hoops, tick = this.tickCount;
+      G.layer(c, 'arena:' + (hoops ? 'hoops' : 'soccer'), 640, 360, ctx => this.paintArena(ctx));
+      // Crowd: two cached poses, swapped on the beat, plus camera flashes.
+      G.layer(c, 'crowd:' + hoops + ':' + (Math.floor(tick / 18) % 2), 640, 48, ctx => {
+        for (let row = 0; row < 3; row++) for (let i = 0; i < 72; i++) {
+          const h = G.hash(i * 31 + row * 977 + (hoops ? 7 : 0)), x = i * 9 + (row % 2) * 4, bob = (h + Math.floor(tick / 18)) % 2 ? 1 : 0;
+          const y = 8 + row * 12 - bob * ((h >>> 5) % 3 === 0 ? 2 : 0);
+          ctx.fillStyle = ['#c6708a', '#7cc7d8', '#e8d07a', '#a0d88c', '#d8a07a', '#9a8ad8'][h % 6]; ctx.fillRect(x, y + 4, 7, 6);
+          ctx.fillStyle = ['#f0c8a0', '#b88660', '#7a5440', '#e8b48b'][(h >>> 8) % 4]; ctx.fillRect(x + 1, y, 5, 5);
+        }
+      }, 0, 4);
+      if (G.high()) for (let i = 0; i < 3; i++) {
+        const h = G.hash(Math.floor(tick / 7) * 13 + i);
+        if (h % 5 === 0) G.glow(c, h % 640, 8 + (h >>> 9) % 36, 9, '#ffffff', 0.9);
       }
-      c.strokeStyle='#e7dfb3'; c.lineWidth=2; c.strokeRect(36,61,568,253); D.line(c,320,62,320,314,'#e7dfb3',2);
-      c.beginPath(); c.arc(320,188,45,0,Math.PI*2); c.stroke();
-      for (const x of [36,506]) { c.strokeRect(x,120,98,130); }
-      D.text(c, this.hoops ? 'FULL COURT.EXE' : 'FLOODLIGHT FC', 320, 351, '#aac6aa', 13, 'center');
-      for (const side of [0,1]) {
+      for (const x of [70, 570]) G.glow(c, x, 4, 90, '#fff6d0', 0.12);
+      for (const p of [...this.players].sort((a, b) => a.y - b.y)) {
+        const i = this.players.indexOf(p), color = p.keeper ? '#e7bd55' : p.team ? '#f47686' : '#80ede2';
+        const x = px(p.x), y = px(p.y);
+        if (i === this.controlled) {
+          G.glow(c, x, y, 22, '#bdf56b', 0.45);
+          c.save(); c.strokeStyle = '#bdf56b'; c.lineWidth = 2; c.beginPath(); c.ellipse(x, y + 3, 16, 6, 0, 0, Math.PI * 2); c.stroke(); c.restore();
+          D.text(c, '1P', x, y - 38, '#d7ff97', 10, 'center'); D.rect(c, x - 3, y - 35, 6, 3, '#d7ff97');
+        }
+        if (hoops && this.streak[p.team] >= 3) {
+          for (let f = 0; f < 3; f++) G.glow(c, x + Math.sin(tick * 0.3 + f * 2) * 6, y - 18 - f * 8, 14 - f * 3, f ? '#ffb148' : '#ff5a2a', 0.6);
+          D.text(c, 'ON FIRE', x, y - 49, '#ffb148', 9, 'center');
+        }
+        D.person(c, x, y, color, p.team ? -1 : 1, p.moving ? tick : 0, 'trooper', 1.6);
+      }
+      const b = this.ball, f = b.flight, z = f ? Math.sin(f.t / f.duration * Math.PI) * (f.dunk ? 38 : 90) : 0;
+      const bx = px(b.x), by = px(b.y), ballColor = hoops ? '#ffa54f' : '#f6efda';
+      G.shadow(c, bx, by + 3, 7 - z / 30, 3 - z / 60, 0.45 - z / 300);
+      if (G.high()) {
+        const tx = f ? px(f.toX - f.fromX) / f.duration : px(b.vx), ty = f ? px(f.toY - f.fromY) / f.duration : px(b.vy);
+        for (let k = 1; k <= 3; k++) { c.save(); c.globalAlpha = 0.18 / k; D.ellipse(c, bx - tx * k * 2, by - 6 - z - ty * k * 2, 6, 6, ballColor); c.restore(); }
+      }
+      G.sprite(c, 'ball:' + hoops, 14, 14, ctx => {
+        ctx.fillStyle = G.radial(ctx, 5, 5, 1, 8, [[0, '#ffffff'], [0.4, ballColor], [1, G.shade(ballColor, -0.45)]]);
+        ctx.beginPath(); ctx.arc(7, 7, 6, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 1; ctx.stroke();
+        if (hoops) { ctx.strokeStyle = '#5a2f1d'; ctx.beginPath(); ctx.moveTo(1, 7); ctx.lineTo(13, 7); ctx.moveTo(7, 1); ctx.lineTo(7, 13); ctx.stroke(); }
+        else { ctx.fillStyle = '#283240'; ctx.fillRect(5, 5, 4, 4); ctx.fillRect(2, 9, 2, 2); ctx.fillRect(10, 3, 2, 2); }
+      }, bx - 7, by - 13 - z);
+      if (hoops && this.streak[0] >= 3) G.glow(c, 576, 174, 26, '#ff7a2a', 0.5 + 0.3 * Math.sin(tick * 0.2));
+      if (hoops && this.streak[1] >= 3) G.glow(c, 64, 174, 26, '#ff7a2a', 0.5 + 0.3 * Math.sin(tick * 0.2));
+      D.bar(c, 230, 329, 180, this.stamina, 100, '#bdf56b'); D.text(c, 'TURBO', 214, 335, '#e5e8c9', 9, 'right');
+      if (this.charge) {
+        D.rect(c, 229, 41, 182, 9, '#05080d'); D.rect(c, 230, 42, 180, 7, '#3b2331'); D.rect(c, 275, 42, 45, 7, '#bdf56b');
+        G.glow(c, 297, 45, 20, '#bdf56b', 0.4);
+        D.rect(c, 230 + Math.min(60, this.charge) * 3, 39, 3, 13, '#ffffff');
+      }
+      if (this.serve) { G.glow(c, 320, 186, 120, '#fff6da', 0.18); D.text(c, 'TIP-OFF / KICK-OFF', 320, 192, '#fff6da', 19, 'center'); }
+    }
+    // The static arena is painted once into a cached layer.
+    paintArena(c) {
+      const G = A.Gfx, hoops = this.hoops;
+      c.fillStyle = G.linear(c, 0, 0, 0, 360, hoops ? [[0, '#120d1e'], [1, '#241838']] : [[0, '#06110f'], [1, '#0d2420']]); c.fillRect(0, 0, 640, 360);
+      c.fillStyle = '#1b2230'; c.fillRect(0, 0, 640, 54);
+      for (let i = 0; i < 4; i++) { c.fillStyle = G.shade('#1b2230', i % 2 ? 0.05 : -0.1); c.fillRect(0, 4 + i * 12, 640, 12); }
+      const boards = ['QSOL', 'VANILLAJS', 'FREE PLAY', 'ARCADE 2', 'NO QUARTERS'];
+      for (let i = 0; i < 5; i++) {
+        const x = 8 + i * 127; c.fillStyle = '#0b1018'; c.fillRect(x, 50, 120, 9);
+        c.fillStyle = ['#c2f874', '#7fe3e0', '#ffad72', '#f1a0ba', '#e8d07a'][i]; c.font = 'bold 7px monospace'; c.textAlign = 'center'; c.fillText(boards[i], x + 60, 57);
+      }
+      c.textAlign = 'left';
+      if (hoops) {
+        c.fillStyle = G.linear(c, 0, 60, 0, 315, [[0, '#c4824e'], [1, '#9c6236']]); c.fillRect(35, 60, 570, 255);
+        for (let i = 0; i < 40; i++) { c.fillStyle = i % 2 ? '#b77642' : '#c88a52'; c.fillRect(36 + i * 14.2, 61, 14, 253); c.fillStyle = 'rgba(80,40,20,0.25)'; c.fillRect(36 + i * 14.2, 61 + (G.hash(i) % 200), 14, 1); }
+        c.fillStyle = 'rgba(255,240,210,0.08)'; c.beginPath(); c.ellipse(320, 140, 260, 50, 0, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#393a5f'; c.fillRect(36, 120, 98, 130); c.fillRect(506, 120, 98, 130);
+        c.strokeStyle = '#e7dfb3'; c.lineWidth = 2;
+        for (const [hx, dir] of [[64, 1], [576, -1]]) { c.beginPath(); c.arc(hx, 188, 132, dir > 0 ? -Math.PI / 2 : Math.PI / 2, dir > 0 ? Math.PI / 2 : Math.PI * 1.5); c.stroke(); }
+        c.fillStyle = 'rgba(255,173,114,0.25)'; c.beginPath(); c.arc(320, 188, 45, 0, Math.PI * 2); c.fill();
+      } else {
+        c.fillStyle = '#285f4c'; c.fillRect(35, 60, 570, 255);
+        for (let i = 0; i < 8; i++) { c.fillStyle = i % 2 ? '#2a6550' : '#317357'; c.fillRect(36 + i * 71, 61, 71, 253); }
+        for (let i = 0; i < 600; i++) { const h = G.hash(i * 17); c.fillStyle = h % 2 ? 'rgba(20,60,40,0.35)' : 'rgba(120,200,140,0.12)'; c.fillRect(36 + h % 568, 61 + (h >>> 10) % 253, 2, 1); }
+        c.strokeStyle = '#e7dfb3'; c.lineWidth = 2; for (const [x, y] of [[36, 61], [604, 61], [36, 314], [604, 314]]) { c.beginPath(); c.arc(x, y, 8, 0, Math.PI * 2); c.stroke(); }
+      }
+      c.fillStyle = G.radial(c, 320, 188, 120, 360, [[0, 'rgba(255,250,220,0.08)'], [1, 'rgba(0,0,0,0.35)']]); c.fillRect(35, 60, 570, 255);
+      c.strokeStyle = '#e7dfb3'; c.lineWidth = 2; c.strokeRect(36, 61, 568, 253);
+      c.beginPath(); c.moveTo(320, 62); c.lineTo(320, 314); c.stroke();
+      c.beginPath(); c.arc(320, 188, 45, 0, Math.PI * 2); c.stroke();
+      for (const x of [36, 506]) c.strokeRect(x, 120, 98, 130);
+      c.fillStyle = '#05080dcc'; c.font = 'bold 13px monospace'; c.textAlign = 'center'; c.fillText(hoops ? 'FULL COURT.EXE' : 'FLOODLIGHT FC', 321, 352);
+      c.fillStyle = '#aac6aa'; c.fillText(hoops ? 'FULL COURT.EXE' : 'FLOODLIGHT FC', 320, 351); c.textAlign = 'left';
+      for (const side of [0, 1]) {
         const x = side ? 603 : 14;
-        if (!this.hoops) {
-          D.rect(c, x, 151, 23, 75, '#d8eddd22');
-          for (let yy=152; yy<225; yy+=8) D.line(c,x,yy,x+23,yy,'#a5c0a7');
-          for (let xx=x; xx<x+24; xx+=6) D.line(c,xx,151,xx,226,'#a5c0a7');
-          D.line(c, side?604:36,151,side?604:36,226,'#fff8d4',3);
+        if (!hoops) {
+          c.fillStyle = 'rgba(216,237,221,0.12)'; c.fillRect(x, 151, 23, 75);
+          c.strokeStyle = '#a5c0a7'; c.lineWidth = 1;
+          for (let yy = 152; yy < 225; yy += 6) { c.beginPath(); c.moveTo(x, yy); c.lineTo(x + 23, yy); c.stroke(); }
+          for (let xx = x; xx < x + 24; xx += 5) { c.beginPath(); c.moveTo(xx, 151); c.lineTo(xx, 226); c.stroke(); }
+          c.fillStyle = '#fff8d4'; c.fillRect(side ? 602 : 34, 149, 4, 79);
         } else {
-          const hx=side?576:64;
-          D.rect(c, hx+(side?12:-15), 133, 3, 49, '#dae5e2'); D.line(c,hx+(side?12:-12),174,hx,174,'#fa8c44',3);
-          D.ellipse(c,hx,174,10,4,'#f29356'); D.line(c,hx-7,176,hx-4,187,'#f4efdd'); D.line(c,hx+7,176,hx+4,187,'#f4efdd');
+          const hx = side ? 576 : 64;
+          c.fillStyle = '#0b1018'; c.fillRect(hx + (side ? 14 : -18), 120, 4, 70);
+          c.fillStyle = G.linear(c, 0, 133, 0, 182, [[0, '#f4fbff'], [1, '#aebfc8']]); c.fillRect(hx + (side ? 12 : -15), 133, 3, 49);
+          c.strokeStyle = '#fa8c44'; c.lineWidth = 3; c.beginPath(); c.moveTo(hx + (side ? 12 : -12), 174); c.lineTo(hx, 174); c.stroke();
+          c.fillStyle = '#f29356'; c.beginPath(); c.ellipse(hx, 174, 10, 4, 0, 0, Math.PI * 2); c.fill();
+          c.fillStyle = '#7a3c1c'; c.beginPath(); c.ellipse(hx, 174, 7, 2, 0, 0, Math.PI * 2); c.fill();
+          c.strokeStyle = '#f4efdd'; c.lineWidth = 1;
+          for (let k = -7; k <= 7; k += 3.5) { c.beginPath(); c.moveTo(hx + k, 176); c.lineTo(hx + k * 0.55, 188); c.stroke(); }
+          c.beginPath(); c.moveTo(hx - 6, 181); c.lineTo(hx + 6, 181); c.moveTo(hx - 4, 186); c.lineTo(hx + 4, 186); c.stroke();
         }
       }
-      for (const p of [...this.players].sort((a,b)=>a.y-b.y)) {
-        const i=this.players.indexOf(p), color=p.keeper?'#e7bd55':p.team?'#f47686':'#80ede2';
-        const x=px(p.x),y=px(p.y);
-        if (i===this.controlled) { D.ellipse(c,x,y+3,16,6,'#bdf56b'); D.text(c,'1P',x,y-38,'#d7ff97',10,'center'); }
-        D.person(c,x,y,color,p.team?-1:1,p.moving?this.tickCount:0,'trooper',1.6);
-        if (this.hoops && this.streak[p.team]>=3) { D.text(c,'ON FIRE',x,y-49,'#ffb148',9,'center'); }
+      for (const x of [70, 570]) {
+        c.fillStyle = '#2a3340'; c.fillRect(x - 2, 0, 4, 10); c.fillStyle = '#fff6d0'; c.fillRect(x - 12, 0, 24, 5);
+        c.fillStyle = G.linear(c, 0, 0, 0, 315, [[0, 'rgba(255,246,208,0.16)'], [1, 'rgba(255,246,208,0)']]);
+        c.beginPath(); c.moveTo(x - 10, 5); c.lineTo(x + 10, 5); c.lineTo(x + (x < 320 ? 190 : 30), 315); c.lineTo(x - (x < 320 ? 30 : 190), 315); c.closePath(); c.fill();
       }
-      const b=this.ball, f=b.flight, z=f?Math.sin(f.t/f.duration*Math.PI)*(f.dunk?38:90):0;
-      const bx=px(b.x),by=px(b.y);
-      D.ellipse(c,bx,by+3,7,3,'#0005'); D.ellipse(c,bx,by-6-z,6,6,this.hoops?'#ffa54f':'#f6efda');
-      if (!this.hoops) D.rect(c,bx-2,by-8-z,4,4,'#283240'); else D.line(c,bx-5,by-6-z,bx+5,by-6-z,'#683f2d');
-      D.bar(c,230,329,180,this.stamina,100,'#bdf56b'); D.text(c,'TURBO',214,335,'#e5e8c9',9,'right');
-      if (this.charge) {
-        D.rect(c,230,42,180,7,'#3b2331'); D.rect(c,275,42,45,7,'#bdf56b');
-        D.rect(c,230+Math.min(60,this.charge)*3,39,3,13,'#fff');
-      }
-      if (this.serve) D.text(c,'TIP-OFF / KICK-OFF',320,192,'#fff6da',19,'center');
     }
   };
   A.register({id:'soccer',title:'Floodlight FC',subtitle:'Small pitch. Big attitude.',genre:'ARCADE FOOTBALL',color:'#b4f383',number:'02',controls:['Move','Z · shoot / tackle','X · pass / switch','Space · turbo'],description:'Three-a-side football under the floodlights. Pass around the defence, pick a corner and race to five.'},()=>new A.Sport('soccer'));
