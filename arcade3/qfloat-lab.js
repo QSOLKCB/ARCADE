@@ -46,11 +46,14 @@
   }
   function redraw(){labels();paint();}
   function pause(){
-    if(!running)return;
+    // Blur/visibility/pagehide must release input even when already paused:
+    // the browser may never deliver keyup or pointerup after focus loss.
+    const wasRunning=running;
     running=false;last=null;debt=0;
     if(frameId!==null){cancelAnimationFrame(frameId);frameId=null;}
-    keys.clear();touch.clear();redraw();
-    say('Paused. Authoritative state retained exactly.');
+    keys.clear();touch.clear();
+    redraw();
+    if(wasRunning)say('Paused. Authoritative state retained exactly.');
   }
   function frame(now){
     frameId=null;
