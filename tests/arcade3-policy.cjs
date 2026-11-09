@@ -161,6 +161,24 @@ function policy(id){
    a.x=best[0];a.y=best[1];
    if(best[3]<2&&p.bombs>0&&!g.bomb&&!g.inv)a.bPressed=true;
   }
+  if(id==='feud'){
+   // Drive and shoot when open, pass out of a double team, elbow the ball carrier on
+   // defence, and crash the boards on every shot.
+   const m=g.men[0],mate=g.men[1],b=g.ball,x=px(m.x),y=px(m.y),h=b.holder;
+   const dist=(u,v)=>Math.max(Math.abs(px(u.x)-px(v.x)),Math.abs(px(u.y)-px(v.y))*2);
+   const go=(tx,ty)=>{a.x=Math.abs(tx-x)>3?sign(tx-x):0;a.y=Math.abs(ty-y)>3?sign(ty-y):0;};
+   const rivals=g.men.slice(2).filter(o=>!o.stun);
+   if(h===0){
+    const d=Math.abs(x-574)+Math.abs(y-276)*2,guard=rivals.find(o=>dist(o,m)<30),mateOpen=!mate.stun&&!rivals.some(o=>dist(o,mate)<44);
+    if(d<56&&g.turbo>10){a.c=true;a.aPressed=true;}
+    else if(d<(g.clock<300&&g.scores[0]<=g.scores[1]?260:150)&&!guard)a.aPressed=true;
+    else if(guard&&mateOpen&&px(mate.x)>x-20&&t%6===0)a.bPressed=true;
+    else{go(548,276);a.c=g.turbo>12;} // Bodies do not collide: burn straight past the defence.
+   }else if(h===1){go(500,y<276?310:244);if(rivals.some(o=>dist(o,mate)<26)&&!rivals.some(o=>dist(o,m)<44))a.bPressed=true;}
+   else if(h>=2){const c=g.men[h];go(px(c.x)-12,px(c.y));a.c=dist(c,m)>60&&g.turbo>30;if(dist(c,m)<26&&!m.cd)a.bPressed=true;}
+   else if(b.flight&&b.flight.kind!=='pass'){const f=b.flight;go(px(f.to[0])+(px(f.to[0])>320?-36:36),px(f.to[1]));}
+   else go(px(b.x),px(b.y));
+  }
   return a;
  };
 }
