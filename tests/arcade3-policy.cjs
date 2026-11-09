@@ -122,6 +122,25 @@ function policy(id){
    a.y=bridge&&ahead(bridge)<220||close||(low&&buoy&&ahead(buoy)<60)?1:0;
    if(!a.y&&!threats.length&&!bridge&&g.fuel>800&&!(low&&buoy))a.y=0;
   }
+  if(id==='skyline'){
+   // Line up on the nearest target; break away from any round or airframe whose
+   // predicted crossing point is near the jet.
+   const p=g.p;a.a=true;a.bPressed=g.locks.length>0&&t%4===0;
+   const targets=g.foes.filter(f=>f.z>520).sort((u,v)=>u.z-v.z),f=targets.find(f=>f.kind==='gunship')||targets[0];
+   let tx=f?f.x:0,ty=f?f.y:0;
+   const hits=[];
+   for(const b of g.flak){const steps=Math.max(0,(b.z-300)/54);if(steps>18)continue;hits.push([b.x+b.vx*steps,b.y+b.vy*steps]);}
+   for(const e of g.foes)if(e.kind!=='gunship'&&e.z<1000)hits.push([e.x,e.y]);
+   const bad=(x,y)=>hits.some(([hx,hy])=>Math.abs(hx-x)<110&&Math.abs(hy-y)<80);
+   if(bad(p.x,p.y)||bad(tx,ty)){
+    // Pick the nearest safe point on a coarse grid around the jet.
+    let best=null;
+    for(let dx=-360;dx<=360;dx+=60)for(let dy=-240;dy<=240;dy+=60){const x=p.x+dx,y=p.y+dy;
+     if(x<-580||x>580||y<-270||y>270||bad(x,y))continue;const cost=Math.abs(dx)/12+Math.abs(dy)/9+(Math.abs(x-tx)+Math.abs(y-ty))/400;if(!best||cost<best[2])best=[x,y,cost];}
+    if(best){tx=best[0];ty=best[1];}
+   }
+   a.x=Math.abs(tx-p.x)>14?sign(tx-p.x):0;a.y=Math.abs(ty-p.y)>12?sign(ty-p.y):0;
+  }
   return a;
  };
 }
