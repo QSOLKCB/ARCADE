@@ -57,6 +57,23 @@ function policy(id){
    if(gap&&p.grounded&&!orb){a.x=1;if(x>=gap[0]-30&&x<gap[0]-4)a.cPressed=true;}
    if(a.x)a.a=a.a;
   }
+  if(id==='sleepwalker'){
+   // Priorities: a pit's take-off window first; then walls and inkblots, but only when no
+   // moth-owl is overhead (wait for it to pass); near a pit, stomp an approaching inkblot.
+   const p=g.p,x=px(p.x),y=px(p.y);
+   a.x=1;a.c=true;a.aPressed=t%20===0;
+   const pit=g.pits.find(([l])=>l-x>-8&&l-x<150),takeoff=pit&&x>=pit[0]-38&&x<pit[0]-8;
+   const wall=g.blocks.find(k=>k.kind!=='gone'&&k.x>x&&k.x-x<34&&k.y+24>y-28&&k.y<y);
+   const ink=g.foes.find(f=>f.kind==='ink'&&px(f.x)-x>0&&px(f.x)-x<84);
+   const moth=g.foes.find(f=>f.kind==='moth'&&Math.abs(px(f.x)-x)<110);
+   let jump=false;
+   if(takeoff)jump=true;
+   else if(ink&&pit){const d=px(ink.x)-x;if(d<52)jump=true;else a.x=0;}
+   else if((wall||ink)&&!moth)jump=true;
+   else if(wall&&moth){a.x=0;}
+   else if(ink&&moth){const d=px(ink.x)-x;if(d<40)jump=true;else a.x=-1;}
+   if(jump&&p.grounded)a.cPressed=true;
+  }
   return a;
  };
 }
