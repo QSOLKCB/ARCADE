@@ -102,24 +102,25 @@ test('each storm art does what its fighter card says',()=>{
  for(const e of g.enemies){assert.ok(e.hp<300);assert.ok(e.hurt>2);assert.equal(e.windup,0);}
  const before=g.enemies.map(e=>e.x);for(let i=0;i<60;i++)g.update(A.STEP,[input()]);
  assert.deepEqual(g.enemies.map(e=>e.x),before,'frozen enemies do not advance');
+ assert.ok(g.players[0].energy<100,'the quake spent energy');
  // Later hits keep the freeze (PR #12 review): ordinary hit feedback never shortens a longer stun.
  const q=fighter('jackal'),qp=q.players[0];q.enemies=[enemy(qp.x+30,qp.y,999)];
  q.update(A.STEP,[input({specialPressed:true})]);const stun=q.enemies[0].hurt;
  for(let i=0;i<20;i++){qp.cd=0;q.update(A.STEP,[input({fire:true})]);}
  assert.ok(q.enemies[0].hp<999-60,'follow-up hits landed');assert.ok(q.enemies[0].hurt>stun-21*A.STEP-1e-9,'stun not cut short');
- assert.equal(g.players[0].energy<100,true);
 });
 
 // Every fighter can finish the campaign: the same scripted, real-damage input as
 // tests/playthrough.test.cjs, picking the fighter at each clear once it is on the roster.
+// The slowest fighter finishes in 5,172 frames; the 12,000-frame cap only bounds a failing run.
 for(const kind of Object.keys(F))for(const difficulty of ['arcade','relaxed'])test(F[kind].name+' can finish all three districts ('+difficulty+')',()=>{
  const g=new A.Ninja({difficulty});g.action('start');const used=new Set();
- for(let frame=0;frame<60000&&!['victory','gameover'].includes(g.state);frame++){
+ for(let frame=0;frame<12000&&!['victory','gameover'].includes(g.state);frame++){
   if(g.state==='stageclear'){if(g.roster().includes(kind))g.action('pick0:'+kind);g.action('start');}
   const p=g.players[0],a=A.emptyInput();used.add(p.fighter||'kage');
   const e=g.enemies.filter(e=>e.hp>0).sort((a,b)=>A.dist(a,p)-A.dist(b,p))[0];
   if(e){const dx=e.x-p.x;a.y=Math.abs(e.y-p.y)>4?Math.sign(e.y-p.y):0;if(Math.abs(dx)>115||Math.sign(dx)!==p.face)a.x=Math.sign(dx);a.specialPressed=p.energy>=60&&Math.abs(dx)<280;a.fire=true;}else a.x=1;
-  a.jumpPressed=frame%48===0;g.update(1/60,[a]);
+  a.jumpPressed=frame%48===0;g.update(A.STEP,[a]);
  }
  assert.equal(g.state,'victory');assert.equal(g.stage,2);assert.ok(used.has(kind),kind+' played');
 });
