@@ -94,6 +94,34 @@ function policy(id){
    const block=g.foes.find(f=>f.kind==='block'&&laneOf(f)===lane&&f.z>640);
    if(block&&danger(lane-1)!==false&&danger(lane+1)!==false&&p.torps>1&&!w)a.bPressed=true;
   }
+  if(id==='canal'){
+   // Hold the middle of the channel ahead, line up on targets to shoot them, skim buoys
+   // when the cell runs low (holding fire so as not to sink them) and ease off near hazards.
+   const x=g.x,d=g.dist,ahead=f=>f.wy-d,HALF={barge:18,drone:11,jet:14,buoy:12};
+   // Islands are centred on x 320, so the skimmer keeps to the side it is already on.
+   const side=wy=>{const chs=g.channels(wy);return chs.length>1?chs[x<320?0:1]:chs[0];};
+   const ch=side(d+70);let lo=ch[0]+12,hi=ch[1]-12;
+   for(let k=0;k<=90;k+=10){const c2=side(d+k);lo=Math.max(lo,c2[0]+11);hi=Math.min(hi,c2[1]-11);}
+   if(lo>hi){const m=(lo+hi)/2;lo=hi=m;}
+   let want=(ch[0]+ch[1])/2;
+   const low=g.fuel<1600,buoy=g.foes.filter(f=>f.kind==='buoy'&&ahead(f)>-4&&ahead(f)<240&&f.x>=ch[0]&&f.x<=ch[1]).sort((u,v)=>ahead(u)-ahead(v))[0];
+   const threats=g.foes.filter(f=>HALF[f.kind]&&f.kind!=='buoy'&&ahead(f)>-14&&ahead(f)<260).sort((u,v)=>ahead(u)-ahead(v));
+   const close=threats.find(f=>ahead(f)<70&&Math.abs(f.x-x)<HALF[f.kind]+16);
+   if(low&&buoy)want=buoy.x;
+   else if(threats.length){const f=threats.find(f=>f.kind!=='jet')||threats[0];if(ahead(f)>50)want=f.x+(f.vx||0)*Math.round(ahead(f)/12);}
+   if(close){
+    // Dodge to the side with room that the threat is not drifting toward.
+    const left=close.x-HALF[close.kind]-18,right=close.x+HALF[close.kind]+18,v=close.vx||0;
+    const cost=(w,dir)=>(w<lo||w>hi?999:0)+Math.abs(w-x)+(sign(v)===dir?60:0);
+    want=cost(left,-1)<=cost(right,1)?left:right;
+   }
+   want=Math.max(lo,Math.min(hi,want));
+   if(Math.abs(want-x)>2)a.x=sign(want-x);
+   const bridge=g.foes.find(f=>f.kind==='bridge'&&ahead(f)<300);
+   a.a=!(buoy&&low&&Math.abs(buoy.x-x)<16&&!threats.some(f=>Math.abs(f.x-x)<HALF[f.kind]&&ahead(f)<ahead(buoy)));
+   a.y=bridge&&ahead(bridge)<220||close||(low&&buoy&&ahead(buoy)<60)?1:0;
+   if(!a.y&&!threats.length&&!bridge&&g.fuel>800&&!(low&&buoy))a.y=0;
+  }
   return a;
  };
 }
