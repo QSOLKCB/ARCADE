@@ -36,8 +36,9 @@ function parseArgs(args){
   }
   const head=options['--expected-head'],out=options['--out'],target=options['--target']??'both';
   if(!/^[a-f0-9]{40}$/.test(head??''))throw new TypeError('expected 40-hex commit SHA');
-  if(typeof out!=='string'||!out.startsWith('/')||out.includes('/../'))
-    throw new TypeError('evidence must have an absolute nontraversing directory');
+  if(typeof out!=='string'||!out.startsWith('/')||resolve(out)!==out||
+     out===ROOT||out.startsWith(ROOT+sep))
+    throw new TypeError('evidence must have a canonical absolute directory outside the checkout');
   if(!TARGETS.includes(target))throw new TypeError('invalid target');
   return {head,out,target};
 }
@@ -166,7 +167,8 @@ async function witness(browser,base,name,out,pinned=null){
         return route.fulfill({status:200,body,
           contentType:MIME[extname(key)]??'application/octet-stream'});
       }
-      if(new URL(url).pathname.endsWith('/favicon.ico'))
+      if(new URL(url).origin===new URL(base).origin&&
+         new URL(url).pathname.endsWith('/favicon.ico'))
         return route.fulfill({status:204,body:''});
       errors.push('unexpected request: '+url);
       return route.abort();
@@ -309,7 +311,11 @@ async function main(args=process.argv.slice(2)){
   mkdirSync(baseEvidence,{mode:0o700});
   let browser=null,srv=null;
   const report={kind:'qsol.arcade.qfloat.runner.001.v1',status:'FAIL',
-    target:opts.target,source:{head:opts.head,files:sourceManifest()},
+    target:opts.target,source:{head:opts.head,files:sourceManifest(),
+      testTools:[
+        'scripts/qfloat-lab-runner.mjs','.github/workflows/qfloat-lab-runner.yml',
+        'scripts/rtx-playwright.mjs','tests/qfloat-runner.test.cjs'
+      ].map(file=>({path:file,sha256:sha(readFileSync(join(ROOT,file)))}))},
     startedAt:new Date().toISOString(),finishedAt:null,
     runner:{name:process.env.RUNNER_NAME??null,platform:os.platform(),
       release:os.release(),cpu:os.cpus()[0]?.model,architecture:os.arch(),
