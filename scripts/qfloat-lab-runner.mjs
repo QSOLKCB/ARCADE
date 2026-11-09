@@ -197,6 +197,18 @@ async function witness(browser,base,name,out,pinned=null){
       'Canvas2D must actually draw the illuminated player at the initial coordinate');
     record('real Canvas2D pixels',{centerRGB:pixels});
 
+    // Focus loss while *already paused* must drop held keys even when the
+    // browser never receives keyup after release outside the window.
+    await page.locator('#field').focus();
+    await page.keyboard.down('ArrowRight');
+    await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
+    await page.locator('#single').click();
+    assert.equal(await page.locator('#x-raw').innerText(),'RAW 20971520');
+    assert.equal(await page.locator('#tick-label').innerText(),'TICK 1');
+    await page.keyboard.up('ArrowRight');
+    await page.locator('#reset').click();
+    record('paused focus-loss clears controls without keyup',{positionRaw:20971520});
+
     assert.equal(await page.locator('#tick-label').innerText(),'TICK 0');
     assert.equal(await page.locator('#x-raw').innerText(),'RAW 20971520');
     await page.keyboard.down('ArrowRight');
