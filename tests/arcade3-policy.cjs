@@ -131,8 +131,9 @@ function policy(id){
    const targets=g.foes.filter(f=>f.z>520).sort((u,v)=>u.z-v.z),f=targets.find(f=>f.kind==='gunship')||targets[0];
    let tx=f?f.x:0,ty=f?f.y:0;
    const hits=[];
-   for(const b of g.flak){const steps=Math.max(0,(b.z-300)/54);if(steps>18)continue;hits.push([b.x+b.vx*steps,b.y+b.vy*steps]);}
-   for(const e of g.foes)if(e.kind!=='gunship'&&e.z<1000)hits.push([e.x,e.y]);
+   // The jet sits 40 units below its aim point, so hazards are compared against that point.
+   for(const b of g.flak){const steps=Math.max(0,(b.z-300)/54);if(steps>18)continue;hits.push([b.x+b.vx*steps,b.y+b.vy*steps-40]);}
+   for(const e of g.foes)if(e.kind!=='gunship'&&e.z<1000)hits.push([e.x,e.y-40]);
    const bad=(x,y)=>hits.some(([hx,hy])=>Math.abs(hx-x)<110&&Math.abs(hy-y)<80);
    if(bad(p.x,p.y)||bad(tx,ty)){
     // Pick the nearest safe point on a coarse grid around the jet.

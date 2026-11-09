@@ -11,6 +11,10 @@
   // The reticle: a screen box of half-size RET_W x RET_H around the point straight ahead
   // of the jet at depth RET_Z. Lock-on uses exactly this box, so what you see is what locks.
   const RET_Z = 1800, RET_W = 36, RET_H = 28;
+  // The jet flies JET_DY world units below its aim point (at depth PLANE one world unit is
+  // one pixel), so it never hides the reticle. Collisions, enemy aim, the muzzle and the
+  // drawing all use this one jet position; cannon rounds climb to cross the reticle.
+  const JET_DY = 40, ROUND_VY = -2;
   const SORTIES = [{quota: 32, gap: 110, hp: 30}, {quota: 40, gap: 96, hp: 44}, {quota: 48, gap: 84, hp: 60}];
   A.Skyline = class extends A.Game {
     constructor(mode = 'extended') { super('skyline', 8807, mode); this.lives = 4; this.setup(); }
@@ -39,7 +43,7 @@
     crash() {
       if (this.inv || this.status !== 'playing') return;
       this.lives--; this.inv = 120; this.emit('hurt');
-      const [sx, sy] = this.project(this.p.x, this.p.y, PLANE); this.burst(q(Math.round(sx)), q(Math.round(sy)), '#ffb35c', 24);
+      const [sx, sy] = this.project(this.p.x, this.p.y + JET_DY, PLANE); this.burst(q(Math.round(sx)), q(Math.round(sy)), '#ffb35c', 24);
       this.flak = [];
       if (this.lives <= 0) this.finish(false);
     }
@@ -50,12 +54,12 @@
       p.vx = A.approach(p.vx, input.x * 12, 2); p.vy = A.approach(p.vy, input.y * 9, 2);
       p.x = clamp(p.x + p.vx, -600, 600); p.y = clamp(p.y + p.vy, -280, 280);
       if (p.cd) p.cd--; if (p.mcd) p.mcd--;
-      if (input.a && !p.cd && this.shots.length < 12) { this.shots.push({x: p.x, y: p.y + 8, z: PLANE + 40}); p.cd = 5; this.emit('shot'); }
+      if (input.a && !p.cd && this.shots.length < 12) { this.shots.push({x: p.x, y: p.y + JET_DY, vy: ROUND_VY, z: PLANE + 40}); p.cd = 5; this.emit('shot'); }
       // Lock-on: up to two targets inside the reticle cone (the box straight ahead of the jet).
       this.locks = this.foes.filter(f => f.z > 600 && f.z < 3400 && this.inReticle(f) && !this.missiles.some(m => m.target === f.uid))
         .sort((u, v) => u.z - v.z).slice(0, 2).map(f => f.uid);
       if (input.bPressed && !p.mcd && p.missiles > 0 && this.locks.length) {
-        for (const uid of this.locks) if (p.missiles > 0) { p.missiles--; this.missiles.push({target: uid, x: p.x, y: p.y + 16, z: PLANE, eta: 22}); }
+        for (const uid of this.locks) if (p.missiles > 0) { p.missiles--; this.missiles.push({target: uid, x: p.x, y: p.y + JET_DY, z: PLANE, eta: 22}); }
         p.mcd = 20; this.emit('blast');
       }
       if (!this.boss && this.kills < so.quota && this.stageTicks % so.gap === 0 && this.foes.length < 9) this.spawnWave();
@@ -69,23 +73,23 @@
           // Close to a holding range, then weave and fire volleys.
           f.z = Math.max(2000, f.z - f.vz);
           f.x = f.bx + A.triangle(f.age, 360, 800) - 400; f.y = f.by + A.triangle(f.age, 200, 160) - 80;
-          if (--f.cd <= 0) { f.cd = 64 - s * 8; for (const dx of [-120, 0, 120]) this.fire(f, p.x + dx, p.y); }
+          if (--f.cd <= 0) { f.cd = 64 - s * 8; for (const dx of [-120, 0, 120]) this.fire(f, p.x + dx, p.y + JET_DY); }
           continue;
         }
         f.z -= f.vz;
         f.x = f.bx + A.triangle(f.age, 160, 240) - 120; f.y = f.by + A.triangle(f.age + 40, 130, 100) - 50;
-        if (f.z < 2600 && f.z > 1100 && --f.cd <= 0) { f.cd = 110 - s * 15; this.fire(f, p.x, p.y); }
+        if (f.z < 2600 && f.z > 1100 && --f.cd <= 0) { f.cd = 110 - s * 15; this.fire(f, p.x, p.y + JET_DY); }
         if (f.z <= PLANE) {
-          if (Math.abs(f.x - p.x) < 70 && Math.abs(f.y - p.y) < 45) { f.hp = 0; this.crash(); }
+          if (Math.abs(f.x - p.x) < 70 && Math.abs(f.y - p.y - JET_DY) < 45) { f.hp = 0; this.crash(); }
           f.gone = true;
         }
       }
       for (const b of this.flak) {
         b.x += b.vx; b.y += b.vy; b.z -= 54;
-        if (b.z <= PLANE) { b.gone = true; if (Math.abs(b.x - p.x) < 52 && Math.abs(b.y - p.y) < 38) this.crash(); }
+        if (b.z <= PLANE) { b.gone = true; if (Math.abs(b.x - p.x) < 52 && Math.abs(b.y - p.y - JET_DY) < 38) this.crash(); }
       }
       for (const b of this.shots) {
-        b.z += 90; if (b.z > 3400) b.gone = true;
+        b.z += 90; b.y += b.vy; if (b.z > 3400) b.gone = true;
         for (const f of this.foes) {
           if (b.gone || f.gone || f.hp <= 0) continue;
           const big = f.kind === 'gunship', w = big ? 170 : f.kind === 'bomber' ? 90 : 70, h = big ? 90 : 50;
@@ -176,8 +180,9 @@
       const [rx, ry] = this.project(p.x, p.y, RET_Z), rw = RET_W * 2, rh = RET_H * 2;
       c.strokeStyle = G.rgba('#c2f874', 0.7); c.lineWidth = 1.5; c.strokeRect(rx - rw / 2, ry - rh / 2, rw, rh); D.line(c, rx - 6, ry, rx + 6, ry, '#c2f874', 1); D.line(c, rx, ry - 6, rx, ry + 6, '#c2f874', 1);
       if (this.status !== 'lost' && this.inv % 8 < 5) {
-        const [sx, sy] = this.project(p.x, p.y, PLANE);
-        c.save(); c.translate(sx, sy + 40); c.rotate(p.vx * 0.04);
+        const [sx, sy] = this.project(p.x, p.y + JET_DY, PLANE);
+        // Drawn exactly where the collision checks place the jet (JET_DY below the aim point).
+        c.save(); c.translate(sx, sy); c.rotate(p.vx * 0.04);
         G.glow(c, 0, 10, 24 + (tick % 5), '#ff8a3a', 0.8);
         G.sprite(c, 'skyline-player', 110, 50, ctx => {
           ctx.translate(55, 25); ctx.strokeStyle = '#0a0f17'; ctx.lineWidth = 1.5;

@@ -18,7 +18,7 @@
   shell. The shell now accepts a per-hall configuration (`Arcade2.HALL`) and
   per-cabinet mode lists, and hides the Mode menu for single-mode cabinets.
   ARCADE 2 behaviour and all of its pins are unchanged.
-- `tests/arcade3.test.cjs` (36 tests) covers:
+- `tests/arcade3.test.cjs` (39 tests) covers:
   - for every cabinet: replay determinism, render purity, bounded pools and
     terminal-state freeze
   - control-only completion of all nine campaigns (29 stages), with nine new
@@ -50,7 +50,18 @@
     from above, as `K.land` does. The campaign pin is unchanged.
   - **Hard Court Feud:** a stunned ball carrier, human or AI, can no longer shoot
     or pass until recovered.
-  Skyline, Sleepwalker and Feud campaign pins were re-recorded for these rule changes.
+  - **Lattice Lancer:** rail spacing now uses the same depth factor as the vertical
+    projection, so the painted rails are straight and every drone, block and shot
+    sits exactly on its rail. Only cosmetic burst positions moved, which re-pins
+    the campaign.
+  - **Skyline Overdrive:** the jet was drawn 40 px below the point its collision
+    checks used. It now flies 40 units below its aim point, and everything uses
+    that one jet position: drawing, flak and airframe collisions, enemy aim,
+    missile launch and the cannon muzzle. Cannon rounds climb to cross the
+    reticle, so the reticle stays visible above the jet.
+  - **Stratos Ward:** an enemy killed by the last bomb pulse no longer moves, fires
+    or rams the ship in the same tick.
+  Skyline, Sleepwalker, Feud and Lancer campaign pins were re-recorded for these rule changes.
   Every fix has a regression test.
 - Links to ARCADE 3 from the original hall and ARCADE 2. The service worker cache key
   is now `v0.8.0-r1-arcade3`, and it precaches the 15 ARCADE 3 files and the six versioned shared scripts. The Pages

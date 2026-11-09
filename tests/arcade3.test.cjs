@@ -48,9 +48,9 @@ const PINS={
  commando:'60124f410951a81765d71b080aa93827095f64f6f3f76abc9b656f2eb54638a3',
  lantern:'f0817eaefeb91f2da7ea1c682e2708f77d0e5a05325a0841892ab5a41c3914f3',
  sleepwalker:'cf55e265068d44d620b7023a288327feeeed4017c200dbe3a088fd186e0e4f25',
- lancer:'b7dd057a823d40b4055957aa71b894cd1940fa54f7eb9c4c04b0151fcb7efce8',
+ lancer:'eebf0fc68b6ca05ecc43fc3c80cef3298c145098f37700a43d23e126efd8fbe4',
  canal:'8c6e56e41f17cd10841b77d3b3d30546ab26c765dca88333ec2eaab7197b07cc',
- skyline:'bec8b7b310db2e59b54360428c1317ccb77cf5f81dc66d8d019bb7572297b7e2',
+ skyline:'d9ce9e47d894140305a46fbad4938f3e18537ef80a5ecb658da4e6547f960820',
  stratos:'7f42a84418081db3a788f9bde643cb79af2f22cd0fc37e61a99bb36bfe801100',
  feud:'a47d9a021be94beee285edf63ca90b4d6c970b81bfbef74c36bd28048f8ef51e',
  knockout:'1c1e859abc9111e63b7294ac98c02d7062708290780ca4df6f129231f6465b09',
@@ -210,6 +210,28 @@ test('Hard Court Feud: a stunned ball carrier cannot shoot or pass until recover
  const h=make('feud');h.pause=0;h.ball.holder=2;h.men[2].stun=30;h.men[2].shot=0;Object.assign(h.men[2],{x:q(90),y:q(276)});
  for(const m of h.men)if(m!==h.men[2])m.x=q(560);
  run(h,5);assert.equal(h.ball.holder,2,'a stunned rival keeps the ball without shooting');
+});
+
+test('Lattice Lancer: entities project exactly onto the straight painted rails (PR #11 review)',()=>{
+ for(let lane=0;lane<5;lane++){
+  const [x0,y0]=A.Lancer.project(lane,0),[x1,y1]=A.Lancer.project(lane,1000);
+  for(const z of [150,400,500,750,900]){const [x,y]=A.Lancer.project(lane,z);
+   assert.ok(Math.abs(x-(x0+(x1-x0)*(y-y0)/(y1-y0)))<1e-9,'lane '+lane+' z '+z+' lies on its rail');}
+ }
+});
+
+test('Skyline Overdrive: the jet is drawn where its collision checks place it (PR #11 review)',()=>{
+ const g=make('skyline'),c=recordingContext(null,{logging:true});g.inv=0;g.draw(c);
+ const [sx,sy]=g.project(g.p.x,g.p.y+40,300);assert.ok(c.log.includes('translate('+sx+','+sy+')'),'jet translated to its projected collision point');
+ // Flak at the jet's drawn position hits; flak at the reticle's aim point 40 px above passes.
+ const h=make('skyline');h.inv=0;const lives=h.lives;h.flak=[{x:0,y:40,z:340,vx:0,vy:0}];run(h,1);assert.equal(h.lives,lives-1);
+ const k=make('skyline');k.inv=0;k.flak=[{x:0,y:-40,z:340,vx:0,vy:0}];run(k,1);assert.equal(k.lives,lives);
+});
+
+test('Stratos Ward: an enemy killed by the last bomb pulse cannot cost a ship (PR #11 review)',()=>{
+ const g=make('stratos');g.inv=0;g.bomb=1;const lives=g.lives;
+ g.foes=[{kind:'heli',x:g.p.x,y:g.p.y,vx:0,vy:0,hp:1,age:0,cd:999,flash:0,uid:99}];
+ run(g,1);assert.equal(g.lives,lives);assert.equal(g.foes.length,0);
 });
 
 test('Stratos Ward: crystals level the weapon, ward bombs clear the sky',()=>{

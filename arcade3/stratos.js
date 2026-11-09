@@ -81,6 +81,7 @@
         this.foes.push({kind: 'boss', x: q(320), y: q(-60), vx: 0, vy: q(1), hp: 300 + s * 120, maxHP: 300 + s * 120, age: 0, cd: 60, flash: 0, uid: ++this.uid});
       }
       for (const f of this.foes) {
+        if (f.hp <= 0) continue; // killed by a bomb pulse this tick
         f.age++; if (f.flash) f.flash--;
         if (f.kind === 'boss') {
           if (f.y < q(80)) f.y += f.vy; else f.x = q(320) + A.triangle(f.age, 420, q(240)) - q(120);

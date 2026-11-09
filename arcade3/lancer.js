@@ -9,8 +9,11 @@
   // rail slots are 16 units wide, so slot 32 is the middle rail.
   const NEAR = 1000, HORIZON = 96, FLOOR = 322, SLOT = 16;
   const depthY = z => HORIZON + (FLOOR - HORIZON) * z * z / (NEAR * NEAR);
-  const railX = (lane, z) => 320 + (lane - 2) * (22 + 118 * z / NEAR);
-  const scaleAt = z => 0.18 + 0.82 * z / NEAR;
+  // Rail spacing grows with the same (z/NEAR)^2 factor as depthY, so screen x is linear in
+  // screen y: the rails are straight lines and every entity sits exactly on its rail.
+  const railX = (lane, z) => 320 + (lane - 2) * (22 + 118 * z * z / (NEAR * NEAR));
+  const Z_BOTTOM = NEAR * Math.sqrt((360 - HORIZON) / (FLOOR - HORIZON)); // depth at screen y 360
+  const scaleAt = z => 0.18 + 0.82 * z * z / (NEAR * NEAR);
   const SECTORS = [{quota: 15, gap: 64, cap: 6}, {quota: 18, gap: 56, cap: 7}, {quota: 21, gap: 48, cap: 8}, {quota: 24, gap: 44, cap: 8}];
   const NAMES = ['SECTOR 1 // GLASS LATTICE', 'SECTOR 2 // AMBER LATTICE', 'SECTOR 3 // VIOLET LATTICE', 'SECTOR 4 // THE WARDEN ROAD'];
   A.Lancer = class extends A.Game {
@@ -126,9 +129,9 @@
       });
       G.layer(c, 'lancer-rails:' + s, 640, 360, ctx => {
         ctx.fillStyle = G.linear(ctx, 0, HORIZON, 0, 360, [[0, G.shade(tone, -0.82)], [1, '#04060d']]);
-        ctx.beginPath(); ctx.moveTo(railX(-0.6, 0), HORIZON); ctx.lineTo(railX(4.6, 0), HORIZON); ctx.lineTo(railX(4.6, NEAR * 1.17), 360); ctx.lineTo(railX(-0.6, NEAR * 1.17), 360); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(railX(-0.6, 0), HORIZON); ctx.lineTo(railX(4.6, 0), HORIZON); ctx.lineTo(railX(4.6, Z_BOTTOM), 360); ctx.lineTo(railX(-0.6, Z_BOTTOM), 360); ctx.closePath(); ctx.fill();
         for (let l = 0; l < 5; l++) {
-          ctx.strokeStyle = G.rgba(tone, 0.25); ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(railX(l, 0), HORIZON); ctx.lineTo(railX(l, NEAR * 1.17), 360); ctx.stroke();
+          ctx.strokeStyle = G.rgba(tone, 0.25); ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(railX(l, 0), HORIZON); ctx.lineTo(railX(l, Z_BOTTOM), 360); ctx.stroke();
           ctx.strokeStyle = G.rgba(tone, 0.85); ctx.lineWidth = 1.2; ctx.stroke();
         }
       });
@@ -174,6 +177,7 @@
       D.bar(c, 420, 331, 200, Math.min(this.kills, this.sector.quota), this.sector.quota, tone);
     }
   };
+  A.Lancer.project = (lane, z) => [railX(lane, z), depthY(z)]; // presentation helper (tests)
   A.register({id: 'lancer', title: 'Lattice Lancer', subtitle: 'Five rails to the horizon.', genre: 'RAIL SHOOTER', color: '#9be9ff', number: '04',
     modes: ['extended'], inspiredBy: 'Beamrider',
     controls: ['Left / right · change rail', 'Z · lance beam', 'X · torpedo (3 per sector)', 'Four sectors · three ships'],
