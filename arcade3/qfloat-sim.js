@@ -25,6 +25,8 @@
   }
   function step(state,input){
     check(state);
+    // Reject before advancing. A successful step must itself pass check().
+    if(state.tick>=2147483646)throw new RangeError('tick exhausted');
     if(!input||typeof input!=='object'||Array.isArray(input)||
       Object.keys(input).length!==2||
       ![-1,0,1].includes(input.x)||![-1,0,1].includes(input.y))
