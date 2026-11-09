@@ -74,6 +74,26 @@ function policy(id){
    else if(ink&&moth){const d=px(ink.x)-x;if(d<40)jump=true;else a.x=-1;}
    if(jump&&p.grounded)a.cPressed=true;
   }
+  if(id==='lancer'){
+   // Rate each rail by the hazards riding down it, prefer a safe rail with a drone to lance,
+   // and lead the warden's crossing with a torpedo.
+   const p=g.p,lane=p.lane,laneOf=f=>Math.round(f.pos/16);
+   const danger=l=>g.foes.some(f=>f.kind!=='warden'&&laneOf(f)===l&&(f.kind==='block'||f.dive||f.kind==='hopper')&&f.z>560)
+    ||g.foes.some(f=>f.kind!=='warden'&&f.lane===l&&f.z>760)||g.shots.some(b=>!b.mine&&b.lane===l&&b.z>620);
+   const prey=g.foes.filter(f=>f.kind==='drone'||f.kind==='hopper').sort((u,v)=>v.z-u.z);
+   const w=g.foes.find(f=>f.kind==='warden');
+   let want=lane;
+   if(w&&p.torps>0){want=Math.max(0,Math.min(4,Math.round((w.pos+22)/16)));}
+   else if(prey.length){const f=prey.find(f=>!danger(laneOf(f)))||prey[0];want=laneOf(f);}
+   // Step toward the wanted rail only through safe rails; flee a dangerous one.
+   const step=Math.sign(want-lane);
+   if(step&&!danger(lane+step))a.x=step;
+   if(danger(lane)){const opts=[lane-1,lane+1].filter(l=>l>=0&&l<=4&&!danger(l));if(opts.length)a.x=opts.sort((u,v)=>Math.abs(u-want)-Math.abs(v-want))[0]-lane;}
+   a.a=p.pos===lane*16&&g.foes.some(f=>f.kind!=='warden'&&laneOf(f)===lane);
+   if(w&&p.torps>0&&p.pos===lane*16&&Math.abs(w.pos+20-lane*16)<=4)a.bPressed=true;
+   const block=g.foes.find(f=>f.kind==='block'&&laneOf(f)===lane&&f.z>640);
+   if(block&&danger(lane-1)!==false&&danger(lane+1)!==false&&p.torps>1&&!w)a.bPressed=true;
+  }
   return a;
  };
 }
