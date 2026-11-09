@@ -69,6 +69,30 @@ test('workflow has no PR/push/schedule triggers and cannot start without explici
   assert.match(y,/SHA256SUMS/);
   assert.match(y,/verify_pages/);
 });
+test('a successful browser witness cannot remain green when browser close rejects',async()=>{
+  const {closeResourcesAndFinalize}=await modulePromise;
+  const report={status:'PASS',failures:[]};
+  const browser={close:async()=>{throw new Error('injected Chromium teardown failure');}};
+  const exitCode=await closeResourcesAndFinalize(report,browser,null);
+  assert.equal(exitCode,1);
+  assert.equal(report.status,'FAIL');
+  assert.deepEqual(report.failures,['browser close: injected Chromium teardown failure']);
+});
+test('a failed server close, or earlier failed witness, returns a nonzero exit code',async()=>{
+  const {closeResourcesAndFinalize}=await modulePromise;
+  const server={listening:true,close:cb=>cb(new Error('injected server shutdown failure'))};
+  const report={status:'PASS',failures:[]};
+  assert.equal(await closeResourcesAndFinalize(report,null,server),1);
+  assert.equal(report.status,'FAIL');
+  assert.deepEqual(report.failures,['server close: injected server shutdown failure']);
+  const alreadyFailed={status:'FAIL',failures:['page assertion failed']};
+  assert.equal(await closeResourcesAndFinalize(alreadyFailed,null,null),1);
+  const success={status:'PASS',failures:[]};
+  assert.equal(await closeResourcesAndFinalize(success,{close:async()=>{}},null),0);
+  assert.equal(success.status,'PASS');
+  assert.deepEqual(success.failures,[]);
+});
+
 test('a process without authorized workflow context cannot read/launch owner workstation',async()=>{
   const {requireReviewedHead}=await modulePromise;
   assert.throws(()=>requireReviewedHead(sha),/Only owner-dispatched reviewed main/);
