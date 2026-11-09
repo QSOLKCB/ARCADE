@@ -45,8 +45,8 @@ for(const id of IDS)test(id+' replay is deterministic, rendering is pure, pools 
 // covers state at fixed checkpoints and every stage transition; drawing between
 // ticks must not change it.
 const PINS={
- commando:'60124f410951a81765d71b080aa93827095f64f6f3f76abc9b656f2eb54638a3',
- lantern:'f0817eaefeb91f2da7ea1c682e2708f77d0e5a05325a0841892ab5a41c3914f3',
+ commando:'d5125b2306f5a0a9040b29110cc7b2e73a3387185dd32d92768e284ad50e5ffa',
+ lantern:'9ee2e0a936f8fb156958b5c49350e5507a6aa501f6fbab582a6ef657bc9e037f',
  sleepwalker:'cf55e265068d44d620b7023a288327feeeed4017c200dbe3a088fd186e0e4f25',
  lancer:'eebf0fc68b6ca05ecc43fc3c80cef3298c145098f37700a43d23e126efd8fbe4',
  canal:'8c6e56e41f17cd10841b77d3b3d30546ab26c765dca88333ec2eaab7197b07cc',
@@ -128,6 +128,29 @@ test('Tin Lantern: plating breaks before a life is lost, and jumps cannot be ste
  g.inv=0;g.hurt();assert.equal(g.lives,lives-1);
  const h=make('lantern');h.foes=[];h.inv=999;run(h,1,{x:1,cPressed:true});const vx=h.p.jumpVX;assert.ok(vx>0);
  const x0=h.p.x;run(h,5,{x:-1});assert.ok(h.p.x>x0,'still travelling forward');assert.equal(h.p.jumpVX,vx);
+});
+
+// Jump rise measured from the real physics; a ledge must sit at least 4 px under it.
+const jumpRise=id=>{const g=make(id);g.inv=99999;const y0=px(g.p.y);let top=y0;
+ g.tick({...A.empty(),cPressed:true,c:true});for(let i=0;i<80;i++){g.foes=[];if(g.slag)g.slag=[];g.tick({...A.empty(),c:true});top=Math.min(top,px(g.p.y));}return y0-top;};
+test('Commando and Lantern: every ledge is within jump reach (PR #11 review)',()=>{
+ for(const id of ['commando','lantern']){
+  const rise=jumpRise(id),g=make(id);
+  for(let s=0;s<3;s++){g.stage=s;g.setup();for(const [x,y] of g.ledges)assert.ok(303-y<=rise-4,id+' stage '+(s+1)+' ledge at '+x+' is '+(303-y)+' px high; jump rises '+rise.toFixed(1));}
+ }
+});
+
+test('Overclock Commando: a runner that falls into a pit cannot touch the player that tick (PR #11 review)',()=>{
+ const g=make('commando');g.inv=0;const [l]=g.pits[0];const lives=g.lives;
+ g.foes=[{kind:'runner',x:q(l+10),y:q(303),hp:1,maxHP:1,cd:999,flash:0,uid:1,vx:q(1)}];Object.assign(g.p,{x:q(l+16),y:q(303)});
+ g.pits=[[l,l+60]];run(g,1);assert.equal(g.lives,lives);
+});
+
+test('Overclock Commando: turret firing warnings survive the lite FX tier (PR #11 review)',()=>{
+ const g=make('commando'),t=g.foes.find(f=>f.kind==='turret');t.cd=5;g.camera=t.x-q(300);
+ for(const quality of ['high','lite']){G.setQuality(quality);const c=recordingContext(null,{logging:true});g.draw(c);
+  assert.ok(c.log.some(e=>e==='fillStyle=#ff4d4d'),quality+' tier draws the muzzle flare');}
+ G.setQuality('high');
 });
 
 test('Pixel Sleepwalker levels are fair: running jumps clear every pit and moth-owls patrol clear of jumps and towers',()=>{

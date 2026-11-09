@@ -15,9 +15,10 @@
       this.p = {x: q(50), y: q(GROUND), vy: 0, jumpVX: 0, face: 1, grounded: true, cd: 0, armor: true, tool: this.p ? this.p.tool : 'spanner'};
       Object.assign(this, {camera: 0, shots: [], foes: [], slag: [], drops: [], stageTicks: 0, inv: 90, bossDead: false, kills: 0, checkpoint: 50, uid: 0});
       this.pits = [[640, 700], [1180, 1240], [1720, 1780]];
-      this.ledges = [[380, 238, 120], [820, 226, 140], [1350, 232, 130], [1880, 222, 120]];
-      this.chests = [{x: q(900), y: q(226), open: false}, {x: q(1420), y: q(232), open: false}];
-      for (const [x, y] of [[430, 238], [880, 226], [1400, 232], [1930, 222]]) this.add('crow', x, y - 6, 1);
+      // Every ledge sits within a jump's 69 px rise (tested).
+      this.ledges = [[380, 240, 120], [820, 242, 140], [1350, 240, 130], [1880, 244, 120]];
+      this.chests = [{x: q(900), y: q(242), open: false}, {x: q(1420), y: q(240), open: false}];
+      for (const [x, y] of [[430, 240], [880, 242], [1400, 240], [1930, 244]]) this.add('crow', x, y - 6, 1);
       this.add('warden', L - 200, GROUND, 40 + s * 15);
       this.announce(['STAGE 1 // THE SCRAPYARD', 'STAGE 2 // RUST MARSH', 'STAGE 3 // FURNACE KEEP'][s], 140);
     }

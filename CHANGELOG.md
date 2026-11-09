@@ -18,7 +18,7 @@
   shell. The shell now accepts a per-hall configuration (`Arcade2.HALL`) and
   per-cabinet mode lists, and hides the Mode menu for single-mode cabinets.
   ARCADE 2 behaviour and all of its pins are unchanged.
-- `tests/arcade3.test.cjs` (39 tests) covers:
+- `tests/arcade3.test.cjs` (42 tests) covers:
   - for every cabinet: replay determinism, render purity, bounded pools and
     terminal-state freeze
   - control-only completion of all nine campaigns (29 stages), with nine new
@@ -61,7 +61,14 @@
     reticle, so the reticle stays visible above the jet.
   - **Stratos Ward:** an enemy killed by the last bomb pulse no longer moves, fires
     or rams the ship in the same tick.
-  Skyline, Sleepwalker, Feud and Lancer campaign pins were re-recorded for these rule changes.
+  - **Overclock Commando / Tin Lantern:** four Commando ledges (67–103 px high)
+    and three Lantern ledges (71–81 px) were above the jump's 67 / 69 px rise.
+    They are now all reachable, and a test measures the real jump. Snipers,
+    chests and crows moved with their ledges.
+  - **Overclock Commando:** a runner that falls into a pit can no longer touch you
+    on that tick. The turret and gun firing warning was a glow, which the lite FX
+    tier does not draw; a muzzle flare now shows in both tiers.
+  Skyline, Sleepwalker, Feud, Lancer, Commando and Lantern campaign pins were re-recorded for these rule changes.
   Every fix has a regression test.
 - Links to ARCADE 3 from the original hall and ARCADE 2. The service worker cache key
   is now `v0.8.0-r1-arcade3`, and it precaches the 15 ARCADE 3 files and the six versioned shared scripts. The Pages

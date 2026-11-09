@@ -16,8 +16,9 @@
       Object.assign(this, {camera: 0, shots: [], foes: [], pods: [], items: [], stageTicks: 0, inv: 120, bossDead: false, uid: 0});
       // A spin jump covers 86 px; 50-60 px pits leave a 30 px take-off window.
       this.pits = [[700, 760], [1500, 1560], [2050, 2100]];
-      this.ledges = [[300, 240, 140], [560, 200, 100], [900, 236, 160], [1200, 214, 120], [1700, 240, 150], [1900, 206, 110]];
-      for (const [x, y, kind] of [[480, GROUND, 'turret'], [980, 236, 'sniper'], [1260, 214, 'sniper'], [1350, GROUND, 'turret'], [1780, 240, 'sniper'], [2200, GROUND, 'turret']])
+      // Every ledge sits within a spin jump's 67 px rise (tested), so none is scenery you cannot use.
+      this.ledges = [[300, 244, 140], [560, 250, 100], [900, 242, 160], [1200, 246, 120], [1700, 244, 150], [1900, 248, 110]];
+      for (const [x, y, kind] of [[480, GROUND, 'turret'], [980, 242, 'sniper'], [1260, 246, 'sniper'], [1350, GROUND, 'turret'], [1780, 244, 'sniper'], [2200, GROUND, 'turret']])
         this.addFoe(kind, x, y, kind === 'turret' ? 40 + s * 10 : 18);
       for (const y of [180, 228, 276]) this.addFoe('gun', L - 150, y, 60 + s * 15);
       this.addFoe('core', L - 95, 236, 260 + s * 70);
@@ -88,7 +89,7 @@
         if (f.flash) f.flash--;
         if (f.kind === 'runner') {
           f.x += f.vx;
-          if (K.overPit(f.x, this.pits)) f.hp = 0;
+          if (K.overPit(f.x, this.pits)) { f.hp = 0; continue; } // a runner that falls is gone, not a hazard
           if (A.near(f, p, 14) && Math.abs(f.y - p.y) < q(28)) this.die();
           continue;
         }
@@ -175,7 +176,8 @@
           D.ellipse(c, x, y - 16, 14, 11, G.shade(tone, -0.3)); D.ellipse(c, x, y - 18, 9, 7, tone);
           const dx = px(p.x) - cam - x, dy = px(p.y) - 18 - (y - 18), d = Math.hypot(dx, dy) || 1;
           D.line(c, x, y - 18, x + dx / d * 16, y - 18 + dy / d * 16, '#e8eef4', 4);
-          if (f.cd < 18) G.glow(c, x, y - 18, 14, '#ff4d4d', 0.8);
+          // Firing warning: a muzzle flare drawn in both FX tiers (the glow is extra, full tier only).
+          if (f.cd < 18) { G.glow(c, x, y - 18, 14, '#ff4d4d', 0.8); D.ellipse(c, x + dx / d * 16, y - 18 + dy / d * 16, 5, 5, '#ff4d4d'); D.ellipse(c, x + dx / d * 16, y - 18 + dy / d * 16, 2, 2, '#fff0f0'); }
           if (f.kind === 'turret') D.bar(c, x - 14, y - 34, 28, f.hp, f.maxHP, '#ff7e81');
         } else {
           const open = !this.foes.some(g => g.kind === 'gun');
