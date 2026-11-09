@@ -41,7 +41,8 @@ with controls alone and pinned by state hash.
 
 [**Enter ARCADE 3**](https://qsolkcb.github.io/ARCADE/arcade3/) ·
 [Cabinets, inspirations and controls](arcade3/README.md) ·
-[Verification record](docs/ARCADE3_VERIFICATION.md)
+[Verification record](docs/ARCADE3_VERIFICATION.md) ·
+[ARCADE3-FUZZ-001 valid-control fuzz protocol](docs/ARCADE3_FUZZ_001.md)
 
 ## The original hall
 
