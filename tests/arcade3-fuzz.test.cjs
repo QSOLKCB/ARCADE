@@ -99,7 +99,9 @@ test('bounded fuzz aggregation retains source-bound PASS summaries',()=>{
   assert.equal(report.plannedCases,18);
   assert.equal(report.executedTicks,1800);
   assert.equal(report.cases.length,18);
-  assert.match(report.source.gitHead??'',/^[0-9a-f]{40}$/);
+  if(report.source.gitHead!==null)
+    assert.match(report.source.gitHead,/^[0-9a-f]{40}$/);
+  else assert.equal(report.source.gitHead,null);
   assert.equal(report.source.nodeVersion,process.version);
   assert.ok(report.source.sourceFiles.some(f=>f.path==='arcade2/engine.js'&&
     /^[0-9a-f]{64}$/.test(f.sha256)));
