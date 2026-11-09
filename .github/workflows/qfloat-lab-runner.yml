@@ -46,7 +46,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test -z "$(git status --porcelain)"
           test "$GITHUB_REF" = 'refs/heads/main'
-          if test -z "$DISPLAY$WAYLAND_DISPLAY"; then
+          if test -z "${DISPLAY:-}${WAYLAND_DISPLAY:-}"; then
             echo 'No graphical desktop: run ./run.sh in a logged-in session, not via SSH/systemd.' >&2
             exit 1
           fi
