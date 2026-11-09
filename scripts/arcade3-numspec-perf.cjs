@@ -100,7 +100,7 @@ function verifyCampaigns({maxTicks=40000}={}){
   const independent=[];
   const samples=[],totals={total:0,safe:0,fallback:0};
   for(const cabinet of IDS){
-    const a=context('reference'),b=context('candidate',{collect:true});
+    const a=context('reference'),b=context('candidate',{collect:true,maxSamples:512});
     const reference=runCampaign(cabinet,a,{maxTicks});
     const candidate=runCampaign(cabinet,b,{maxTicks});
     for(const result of [reference,candidate]){
