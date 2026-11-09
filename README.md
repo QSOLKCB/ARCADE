@@ -49,7 +49,7 @@ with controls alone and pinned by state hash.
 | --- | --- | --- |
 | **Iron Meridian** | *Dogs of War* (1989, Amiga / Atari ST) | Three mercenary contracts, team loadout shop, four weapons, limited ammunition with unlimited sidearm fallback, grenades, rescue/recovery objectives, armoured roadblocks and extraction. 1–2 players. |
 | **Velvet Heist** | *Cops 'n' Robbers* (1985, Commodore 64) | Seven authored screens, pursuing police and reinforcements, limited shots, lifts, a key/code/safe puzzle, TNT, a torch-lit gallery, helicopter warnings, 22 gems, banking and jail rescues. 1 player. |
-| **Neon Ronin** | *Ninja Combat* (1990, arcade / Neo Geo) | Three city districts, twelve encounter blocks, three bosses, throwing stars, close-range attacks, jumps, rechargeable storm attacks, weapon/health pickups and local co-op revives. 1–2 players. |
+| **Neon Ronin** | *Ninja Combat* (1990, arcade / Neo Geo) | Three city districts, twelve encounter blocks, three bosses, throwing stars, close-range attacks, jumps, rechargeable storm attacks, weapon/health pickups and local co-op revives. A fighter select after each district: four fighters with their own skills, and each defeated boss joins the roster. 1–2 players. |
 | **Neon Air** | Air hockey | Perspective 3D table, velocity-based mallet strikes, bank shots, first-to-seven matches and Rookie / Club / Expert AI. 1 player. |
 | **Basement Brawl** | *Pit-Fighter* (1990) | Three fighters, five arena bouts, depth movement, punches, kicks, jump attacks, guard, combos, chairs and stagger throws. 1 player. |
 | **Chrono Wing** | *Time Pilot* (1982) | Free flight through five eras, patrol quotas, flagship bosses, courier rescues, evasive rolls and replacement craft. 1 player. |
